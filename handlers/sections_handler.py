@@ -12,14 +12,14 @@ router = Router()
 
 client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
 
-
 @router.callback_query(lambda callback: callback.data == "get_full_access")
 async def handle_full_access(callback_query: CallbackQuery):
-    keyboard = InlineKeyboardMarkup(row_width=1)
-    keyboard.add(
-        InlineKeyboardButton("Тариф 1 (290 руб.)", callback_data="tariff_1"),
-        InlineKeyboardButton("Тариф 2 (490 руб.)", callback_data="tariff_2"),
-        InlineKeyboardButton("Тариф 3 (790 руб.)", callback_data="tariff_3")
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton("Тариф 1 (290 руб.)", callback_data="tariff_1")],
+            [InlineKeyboardButton("Тариф 2 (490 руб.)", callback_data="tariff_2")],
+            [InlineKeyboardButton("Тариф 3 (790 руб.)", callback_data="tariff_3")]
+        ]
     )
 
     await callback_query.message.answer(
