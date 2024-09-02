@@ -16,9 +16,9 @@ client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
 async def handle_full_access(callback_query: CallbackQuery):
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton("Тариф 1 (290 руб.)", callback_data="tariff_1")],
-            [InlineKeyboardButton("Тариф 2 (490 руб.)", callback_data="tariff_2")],
-            [InlineKeyboardButton("Тариф 3 (790 руб.)", callback_data="tariff_3")]
+            [InlineKeyboardButton(text="Тариф 1 (290 руб.)", callback_data="tariff_1")],
+            [InlineKeyboardButton(text="Тариф 2 (490 руб.)", callback_data="tariff_2")],
+            [InlineKeyboardButton(text="Тариф 3 (790 руб.)", callback_data="tariff_3")]
         ]
     )
 
