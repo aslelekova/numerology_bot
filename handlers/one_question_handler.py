@@ -15,7 +15,6 @@ router = Router()
 
 @router.callback_query(lambda callback: callback.data == "ask_free_question")
 async def ask_free_question_callback(callback_query: types.CallbackQuery, state: FSMContext):
-    # Проверка, был ли уже задан вопрос
     user_data = await state.get_data()
     if user_data.get("question_asked", False):
         await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
