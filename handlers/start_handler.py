@@ -12,12 +12,7 @@ router = Router()
 async def cmd_start(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
 
-    await state.update_data({
-        "first_message_id": None,
-        "second_message_id": None,
-        "question_prompt_message_id": None,
-        "previous_message_ids": [],
-    })
+    await state.clear()
 
     user_name = message.from_user.first_name
     await message.answer(f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, нумерологии, "
