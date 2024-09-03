@@ -19,13 +19,9 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
     user_data = await state.get_data()
     if user_data.get("question_asked", False):
         await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
-        return
-
-    await callback_query.message.answer(
-        "Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить мои отношения с партнером?)\n\n"
-        "⚡️ У вас есть 1 бесплатный вопрос"
-    )
-    await state.set_state(QuestionState.waiting_for_question)
+    else:
+        await callback_query.message.answer("Отлично! Теперь вы можете задать свой вопрос.")
+        await state.set_state(QuestionState.waiting_for_question)
 
 
 @router.message(StateFilter(QuestionState.waiting_for_question))
