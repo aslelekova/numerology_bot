@@ -1,4 +1,5 @@
 # handlers/compatibility_handler.py
+
 from aiogram import Router
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext

@@ -1,4 +1,4 @@
-from aiogram import Router, types
+from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from openai import AsyncOpenAI
@@ -6,11 +6,13 @@ from openai import AsyncOpenAI
 import config
 from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_matrix import create_sections_keyboard
+from services.gpt_service import generate_gpt_response
 from states import QuestionState
 
 router = Router()
 
 client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
+
 
 @router.callback_query(lambda callback: callback.data == "get_full_access")
 async def handle_full_access(callback_query: CallbackQuery):
@@ -28,25 +30,6 @@ async def handle_full_access(callback_query: CallbackQuery):
         "Тариф 3.\n- 15 раскладов (любых)\n- 40 вопросов\n💲 790 рублей",
         reply_markup=keyboard
     )
-
-
-async def generate_gpt_response(user_name, birth_date, category):
-    prompt = (
-        f"У вас есть пользователь с именем {user_name}, дата рождения {birth_date}. "
-        f"Пользователь выбрал категорию '{category}'. Составь матрицу судьбы для этой категории, "
-        f"учитывая информацию о пользователе и его выбор. Ответ должен быть информативным и подходящим "
-        f"для выбранной категории."
-    )
-
-    messages = [{"role": "user", "content": prompt}]
-
-    response = await client.chat.completions.create(
-        messages=messages,
-        model="gpt-3.5-turbo"
-    )
-
-    response_text = response.choices[0].message.content
-    return response_text
 
 
 async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
@@ -208,10 +191,3 @@ async def go_back_to_categories(callback_query: CallbackQuery, state: FSMContext
     )
 
     await state.update_data(first_message_id=first_message.message_id)
-
-
-def create_back_button():
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Вернуться к разделам 👈", callback_data="go_back_to_categories")]
-    ])
-    return keyboard

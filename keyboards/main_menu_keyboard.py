@@ -1,4 +1,5 @@
 # keyboards/main_menu_keyboard.py
+
 from aiogram import types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 

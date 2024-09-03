@@ -1,18 +1,26 @@
 # handlers/start_handler.py
 from aiogram import Router, types
 from aiogram.filters import CommandStart, Command
+from aiogram.fsm.context import FSMContext
 
 from keyboards.main_menu_keyboard import main_menu_keyboard
 
 router = Router()
 
+
 @router.message(CommandStart())
-async def cmd_start(message: types.Message):
+async def cmd_start(message: types.Message, state: FSMContext):
     """
     Handler for the /start command.
 
     :param message: The message triggering the command.
     """
+    user_data = await state.get_data()
+
+    if user_data.get("question_asked", False):
+        await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
+        return
+
     user_name = message.from_user.first_name
     await message.answer(f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, нумерологии, "
                          "совместимости, карьерного успеха, богатства и других вопросов.\n\n<b>После каждого расчета вы"
