@@ -10,12 +10,10 @@ router = Router()
 
 @router.message(CommandStart())
 async def cmd_start(message: types.Message, state: FSMContext):
-    """
-    Handler for the /start command.
-
-    :param message: The message triggering the command.
-    """
     user_data = await state.get_data()
+
+    # Clear the question state if needed
+    await state.update_data(question_asked=False)
 
     if user_data.get("question_asked", False):
         await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
@@ -25,7 +23,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
     await message.answer(f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, нумерологии, "
                          "совместимости, карьерного успеха, богатства и других вопросов.\n\n<b>После каждого расчета вы"
                          "сможете задать любой вопрос.</b> С чего начнем?", reply_markup=main_menu_keyboard())
-
 
 @router.message(Command("help"))
 async def handle_help(message: types.Message):
