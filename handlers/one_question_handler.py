@@ -6,8 +6,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from handlers.start_handler import cmd_start
-from services.gpt_service import generate_gpt_response
-from services.question_service import generate_response, generate_suggestions
+from services.gpt_service import client, generate_gpt_response
+from services.question_service import generate_suggestions
 from services.message_service import delete_previous_messages
 from states import QuestionState
 
@@ -35,16 +35,16 @@ async def process_question(message: types.Message, state: FSMContext):
         await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
         return
 
-    # Extract user data needed for the prompt
     user_name = user_data['user_name']
     birth_date = user_data['user_date']
     category = message.text
 
-    # Call the correct function with the required arguments
     response_text = await generate_gpt_response(user_name, birth_date, category)
 
     await message.answer(response_text)
-    suggestions_text = await generate_suggestions(message.text)
+
+    suggestions_text = await generate_suggestions(message.text, client)
+
     inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
         [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
@@ -55,7 +55,6 @@ async def process_question(message: types.Message, state: FSMContext):
 
     await state.update_data(previous_message_ids=[suggestion_message.message_id])
     await state.update_data(question_asked=True)
-
 
 @router.callback_query(lambda callback: callback.data == "main_menu")
 async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMContext):
