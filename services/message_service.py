@@ -1,5 +1,5 @@
 # services/message_service.py
-import types
+from aiogram import types
 
 from aiogram.types import InlineKeyboardMarkup
 
@@ -23,3 +23,7 @@ async def delete_message(bot, chat_id, message_id):
 
 async def send_message_with_keyboard(message: types.Message, text: str, keyboard: InlineKeyboardMarkup):
     return await message.answer(text, reply_markup=keyboard)
+
+
+
+
