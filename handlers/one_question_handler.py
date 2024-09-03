@@ -20,7 +20,8 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
     if user_data.get("question_asked", False):
         await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
     else:
-        await callback_query.message.answer("Отлично! Теперь вы можете задать свой вопрос.")
+        await callback_query.message.answer("Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить "
+                                            "мои отношения с партнером?)\n\n⚡️ У вас есть 1 бесплатный вопрос")
         await state.set_state(QuestionState.waiting_for_question)
 
 
@@ -35,7 +36,10 @@ async def process_question(message: types.Message, state: FSMContext):
     birth_date = user_data['user_date']
     category = message.text
 
+    generating_message = await message.answer("⏳")
     response_text = await generate_gpt_response(user_name, birth_date, category)
+
+    await generating_message.delete()
 
     await message.answer(response_text)
 
