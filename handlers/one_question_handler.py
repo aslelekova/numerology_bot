@@ -56,9 +56,18 @@ async def process_question(message: types.Message, state: FSMContext):
     await state.update_data(previous_message_ids=[suggestion_message.message_id])
     await state.update_data(question_asked=True)
 
+
 @router.callback_query(lambda callback: callback.data == "main_menu")
 async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
+
+    # Clear previous messages and reset the state
     await delete_previous_messages(callback_query.message.chat.id, user_data.get("previous_message_ids", []),
                                    callback_query.message.bot)
+
+    # Optionally, clear the 'question_asked' flag or reset the entire state
+    await state.update_data(question_asked=False)
+
+    # Now start the main menu again
     await cmd_start(callback_query.message, state)
+
