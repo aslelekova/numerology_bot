@@ -56,4 +56,4 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
     user_data = await state.get_data()
     await delete_previous_messages(callback_query.message.chat.id, user_data.get("previous_message_ids", []),
                                    callback_query.message.bot)
-    await cmd_start(callback_query.message)
+    await cmd_start(callback_query.message, state)

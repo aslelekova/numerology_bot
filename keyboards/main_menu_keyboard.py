@@ -4,7 +4,6 @@ from aiogram import types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
-
 def main_menu_keyboard():
     """
     Creates and returns the main menu keyboard with options for different features.
