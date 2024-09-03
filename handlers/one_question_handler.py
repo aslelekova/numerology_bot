@@ -32,11 +32,13 @@ async def process_question(message: types.Message, state: FSMContext):
         await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
         return
 
+    # Отправляем сообщение с песочными часами
+    generating_message = await message.answer("⏳ Пожалуйста, подождите, ваш ответ генерируется...")
+
     user_name = user_data['user_name']
     birth_date = user_data['user_date']
     category = message.text
 
-    generating_message = await message.answer("⏳")
     response_text = await generate_gpt_response(user_name, birth_date, category)
 
     await generating_message.delete()
@@ -50,8 +52,17 @@ async def process_question(message: types.Message, state: FSMContext):
         [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
         [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")],
     ])
-    suggestion_message = await message.answer(f"💫 Вот примеры вопросов:\n\n{suggestions_text}",
-                                              reply_markup=inline_keyboard)
+
+    suggestion_message_text = (
+        "💫 Задавайте еще больше вопросов своему ассистенту! Вот примеры вопросов, которые могут вас заинтересовать:\n\n"
+        "🔮 - Какое будущее меня ожидает?\n"
+        "🔮 - Какие таланты и способности мне развивать?\n"
+        "🔮 - Как привлечь финансовое благополучие?\n\n"
+        "ПОДЕЛИТЕСЬ с другом и получите возможность задать еще один бесплатный вопрос, или ПОЛУЧИТЕ ПОЛНЫЙ ДОСТУП к боту, "
+        "чтобы задавать неограниченное количество вопросов и делать любые расклады! 😍"
+    )
+
+    suggestion_message = await message.answer(suggestion_message_text, reply_markup=inline_keyboard)
 
     await state.update_data(previous_message_ids=[suggestion_message.message_id])
     await state.update_data(question_asked=True)
@@ -61,13 +72,10 @@ async def process_question(message: types.Message, state: FSMContext):
 async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
 
-    # Clear previous messages and reset the state
     await delete_previous_messages(callback_query.message.chat.id, user_data.get("previous_message_ids", []),
                                    callback_query.message.bot)
 
-    # Optionally, clear the 'question_asked' flag or reset the entire state
     await state.update_data(question_asked=False)
 
-    # Now start the main menu again
     await cmd_start(callback_query.message, state)
 
