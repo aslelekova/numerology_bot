@@ -5,6 +5,7 @@ import config
 
 client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
 
+
 async def generate_gpt_response(user_name, birth_date, category):
     prompt = (
         f"У вас есть пользователь с именем {user_name}, дата рождения {birth_date}. "

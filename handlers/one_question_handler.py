@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from handlers.start_handler import cmd_start
+from services.gpt_service import generate_gpt_response
 from services.question_service import generate_response, generate_suggestions
 from services.message_service import delete_previous_messages
 from states import QuestionState
@@ -34,8 +35,13 @@ async def process_question(message: types.Message, state: FSMContext):
         await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
         return
 
-    prompt = f"У вас есть пользователь с именем {user_data['user_name']}, дата рождения {user_data['user_date']}. Пользователь задал следующий вопрос: '{message.text}'."
-    response_text = await generate_response(prompt)
+    # Extract user data needed for the prompt
+    user_name = user_data['user_name']
+    birth_date = user_data['user_date']
+    category = message.text
+
+    # Call the correct function with the required arguments
+    response_text = await generate_gpt_response(user_name, birth_date, category)
 
     await message.answer(response_text)
     suggestions_text = await generate_suggestions(message.text)
