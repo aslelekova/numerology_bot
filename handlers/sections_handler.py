@@ -14,6 +14,17 @@ router = Router()
 client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
 
 
+async def generate_gpt_response(user_name, user_date, category):
+    # Обратите внимание, что функция должна быть асинхронной и использовать OpenAI API для генерации текста
+    prompt = f"Пользователь: {user_name}, Дата: {user_date}, Категория: {category}. Составьте личный расклад на основе загруженного файла. Интерпретации по каждой категории должны быть включены."
+    response = await client.Completion.create(
+        engine="text-davinci-003",  # Убедитесь, что используете корректный движок
+        prompt=prompt,
+        max_tokens=1500  # Настройте в зависимости от потребностей
+    )
+    return response.choices[0].text.strip()
+
+
 @router.callback_query(lambda callback: callback.data == "get_full_access")
 async def handle_full_access(callback_query: CallbackQuery):
     keyboard = InlineKeyboardMarkup(
@@ -34,53 +45,8 @@ async def handle_full_access(callback_query: CallbackQuery):
 
 async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
     data = await state.get_data()
-    first_message_id = data.get("first_message_id")
-    second_message_id = data.get("second_message_id")
-    previous_warning_message_id = data.get("previous_warning_message_id")
-    question_prompt_message_id = data.get("question_prompt_message_id")
-
     user_name = data.get("user_name", "Пользователь")
     user_date = data.get("user_date", "неизвестна")
-
-    if previous_warning_message_id:
-        try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=previous_warning_message_id
-            )
-        except Exception as e:
-            if "message to delete not found" not in str(e):
-                print(f"Error deleting previous warning message: {e}")
-
-    if first_message_id:
-        try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=first_message_id
-            )
-        except Exception as e:
-            if "message to delete not found" not in str(e):
-                print(f"Error deleting message with ID {first_message_id}: {e}")
-
-    if second_message_id:
-        try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=second_message_id
-            )
-        except Exception as e:
-            if "message to delete not found" not in str(e):
-                print(f"Error deleting message with ID {second_message_id}: {e}")
-
-    if question_prompt_message_id:
-        try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=question_prompt_message_id
-            )
-        except Exception as e:
-            if "message to delete not found" not in str(e):
-                print(f"Error deleting question prompt message: {e}")
 
     generating_message = await callback_query.message.answer("⏳")
 
@@ -94,7 +60,6 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
         [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
         [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
         [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-
     ])
 
     question_prompt_message = await callback_query.message.answer(
@@ -119,7 +84,7 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     }
 
     category_mapping = {
-        "section_personal": "Личностные качества",
+        "section_personal": "Личные качества",
         "section_destiny": "Предназначение",
         "section_talents": "Таланты",
         "section_family_relationships": "Детско родительские отношения",
