@@ -1,5 +1,3 @@
-import logging
-
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
@@ -34,24 +32,21 @@ async def handle_full_access(callback_query: CallbackQuery):
         reply_markup=keyboard
     )
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
     data = await state.get_data()
 
     user_name = data.get("user_name", "Пользователь")
-    user_date = data.get("user_date", "неизвестна")
-
-    logging.debug(f"User date: {user_date}")
+    user_date = data.get("user_date", None)
+    day = user_date.day
+    month = user_date.month
+    year = user_date.year
+    values = calculate_values(day, month, year)
 
     generating_message = await callback_query.message.answer("⏳")
-    try:
-        day, month, year = map(int, user_date.split('-'))
-    except ValueError:
-        await callback_query.message.answer("⚠️ Неверный формат даты. Используйте формат: день-месяц-год.")
-        return
 
     values = calculate_values(day, month, year)
+
     response_text = await generate_gpt_response(values, category)
 
     await generating_message.delete()
