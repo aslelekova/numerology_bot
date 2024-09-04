@@ -54,15 +54,14 @@ async def process_question(message: types.Message, state: FSMContext):
     ])
 
     suggestion_message_text = (
-        f"💫 Задавайте еще больше вопросов своему ассистенту! Вот примеры вопросов, которые могут вас заинтересовать:\n\n"
-        f"{suggestions_text}\n\n"
-        f"ПОДЕЛИТЕСЬ с другом и получите возможность задать еще один бесплатный вопрос, или ПОЛУЧИТЕ ПОЛНЫЙ ДОСТУП к боту, "
-        f"чтобы задавать неограниченное количество вопросов и делать любые расклады! 😍"
+        f"💫 Задавайте еще больше вопросов своему ассистенту! Вот примеры вопросов, которые могут вас "
+        f"заинтересовать:\n\n{suggestions_text}\n\n"
+        f"ПОДЕЛИТЕСЬ с другом и получите возможность задать еще один бесплатный вопрос, или ПОЛУЧИТЕ ПОЛНЫЙ ДОСТУП к "
+        f"боту, чтобы задавать неограниченное количество вопросов и делать любые расклады! 😍"
     )
 
     suggestion_message = await message.answer(suggestion_message_text, reply_markup=inline_keyboard)
 
-    # Обновляем список ID сообщений для удаления при нажатии "Главное меню"
     previous_message_ids = user_data.get("previous_message_ids", [])
     previous_message_ids.append(suggestion_message.message_id)
     await state.update_data(previous_message_ids=previous_message_ids)
@@ -74,10 +73,8 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
     user_data = await state.get_data()
     user_name = callback_query.from_user.first_name
 
-    # Получаем список ID сообщений для удаления
     previous_message_ids = user_data.get("previous_message_ids", [])
 
-    # Удаляем сохраненные сообщения
     for message_id in previous_message_ids:
         try:
             await callback_query.message.bot.delete_message(
@@ -88,11 +85,9 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
             if "message to delete not found" not in str(e):
                 print(f"Error deleting message with ID {message_id}: {e}")
 
-    # Очищаем состояние
     await state.clear()
     await state.update_data(question_asked=False)
 
-    # Отправляем новое приветственное сообщение
     await callback_query.message.answer(
         f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, "
         "нумерологии, совместимости, карьерного успеха, богатства и других вопросов.\n\n"

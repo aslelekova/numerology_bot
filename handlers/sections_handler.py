@@ -31,60 +31,83 @@ async def handle_full_access(callback_query: CallbackQuery):
         reply_markup=keyboard
     )
 
-async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
-    # Получаем данные из состояния
-    data = await state.get_data()
 
-    # Удаляем предыдущее сообщение с категориями
+async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
+    data = await state.get_data()
     first_message_id = data.get("first_message_id")
+    second_message_id = data.get("second_message_id")
+    previous_warning_message_id = data.get("previous_warning_message_id")
+    question_prompt_message_id = data.get("question_prompt_message_id")
+
+    user_name = data.get("user_name", "Пользователь")
+    user_date = data.get("user_date", "неизвестна")
+
+    if previous_warning_message_id:
+        try:
+            await callback_query.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=previous_warning_message_id
+            )
+        except Exception as e:
+            if "message to delete not found" not in str(e):
+                print(f"Error deleting previous warning message: {e}")
+
     if first_message_id:
         try:
-            await callback_query.bot.delete_message(callback_query.message.chat.id, first_message_id)
+            await callback_query.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=first_message_id
+            )
         except Exception as e:
-            print(f"Error deleting first message with ID {first_message_id}: {e}")
+            if "message to delete not found" not in str(e):
+                print(f"Error deleting message with ID {first_message_id}: {e}")
 
-    # Удаляем предыдущее сообщение с предложением задать вопрос
-    second_message_id = data.get("second_message_id")
     if second_message_id:
         try:
-            await callback_query.bot.delete_message(callback_query.message.chat.id, second_message_id)
+            await callback_query.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=second_message_id
+            )
         except Exception as e:
-            print(f"Error deleting second message with ID {second_message_id}: {e}")
+            if "message to delete not found" not in str(e):
+                print(f"Error deleting message with ID {second_message_id}: {e}")
 
-    # Создаем новое сообщение
+    if question_prompt_message_id:
+        try:
+            await callback_query.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=question_prompt_message_id
+            )
+        except Exception as e:
+            if "message to delete not found" not in str(e):
+                print(f"Error deleting question prompt message: {e}")
+
     generating_message = await callback_query.message.answer("⏳")
 
-    # Генерация текста ответа
-    response_text = await generate_gpt_response(data.get("user_name"), data.get("user_date"), category)
+    response_text = await generate_gpt_response(user_name, user_date, category)
 
-    # Удаляем сообщение с индикатором загрузки
     await generating_message.delete()
 
-    # Отправляем ответ и сохраняем ID сообщения
-    first_message = await callback_query.message.answer(response_text, reply_markup=create_back_button())
-    await state.update_data(first_message_id=first_message.message_id)
+    await callback_query.message.answer(response_text, reply_markup=create_back_button())
 
-    # Создаем inline-клавиатуру и новое сообщение с предложением задать вопрос
     inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
         [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
         [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
+
     ])
 
-    second_message = await callback_query.message.answer(
-        "Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
+    question_prompt_message = await callback_query.message.answer(
+        f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
         " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с "
-        "партнером?</b>)",
+        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
         reply_markup=inline_keyboard,
         parse_mode="HTML"
     )
 
-    # Сохраняем ID второго сообщения
-    await state.update_data(second_message_id=second_message.message_id)
+    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+    await state.set_state(QuestionState.waiting_for_question)
 
-    # Обновляем список ID сообщений, которые нужно удалить при нажатии на "Главное меню"
-    await state.update_data(previous_message_ids=[first_message.message_id, second_message.message_id])
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
 async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
@@ -142,10 +165,11 @@ async def go_back_to_categories(callback_query: CallbackQuery, state: FSMContext
         try:
             await callback_query.bot.delete_message(
                 chat_id=callback_query.message.chat.id,
-                message_id=first_message_id
+                message_id=callback_query.message.message_id
             )
         except Exception as e:
-            print(f"Error deleting current message: {e}")
+            if "message to delete not found" not in str(e):
+                print(f"Error deleting current message: {e}")
 
     if question_prompt_message_id:
         try:
@@ -154,7 +178,8 @@ async def go_back_to_categories(callback_query: CallbackQuery, state: FSMContext
                 message_id=question_prompt_message_id
             )
         except Exception as e:
-            print(f"Error deleting question prompt message: {e}")
+            if "message to delete not found" not in str(e):
+                print(f"Error deleting question prompt message: {e}")
 
     sections_keyboard = create_sections_keyboard()
     first_message = await callback_query.message.answer(
@@ -166,20 +191,3 @@ async def go_back_to_categories(callback_query: CallbackQuery, state: FSMContext
     )
 
     await state.update_data(first_message_id=first_message.message_id)
-
-    inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-        [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
-        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-    ])
-
-    second_message = await callback_query.message.answer(
-        f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
-        " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с "
-        "партнером?</b>)",
-        reply_markup=inline_keyboard,
-        parse_mode="HTML"
-    )
-
-    await state.update_data(second_message_id=second_message.message_id)
