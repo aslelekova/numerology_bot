@@ -65,31 +65,33 @@ async def process_question(message: types.Message, state: FSMContext):
     await state.update_data(previous_message_ids=[suggestion_message.message_id])
     await state.update_data(question_asked=True)
 
+
 @router.callback_query(lambda callback: callback.data == "main_menu")
 async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMContext):
-    # Получаем данные из состояния
+    # Получаем данные пользователя из состояния
     user_data = await state.get_data()
     user_name = callback_query.from_user.first_name
 
-    # Удаляем текущее сообщение
-    try:
-        await callback_query.message.delete()
-    except Exception as e:
-        print(f"Error deleting current message: {e}")
-
-    # Удаляем все сохраненные предыдущие сообщения
+    # Получаем идентификаторы последних сообщений
     previous_message_ids = user_data.get("previous_message_ids", [])
+
+    # Если есть предыдущие сообщения, удаляем их
     if previous_message_ids:
-        for message_id in previous_message_ids:
+        for message_id in previous_message_ids[-2:]:  # Берем последние два сообщения
             try:
-                await callback_query.bot.delete_message(callback_query.message.chat.id, message_id)
+                await callback_query.message.bot.delete_message(
+                    chat_id=callback_query.message.chat.id,
+                    message_id=message_id
+                )
             except Exception as e:
-                print(f"Error deleting previous message with ID {message_id}: {e}")
+                if "message to delete not found" not in str(e):
+                    print(f"Error deleting message with ID {message_id}: {e}")
 
-    # Очищаем состояние
+    # Очищаем состояние пользователя
     await state.clear()
+    await state.update_data(question_asked=False)
 
-    # Отправляем новое приветственное сообщение
+    # Отправляем приветственное сообщение и клавиатуру "Главное меню"
     await callback_query.message.answer(
         f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, "
         "нумерологии, совместимости, карьерного успеха, богатства и других вопросов.\n\n"
