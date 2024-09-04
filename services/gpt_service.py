@@ -18,7 +18,7 @@ async def generate_gpt_response(user_name, birth_date, category):
 
     response = await client.chat.completions.create(
         messages=messages,
-        model="gpt-40-2024-08-06"
+        model="gpt-4o-2024-08-06"
     )
 
     return response.choices[0].message.content
