@@ -35,8 +35,8 @@ async def process_question(message: types.Message, state: FSMContext):
 
     generating_message = await message.answer("⏳")
 
-    user_name = user_data['user_name']
-    birth_date = user_data['user_date']
+    user_name = user_data.get('user_name', 'Пользователь')
+    birth_date = user_data.get('user_date', 'неизвестна')
     category = message.text
 
     response_text = await generate_gpt_response(user_name, birth_date, category)
@@ -62,39 +62,41 @@ async def process_question(message: types.Message, state: FSMContext):
 
     suggestion_message = await message.answer(suggestion_message_text, reply_markup=inline_keyboard)
 
-    await state.update_data(previous_message_ids=[suggestion_message.message_id])
+    # Обновляем список ID сообщений для удаления при нажатии "Главное меню"
+    previous_message_ids = user_data.get("previous_message_ids", [])
+    previous_message_ids.append(suggestion_message.message_id)
+    await state.update_data(previous_message_ids=previous_message_ids)
     await state.update_data(question_asked=True)
 
 
 @router.callback_query(lambda callback: callback.data == "main_menu")
 async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMContext):
-    # Получаем данные пользователя из состояния
     user_data = await state.get_data()
     user_name = callback_query.from_user.first_name
 
-    # Получаем идентификаторы последних сообщений
+    # Получаем список ID сообщений для удаления
     previous_message_ids = user_data.get("previous_message_ids", [])
 
-    # Если есть предыдущие сообщения, удаляем их
-    if previous_message_ids:
-        for message_id in previous_message_ids[-2:]:  # Берем последние два сообщения
-            try:
-                await callback_query.message.bot.delete_message(
-                    chat_id=callback_query.message.chat.id,
-                    message_id=message_id
-                )
-            except Exception as e:
-                if "message to delete not found" not in str(e):
-                    print(f"Error deleting message with ID {message_id}: {e}")
+    # Удаляем сохраненные сообщения
+    for message_id in previous_message_ids:
+        try:
+            await callback_query.message.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=message_id
+            )
+        except Exception as e:
+            if "message to delete not found" not in str(e):
+                print(f"Error deleting message with ID {message_id}: {e}")
 
-    # Очищаем состояние пользователя
+    # Очищаем состояние
     await state.clear()
     await state.update_data(question_asked=False)
 
-    # Отправляем приветственное сообщение и клавиатуру "Главное меню"
+    # Отправляем новое приветственное сообщение
     await callback_query.message.answer(
         f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, "
         "нумерологии, совместимости, карьерного успеха, богатства и других вопросов.\n\n"
         "<b>После каждого расчета вы сможете задать любой вопрос.</b> С чего начнем?",
         reply_markup=main_menu_keyboard()
     )
+
