@@ -262,12 +262,10 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     category_key = callback_query.data
     category = category_mapping.get(category_key, "Неизвестная категория")
 
-    # Логирование значений для отладки
     print(f"Received callback data: {callback_query.data}")
     print(f"Resolved category: {category}")
 
     if category == "Неизвестная категория":
-        # Логирование для ошибок
         print(f"Error: Category '{callback_query.data}' not found.")
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
         return
