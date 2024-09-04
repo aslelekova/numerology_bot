@@ -547,42 +547,36 @@ async def handle_full_access(callback_query: CallbackQuery):
         reply_markup=keyboard
     )
 
-
 async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
     data = await state.get_data()
-
     user_name = data.get("user_name", "Пользователь")
-    user_date = data.get("user_date", "Неизвестная категория")
+    user_date = data.get("user_date", None)  # Expecting a datetime object
+
+    # Логирование данных пользователя с помощью print
+    print(f"User name: {user_name}")
+    print(f"User date: {user_date}")
+    print(f"Category: {category}")
+
+
+    # Extract day, month, and year from the datetime object
     day = user_date.day
     month = user_date.month
     year = user_date.year
-    print("DAY",day, month, year)
+
+    # Calculate values based on the date
     values = calculate_values(day, month, year)
 
+    # Send a message indicating that generation is in progress
     generating_message = await callback_query.message.answer("⏳")
 
+    # Generate response using the values and category
     response_text = await generate_gpt_response(values, category)
 
+    # Delete the generating message and send the response
     await generating_message.delete()
+    await callback_query.message.answer(response_text)
 
-    await callback_query.message.answer(response_text, reply_markup=create_back_button())
 
-    inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-        [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
-        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-    ])
-
-    question_prompt_message = await callback_query.message.answer(
-        f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
-        " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
-        reply_markup=inline_keyboard,
-        parse_mode="HTML"
-    )
-
-    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-    await state.set_state(QuestionState.waiting_for_question)
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
 async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
