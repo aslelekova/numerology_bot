@@ -547,7 +547,6 @@ async def handle_full_access(callback_query: CallbackQuery):
         reply_markup=keyboard
     )
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
     data = await state.get_data()
@@ -557,7 +556,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
     day = user_date.day
     month = user_date.month
     year = user_date.year
-    logging.debug(day, month, year)
+    print("DAY",day, month, year)
     values = calculate_values(day, month, year)
 
     generating_message = await callback_query.message.answer("⏳")
