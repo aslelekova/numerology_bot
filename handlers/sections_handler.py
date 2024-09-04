@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
@@ -32,12 +34,16 @@ async def handle_full_access(callback_query: CallbackQuery):
         reply_markup=keyboard
     )
 
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
     data = await state.get_data()
+
     user_name = data.get("user_name", "Пользователь")
     user_date = data.get("user_date", "неизвестна")
-    print(user_date)
+
+    logging.debug(f"User date: {user_date}")
+
     generating_message = await callback_query.message.answer("⏳")
     try:
         day, month, year = map(int, user_date.split('-'))
