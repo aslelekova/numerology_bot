@@ -69,7 +69,7 @@ async def process_question(message: types.Message, state: FSMContext):
 @router.callback_query(lambda callback: callback.data == "main_menu")
 async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
-    user_name = user_data.get("user_name") or callback_query.from_user.first_name
+    user_name = callback_query.from_user.first_name
 
     await delete_previous_messages(callback_query.message.chat.id, user_data.get("previous_message_ids", []),
                                    callback_query.message.bot)
@@ -78,7 +78,6 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
 
     await state.update_data(question_asked=False)
 
-    # Используем имя пользователя при выводе приветствия в главном меню
     await callback_query.message.answer(f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, "
                                         "нумерологии, совместимости, карьерного успеха, богатства и других вопросов.\n\n"
                                         "<b>После каждого расчета вы сможете задать любой вопрос.</b> С чего начнем?",
