@@ -31,27 +31,13 @@ async def handle_full_access(callback_query: CallbackQuery):
         reply_markup=keyboard
     )
 
-
 async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
+    # Получение данных состояния
     data = await state.get_data()
     first_message_id = data.get("first_message_id")
     second_message_id = data.get("second_message_id")
-    previous_warning_message_id = data.get("previous_warning_message_id")
-    question_prompt_message_id = data.get("question_prompt_message_id")
 
-    user_name = data.get("user_name", "Пользователь")
-    user_date = data.get("user_date", "неизвестна")
-
-    if previous_warning_message_id:
-        try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=previous_warning_message_id
-            )
-        except Exception as e:
-            if "message to delete not found" not in str(e):
-                print(f"Error deleting previous warning message: {e}")
-
+    # Удаление предыдущих сообщений, если они существуют
     if first_message_id:
         try:
             await callback_query.bot.delete_message(
@@ -72,41 +58,38 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
             if "message to delete not found" not in str(e):
                 print(f"Error deleting message with ID {second_message_id}: {e}")
 
-    if question_prompt_message_id:
-        try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=question_prompt_message_id
-            )
-        except Exception as e:
-            if "message to delete not found" not in str(e):
-                print(f"Error deleting question prompt message: {e}")
-
+    # Создание нового сообщения
     generating_message = await callback_query.message.answer("⏳")
+    response_text = await generate_gpt_response(data.get("user_name"), data.get("user_date"), category)
 
-    response_text = await generate_gpt_response(user_name, user_date, category)
-
+    # Удаление сообщения с индикатором загрузки
     await generating_message.delete()
 
-    await callback_query.message.answer(response_text, reply_markup=create_back_button())
+    # Отправка ответа
+    first_message = await callback_query.message.answer(response_text, reply_markup=create_back_button())
 
+    # Сохранение ID нового сообщения
+    await state.update_data(first_message_id=first_message.message_id)
+
+    # Создание inline-клавиатуры и второго сообщения
     inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
         [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
         [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-
     ])
 
-    question_prompt_message = await callback_query.message.answer(
+    second_message = await callback_query.message.answer(
         f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
         " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
+        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с "
+        "партнером?</b>)",
         reply_markup=inline_keyboard,
         parse_mode="HTML"
     )
 
-    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-    await state.set_state(QuestionState.waiting_for_question)
+    # Сохранение ID второго сообщения
+    await state.update_data(second_message_id=second_message.message_id)
+    await state.update_data(previous_message_ids=[first_message.message_id, second_message.message_id])
 
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))

@@ -85,9 +85,9 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
                 print(f"Error deleting previous message with ID {message_id}: {e}")
 
     await state.clear()
-    await state.update_data(question_asked=False)
 
     await callback_query.message.answer(f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, "
                                         "нумерологии, совместимости, карьерного успеха, богатства и других вопросов.\n\n"
                                         "<b>После каждого расчета вы сможете задать любой вопрос.</b> С чего начнем?",
                                         reply_markup=main_menu_keyboard())
+
