@@ -71,11 +71,20 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
     user_data = await state.get_data()
     user_name = callback_query.from_user.first_name
 
-    await delete_previous_messages(callback_query.message.chat.id, user_data.get("previous_message_ids", []),
-                                   callback_query.message.bot)
+    try:
+        await callback_query.message.delete()
+    except Exception as e:
+        print(f"Error deleting current message: {e}")
+
+    previous_message_ids = user_data.get("previous_message_ids", [])
+    if previous_message_ids:
+        for message_id in previous_message_ids:
+            try:
+                await callback_query.bot.delete_message(callback_query.message.chat.id, message_id)
+            except Exception as e:
+                print(f"Error deleting previous message with ID {message_id}: {e}")
 
     await state.clear()
-
     await state.update_data(question_asked=False)
 
     await callback_query.message.answer(f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, "
