@@ -32,8 +32,7 @@ async def process_question(message: types.Message, state: FSMContext):
         await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
         return
 
-    # Отправляем сообщение с песочными часами
-    generating_message = await message.answer("⏳ Пожалуйста, подождите, ваш ответ генерируется...")
+    generating_message = await message.answer("⏳")
 
     user_name = user_data['user_name']
     birth_date = user_data['user_date']
@@ -72,6 +71,8 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
 
     await delete_previous_messages(callback_query.message.chat.id, user_data.get("previous_message_ids", []),
                                    callback_query.message.bot)
+
+    await state.clear()
 
     await state.update_data(question_asked=False)
 
