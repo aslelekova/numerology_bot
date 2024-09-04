@@ -560,7 +560,6 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
 
     generating_message = await callback_query.message.answer("⏳")
 
-    print(f"Generated category: {category}")
     response_text = await generate_gpt_response(values, category)
 
     await generating_message.delete()
