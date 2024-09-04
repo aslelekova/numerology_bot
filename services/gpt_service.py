@@ -180,4 +180,4 @@ async def generate_gpt_response(values, category):
         messages=messages
     )
 
-    return response.choices[0].message['content'].strip()
+    return response.choices[0].message.content.strip()
