@@ -32,46 +32,39 @@ async def handle_full_access(callback_query: CallbackQuery):
     )
 
 async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
-    # Получение данных состояния
+    # Получаем данные из состояния
     data = await state.get_data()
-    first_message_id = data.get("first_message_id")
-    second_message_id = data.get("second_message_id")
 
-    # Удаление предыдущих сообщений, если они существуют
+    # Удаляем предыдущее сообщение с категориями
+    first_message_id = data.get("first_message_id")
     if first_message_id:
         try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=first_message_id
-            )
+            await callback_query.bot.delete_message(callback_query.message.chat.id, first_message_id)
         except Exception as e:
-            if "message to delete not found" not in str(e):
-                print(f"Error deleting message with ID {first_message_id}: {e}")
+            print(f"Error deleting first message with ID {first_message_id}: {e}")
 
+    # Удаляем предыдущее сообщение с предложением задать вопрос
+    second_message_id = data.get("second_message_id")
     if second_message_id:
         try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=second_message_id
-            )
+            await callback_query.bot.delete_message(callback_query.message.chat.id, second_message_id)
         except Exception as e:
-            if "message to delete not found" not in str(e):
-                print(f"Error deleting message with ID {second_message_id}: {e}")
+            print(f"Error deleting second message with ID {second_message_id}: {e}")
 
-    # Создание нового сообщения
+    # Создаем новое сообщение
     generating_message = await callback_query.message.answer("⏳")
+
+    # Генерация текста ответа
     response_text = await generate_gpt_response(data.get("user_name"), data.get("user_date"), category)
 
-    # Удаление сообщения с индикатором загрузки
+    # Удаляем сообщение с индикатором загрузки
     await generating_message.delete()
 
-    # Отправка ответа
+    # Отправляем ответ и сохраняем ID сообщения
     first_message = await callback_query.message.answer(response_text, reply_markup=create_back_button())
-
-    # Сохранение ID нового сообщения
     await state.update_data(first_message_id=first_message.message_id)
 
-    # Создание inline-клавиатуры и второго сообщения
+    # Создаем inline-клавиатуру и новое сообщение с предложением задать вопрос
     inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
         [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
@@ -79,7 +72,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
     ])
 
     second_message = await callback_query.message.answer(
-        f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
+        "Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
         " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
         "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с "
         "партнером?</b>)",
@@ -87,10 +80,11 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
         parse_mode="HTML"
     )
 
-    # Сохранение ID второго сообщения
+    # Сохраняем ID второго сообщения
     await state.update_data(second_message_id=second_message.message_id)
-    await state.update_data(previous_message_ids=[first_message.message_id, second_message.message_id])
 
+    # Обновляем список ID сообщений, которые нужно удалить при нажатии на "Главное меню"
+    await state.update_data(previous_message_ids=[first_message.message_id, second_message.message_id])
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
 async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):

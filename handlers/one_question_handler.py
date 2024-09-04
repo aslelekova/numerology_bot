@@ -65,17 +65,19 @@ async def process_question(message: types.Message, state: FSMContext):
     await state.update_data(previous_message_ids=[suggestion_message.message_id])
     await state.update_data(question_asked=True)
 
-
 @router.callback_query(lambda callback: callback.data == "main_menu")
 async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMContext):
+    # Получаем данные из состояния
     user_data = await state.get_data()
     user_name = callback_query.from_user.first_name
 
+    # Удаляем текущее сообщение
     try:
         await callback_query.message.delete()
     except Exception as e:
         print(f"Error deleting current message: {e}")
 
+    # Удаляем все сохраненные предыдущие сообщения
     previous_message_ids = user_data.get("previous_message_ids", [])
     if previous_message_ids:
         for message_id in previous_message_ids:
@@ -84,10 +86,13 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
             except Exception as e:
                 print(f"Error deleting previous message with ID {message_id}: {e}")
 
+    # Очищаем состояние
     await state.clear()
 
-    await callback_query.message.answer(f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, "
-                                        "нумерологии, совместимости, карьерного успеха, богатства и других вопросов.\n\n"
-                                        "<b>После каждого расчета вы сможете задать любой вопрос.</b> С чего начнем?",
-                                        reply_markup=main_menu_keyboard())
-
+    # Отправляем новое приветственное сообщение
+    await callback_query.message.answer(
+        f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, "
+        "нумерологии, совместимости, карьерного успеха, богатства и других вопросов.\n\n"
+        "<b>После каждого расчета вы сможете задать любой вопрос.</b> С чего начнем?",
+        reply_markup=main_menu_keyboard()
+    )
