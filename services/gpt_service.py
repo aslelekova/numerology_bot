@@ -163,14 +163,11 @@ async def generate_gpt_response(values, category):
         )
     }
 
-    # Получение шаблона для заданной категории
     prompt = prompts.get(category, "Категория не найдена.")
 
-    # Если категория не найдена, обработайте это здесь
     if prompt == "Категория не найдена.":
         return prompt
 
-    # Конструирование сообщений для модели GPT
     messages = [
         {"role": "system",
          "content": "You are an assistant who provides detailed and insightful responses based on the provided information."},
