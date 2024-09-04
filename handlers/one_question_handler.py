@@ -78,3 +78,4 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
 
     await cmd_start(callback_query.message, state)
 
+
