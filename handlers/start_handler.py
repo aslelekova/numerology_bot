@@ -52,9 +52,7 @@ router = Router()
 
 @router.message(CommandStart())
 async def cmd_start(message: types.Message, state: FSMContext):
-    user_data = await state.get_data()
-
-    user_name = user_data.get("user_name") or message.from_user.first_name
+    user_name = message.from_user.first_name
 
     await state.clear()
 
