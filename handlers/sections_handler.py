@@ -6,6 +6,7 @@ from openai import AsyncOpenAI
 import config
 from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_matrix import create_sections_keyboard
+from services.birthday_service import calculate_values
 from services.gpt_service import generate_gpt_response
 from states import QuestionState
 
@@ -36,10 +37,16 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
     data = await state.get_data()
     user_name = data.get("user_name", "Пользователь")
     user_date = data.get("user_date", "неизвестна")
-
+    print(user_date)
     generating_message = await callback_query.message.answer("⏳")
+    try:
+        day, month, year = map(int, user_date.split('-'))
+    except ValueError:
+        await callback_query.message.answer("⚠️ Неверный формат даты. Используйте формат: день-месяц-год.")
+        return
 
-    response_text = await generate_gpt_response(user_name, user_date, category)
+    values = calculate_values(day, month, year)
+    response_text = await generate_gpt_response(values, category)
 
     await generating_message.delete()
 
