@@ -14,17 +14,6 @@ router = Router()
 client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
 
 
-async def generate_gpt_response(user_name, user_date, category):
-    # Обратите внимание, что функция должна быть асинхронной и использовать OpenAI API для генерации текста
-    prompt = f"Пользователь: {user_name}, Дата: {user_date}, Категория: {category}. Составьте личный расклад на основе загруженного файла. Интерпретации по каждой категории должны быть включены."
-    response = await client.Completion.create(
-        engine="text-davinci-003",  # Убедитесь, что используете корректный движок
-        prompt=prompt,
-        max_tokens=1500  # Настройте в зависимости от потребностей
-    )
-    return response.choices[0].text.strip()
-
-
 @router.callback_query(lambda callback: callback.data == "get_full_access")
 async def handle_full_access(callback_query: CallbackQuery):
     keyboard = InlineKeyboardMarkup(
