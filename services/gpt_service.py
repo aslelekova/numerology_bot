@@ -19,7 +19,7 @@ book_file = client.files.create(
     purpose="assistants"
 )
 
-file_streams = [open("/matrix.pdf", "rb")]
+file_streams = [open("/app/matrix.pdf", "rb")]
 
 file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
     vector_store_id=vector_store.id,
