@@ -1,8 +1,36 @@
-import openai
-from openai import AsyncOpenAI
 import config
+import openai
+from openai import OpenAI
 
-client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
+client = OpenAI(api_key=config.OPENAI_API_KEY)
+
+assistant = client.beta.assistants.create(
+    name="Numerology Assistant",
+    instructions="You are an expert numerology analyst. Use your knowledge base to answer questions based on the "
+                 "provided book.",
+    model="gpt-4o",
+    tools=[{"type": "file_search"}],
+)
+
+vector_store = client.beta.vector_stores.create(name="Numerology Book")
+
+book_file = client.files.create(
+    file=open("/Users/anastasialelekova/PycharmProjects/numerology_bot/matrix.pdf", "rb"),
+    purpose="assistants"
+)
+
+file_streams = [open("/matrix.pdf", "rb")]
+
+file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
+    vector_store_id=vector_store.id,
+    files=file_streams
+)
+
+
+assistant = client.beta.assistants.update(
+    assistant_id=assistant.id,
+    tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
+)
 
 
 async def generate_gpt_response(values):
@@ -136,19 +164,21 @@ async def generate_gpt_response(values):
         f"Значение каст находится на 137-140 страницах книги, нужно описать касту, к которой человек относится."
     )
 
-    messages = [
-        {"role": "system", "content": "You are an assistant who provides detailed and insightful responses based on "
-                                      "the provided information."},
-        {"role": "user", "content": prompt}
-    ]
-
-    response = await client.chat.completions.create(
-        model="gpt-4o-2024-08-06",
-        messages=messages
+    thread = client.beta.threads.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+                "attachments": [
+                    {"file_id": book_file.id, "tools": [{"type": "file_search"}]}
+                ],
+            }
+        ]
     )
 
-    full_response = response.choices[0].message.content.strip()
+    response = await client.beta.threads.retrieve(thread.id)
 
+    full_response = response.messages[-1]['content']
     sections = full_response.split('\n\n')
 
     categories = {
@@ -158,10 +188,9 @@ async def generate_gpt_response(values):
         "Таланты": sections[3],
         "Родовые программы": sections[4],
         "Кармический хвост": sections[5],
-        "Главный кармический урок души": sections[6],
-        "Отношения": sections[7],
-        "Деньги": sections[8],
-        "Определение каст": sections[9],
+        "Отношения": sections[6],
+        "Деньги": sections[7],
+        "Определение каст": sections[8],
     }
 
     return categories
