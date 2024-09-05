@@ -176,7 +176,7 @@ async def generate_gpt_response(values):
         ]
     )
 
-    response = await client.beta.threads.retrieve(thread.id)
+    response = client.beta.threads.retrieve(thread.id)
 
     full_response = response.messages[-1]['content']
     sections = full_response.split('\n\n')
