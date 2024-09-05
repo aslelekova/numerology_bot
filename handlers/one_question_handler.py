@@ -5,11 +5,9 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from handlers.start_handler import cmd_start
 from keyboards.main_menu_keyboard import main_menu_keyboard
 from services.gpt_service import client, generate_gpt_response
 from services.question_service import generate_suggestions
-from services.message_service import delete_previous_messages
 from states import QuestionState
 
 router = Router()
