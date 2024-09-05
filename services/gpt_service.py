@@ -15,7 +15,7 @@ assistant = client.beta.assistants.create(
 vector_store = client.beta.vector_stores.create(name="Numerology Book")
 
 book_file = client.files.create(
-    file=open("/Users/anastasialelekova/PycharmProjects/numerology_bot/matrix.pdf", "rb"),
+    file=open("/app/matrix.pdf", "rb"),
     purpose="assistants"
 )
 
