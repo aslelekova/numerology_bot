@@ -1,5 +1,6 @@
+import asyncio
+
 import config
-import tiktoken
 from openai import OpenAI, AssistantEventHandler
 
 client = OpenAI(api_key=config.OPENAI_API_KEY)
@@ -190,10 +191,6 @@ async def generate_gpt_response(user_name, values, handler):
         f"Значение каст находится на 137-140 страницах книги, нужно описать касту, к которой человек относится."
     )
 
-    encoder = tiktoken.get_encoding("cl100k_base")  # Замените на нужный тип кодировщика
-    num_tokens = len(encoder.encode(prompt))
-    print(f"Number of tokens: {num_tokens}")
-
     message_file = client.files.create(
         file=open("/app/matrix.pdf", "rb"), purpose="assistants"
     )
@@ -217,6 +214,9 @@ async def generate_gpt_response(user_name, values, handler):
             event_handler=EventHandler(),
     ) as stream:
         stream.until_done()
+
+    while handler.response_text is None:
+        await asyncio.sleep(0.1)
 
     return handler.response_text
 
