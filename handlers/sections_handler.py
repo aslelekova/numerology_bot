@@ -45,7 +45,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
     generating_message = await callback_query.message.answer("⏳")
 
     response_text = await generate_gpt_response(user_name, values)
-    print(response_text)
+    print("ЗАПРОС", response_text)
 
     await generating_message.delete()
 
@@ -93,9 +93,6 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
 
     category_key = callback_query.data
     category = category_mapping.get(category_key, "Неизвестная категория")
-
-    print(f"Received callback data: {callback_query.data}")
-    print(f"Resolved category: {category}")
 
     if category == "Неизвестная категория":
         print(f"Error: Category '{callback_query.data}' not found.")
