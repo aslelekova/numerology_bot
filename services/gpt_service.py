@@ -1,4 +1,5 @@
 import config
+import tiktoken
 from openai import OpenAI, AssistantEventHandler
 
 client = OpenAI(api_key=config.OPENAI_API_KEY)
@@ -31,7 +32,7 @@ assistant = client.beta.assistants.create(
     name="Numerology Assistant",
     instructions="You are an expert numerology analyst. Use your knowledge base to answer questions based on the "
                  "provided book.",
-    model="gpt-4-turbo",
+    model="gpt-4o",
     tools=[{"type": "file_search"}],
 )
 
@@ -179,6 +180,10 @@ async def generate_gpt_response(user_name, values):
         f"Шудра – 4, 7, 8\n"
         f"Значение каст находится на 137-140 страницах книги, нужно описать касту, к которой человек относится."
     )
+
+    encoder = tiktoken.get_encoding("cl100k_base")  # Замените на нужный тип кодировщика
+    num_tokens = len(encoder.encode(prompt))
+    print(f"Number of tokens: {num_tokens}")
 
     message_file = client.files.create(
         file=open("/app/matrix.pdf", "rb"), purpose="assistants"

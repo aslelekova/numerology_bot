@@ -44,6 +44,8 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
 
     generating_message = await callback_query.message.answer("⏳")
 
+
+
     response_text = await generate_gpt_response(user_name, values)
     print("ЗАПРОС", response_text)
 
