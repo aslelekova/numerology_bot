@@ -10,6 +10,7 @@ class EventHandler(AssistantEventHandler):
     def __init__(self):
         super().__init__()
         self.response_text = None
+        self.event = asyncio.Event()  # Создаем объект Event
 
     def on_text_created(self, text) -> None:
         print(f"\nassistant > ", end="", flush=True)
@@ -18,11 +19,8 @@ class EventHandler(AssistantEventHandler):
         print(f"\nassistant > {tool_call.type}\n", flush=True)
 
     def on_message_done(self, message) -> None:
-        print("Message done called with message:", message)
         if hasattr(message, 'content'):
-            print("Message content:", message.content)
             message_content = message.content[0].text
-            print("Extracted message content:", message_content)
 
             annotations = message_content.annotations if hasattr(message_content, 'annotations') else []
             citations = []
@@ -33,9 +31,10 @@ class EventHandler(AssistantEventHandler):
                     citations.append(f"[{index}] {cited_file.filename}")
 
             self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
-            print("Updated response text:", self.response_text)
         else:
             print("Message has no content")
+
+        self.event.set()
 
 
 assistant = client.beta.assistants.create(
@@ -211,12 +210,9 @@ async def generate_gpt_response(user_name, values, handler):
             thread_id=thread.id,
             assistant_id=assistant.id,
             instructions=f"Please address the user as {user_name}.",
-            event_handler=EventHandler(),
+            event_handler=handler,
     ) as stream:
-        stream.until_done()
-
-    while handler.response_text is None:
-        await asyncio.sleep(0.1)
+        await handler.event.wait()  # Ожидаем завершения обработки сообщения
 
     return handler.response_text
 
