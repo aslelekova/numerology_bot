@@ -17,18 +17,24 @@ class EventHandler(AssistantEventHandler):
         print(f"\nassistant > {tool_call.type}\n", flush=True)
 
     def on_message_done(self, message) -> None:
-        message_content = message.content[0].text
-        annotations = message_content.annotations
-        citations = []
-        for index, annotation in enumerate(annotations):
-            message_content.value = message_content.value.replace(
-                annotation.text, f"[{index}]"
-            )
-            if file_citation := getattr(annotation, "file_citation", None):
-                cited_file = client.files.retrieve(file_citation.file_id)
-                citations.append(f"[{index}] {cited_file.filename}")
+        print("Message done called with message:", message)
+        if hasattr(message, 'content'):
+            print("Message content:", message.content)
+            message_content = message.content[0].text
+            print("Extracted message content:", message_content)
 
-        self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
+            annotations = message_content.annotations if hasattr(message_content, 'annotations') else []
+            citations = []
+            for index, annotation in enumerate(annotations):
+                message_content.value = message_content.value.replace(annotation.text, f"[{index}]")
+                if file_citation := getattr(annotation, "file_citation", None):
+                    cited_file = client.files.retrieve(file_citation.file_id)
+                    citations.append(f"[{index}] {cited_file.filename}")
+
+            self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
+            print("Updated response text:", self.response_text)
+        else:
+            print("Message has no content")
 
 
 assistant = client.beta.assistants.create(
