@@ -10,7 +10,6 @@ class EventHandler(AssistantEventHandler):
     def __init__(self):
         super().__init__()
         self.response_text = None
-        self.event = asyncio.Event()
 
     def on_text_created(self, text) -> None:
         print(f"\nassistant > ", end="", flush=True)
@@ -31,11 +30,9 @@ class EventHandler(AssistantEventHandler):
                     citations.append(f"[{index}] {cited_file.filename}")
 
             self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
-            print(self.response_text)
+            print("Updated response text:", self.response_text)
         else:
             print("Message has no content")
-
-        self.event.set()
 
 
 assistant = client.beta.assistants.create(
@@ -211,9 +208,10 @@ async def generate_gpt_response(user_name, values, handler):
             thread_id=thread.id,
             assistant_id=assistant.id,
             instructions=f"Please address the user as {user_name}.",
-            event_handler=handler,
+            event_handler=EventHandler(),
     ) as stream:
-        await handler.event.wait()
+        stream.until_done()
+    print("Returning response text from handler:", handler.response_text)
 
     return handler.response_text
 
