@@ -8,7 +8,7 @@ assistant = client.beta.assistants.create(
     name="Numerology Assistant",
     instructions="You are an expert numerology analyst. Use your knowledge base to answer questions based on the "
                  "provided book.",
-    model="gpt-4o",
+    model="gpt-4-turbo",
     tools=[{"type": "file_search"}],
 )
 
@@ -177,7 +177,7 @@ async def generate_gpt_response(values):
     )
 
     response = client.beta.threads.retrieve(thread.id)
-    print("RESPONSE", response)
+    print("FULL RESPONSE", response)
 
     full_response = response.messages[-1]['content']
     sections = full_response.split('\n\n')
