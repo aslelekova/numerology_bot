@@ -119,7 +119,7 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         await state.update_data(previous_warning_message_id=warning_message.message_id)
         return
 
-    await handle_section(callback_query, state, category)
+    await handle_section(callback_query, state)
 
 
 @router.callback_query(lambda callback: callback.data == "go_back_to_categories")
