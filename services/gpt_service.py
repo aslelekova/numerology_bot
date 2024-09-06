@@ -5,17 +5,11 @@ from openai import OpenAI, AssistantEventHandler
 
 client = OpenAI(api_key=config.OPENAI_API_KEY)
 
-
 class EventHandler(AssistantEventHandler):
     def __init__(self):
         super().__init__()
         self.response_text = None
-
-    def on_text_created(self, text) -> None:
-        print(f"\nassistant > ", end="", flush=True)
-
-    def on_tool_call_created(self, tool_call):
-        print(f"\nassistant > {tool_call.type}\n", flush=True)
+        self.event = asyncio.Event()
 
     def on_message_done(self, message) -> None:
         if hasattr(message, 'content'):
@@ -33,6 +27,7 @@ class EventHandler(AssistantEventHandler):
             print("Updated response text:", self.response_text)
         else:
             print("Message has no content")
+        self.event.set()
 
 
 assistant = client.beta.assistants.create(
@@ -208,10 +203,9 @@ async def generate_gpt_response(user_name, values, handler):
             thread_id=thread.id,
             assistant_id=assistant.id,
             instructions=f"Please address the user as {user_name}.",
-            event_handler=EventHandler(),
+            event_handler=handler,
     ) as stream:
-        stream.until_done()
+        await handler.event.wait()
     print("Returning response text from handler:", handler.response_text)
 
     return handler.response_text
-
