@@ -5,6 +5,7 @@ from openai import OpenAI, AssistantEventHandler
 
 client = OpenAI(api_key=config.OPENAI_API_KEY)
 
+
 class EventHandler(AssistantEventHandler):
     def __init__(self):
         super().__init__()
@@ -183,6 +184,8 @@ async def generate_gpt_response(user_name, values, handler):
         f"Значение каст находится на 137-140 страницах книги, нужно описать касту, к которой человек относится."
     )
 
+    print("Starting request to OpenAI API with prompt:", prompt)
+
     message_file = client.files.create(
         file=open("/app/matrix.pdf", "rb"), purpose="assistants"
     )
@@ -206,6 +209,6 @@ async def generate_gpt_response(user_name, values, handler):
             event_handler=handler,
     ) as stream:
         await handler.event.wait()
-    print("Returning response text from handler:", handler.response_text)
 
+    print("Returning response text from handler:", handler.response_text)
     return handler.response_text
