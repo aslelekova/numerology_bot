@@ -50,7 +50,7 @@ assistant = client.beta.assistants.update(
 )
 
 
-async def generate_gpt_response(values):
+async def generate_gpt_response(user_name, values):
     A = values.get('A')
     X = values.get('X')
     Y = values.get('Y')
@@ -199,7 +199,7 @@ async def generate_gpt_response(values):
     with client.beta.threads.runs.stream(
             thread_id=thread.id,
             assistant_id=assistant.id,
-            instructions="Please address the user as Jane Doe. The user has a premium account.",
+            instructions=f"Please address the user as {user_name}.",
             event_handler=EventHandler(),
     ) as stream:
         stream.until_done()
