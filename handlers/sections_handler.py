@@ -46,6 +46,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
 
     response_text = await generate_gpt_response(values)
     print(response_text)
+
     await generating_message.delete()
 
     await callback_query.message.answer(response_text, reply_markup=create_back_button())
@@ -157,6 +158,7 @@ async def go_back_to_categories(callback_query: CallbackQuery, state: FSMContext
         "🔐 - требуется полный доступ",
         reply_markup=sections_keyboard
     )
+
     inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
         [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
