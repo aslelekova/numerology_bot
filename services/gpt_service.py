@@ -7,6 +7,7 @@ client = OpenAI(api_key=config.OPENAI_API_KEY)
 
 class EventHandler(AssistantEventHandler):
     def __init__(self):
+        super().__init__()
         self.response_text = None
 
     def on_text_created(self, text) -> None:
