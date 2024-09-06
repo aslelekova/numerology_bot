@@ -7,7 +7,7 @@ import config
 from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_matrix import create_sections_keyboard
 from services.birthday_service import calculate_values
-from services.gpt_service import generate_gpt_response
+from services.gpt_service import generate_gpt_response, EventHandler
 from states import QuestionState
 
 router = Router()
@@ -44,9 +44,8 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
 
     generating_message = await callback_query.message.answer("⏳")
 
-
-
-    response_text = await generate_gpt_response(user_name, values)
+    handler = EventHandler()
+    response_text = await generate_gpt_response(user_name, values, handler)
     print("ЗАПРОС", response_text)
 
     await generating_message.delete()
