@@ -1,43 +1,36 @@
 import config
-import openai
 from openai import OpenAI
 
-# Инициализация клиента
 client = OpenAI(api_key=config.OPENAI_API_KEY)
 
-# Создание ассистента с инструкциями для анализа книги по нумерологии
 assistant = client.beta.assistants.create(
     name="Numerology Assistant",
-    instructions="You are an expert numerology analyst. Use your knowledge base to answer questions based on the provided book.",
+    instructions="You are an expert numerology analyst. Use your knowledge base to answer questions based on the "
+                 "provided book.",
     model="gpt-4-turbo",
     tools=[{"type": "file_search"}],
 )
 
-# Создание векторного хранилища для загруженного файла
 vector_store = client.beta.vector_stores.create(name="Numerology Book")
 
-# Загрузка файла книги
-book_file = client.files.create(
-    file=open("/app/matrix.pdf", "rb"),
-    purpose="assistants"
-)
+file_paths = ["/app/matrix.pdf"]
+file_streams = [open(path, "rb") for path in file_paths]
 
-# Добавление файла в векторное хранилище
-file_streams = [open("/app/matrix.pdf", "rb")]
 file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
-    vector_store_id=vector_store.id,
-    files=file_streams
+    vector_store_id=vector_store.id, files=file_streams
 )
 
-# Обновление ассистента с указанием на новое векторное хранилище
+print(file_batch.status)
+print(file_batch.file_counts)
+
+
 assistant = client.beta.assistants.update(
-    assistant_id=assistant.id,
-    tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
+  assistant_id=assistant.id,
+  tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
 )
 
-# Функция для генерации ответа от GPT на основе значений
+
 async def generate_gpt_response(values):
-    # Достаем значения для нумерологического расклада
     A = values.get('A')
     X = values.get('X')
     Y = values.get('Y')
@@ -65,8 +58,6 @@ async def generate_gpt_response(values):
     ZZ = values.get('ZZ')
     M = values.get('M')
     Zh = values.get('Zh')
-
-    # Формирование запроса для GPT
     prompt = (
         f"Чат, тебе необходимо составить личный расклад на основе загруженного файла.\n\n"
         f"1) Объем каждого пункта должен быть около 5-6 предложений.\n"
@@ -129,7 +120,6 @@ async def generate_gpt_response(values):
 
         f"7) Главный кармический урок души – энергия {G}\n"
         f"Трактовка значения находится на 102-103 страницах книги.\n\n"
-
         f"8) Отношения:\n"
         f"1. Отношения в прошлом: энергия {G3}\n"
         f"Этот аркан говорит о самом худшем, что Вы делали в отношениях с людьми в предыдущем воплощении и "
@@ -169,38 +159,20 @@ async def generate_gpt_response(values):
         f"Значение каст находится на 137-140 страницах книги, нужно описать касту, к которой человек относится."
     )
 
-    # Создание нового потока для запроса
+    message_file = client.files.create(
+        file=open("/app/matrix.pdf", "rb"), purpose="assistants"
+    )
+
     thread = client.beta.threads.create(
         messages=[
             {
                 "role": "user",
                 "content": prompt,
                 "attachments": [
-                    {"file_id": book_file.id, "tools": [{"type": "file_search"}]}
+                    {"file_id": message_file.id, "tools": [{"type": "file_search"}]}
                 ],
             }
         ]
     )
 
-    # Получение ответа от GPT
-    response = client.beta.threads.retrieve(thread.id)
-    print("FULL RESPONSE", response)
-
-    # Обработка ответа
-    full_response = response.messages[-1]['content']
-    sections = full_response.split('\n\n')
-
-    # Разделение ответа на категории
-    categories = {
-        "Личные качества": sections[0],
-        "Предназначение": sections[1],
-        "Детско-родительские отношения": sections[2],
-        "Таланты": sections[3],
-        "Родовые программы": sections[4],
-        "Кармический хвост": sections[5],
-        "Отношения": sections[6],
-        "Деньги": sections[7],
-        "Определение каст": sections[8],
-    }
-
-    return categories
+    print(thread.tool_resources.file_search)
