@@ -2,38 +2,42 @@ import config
 import openai
 from openai import OpenAI
 
+# Инициализация клиента
 client = OpenAI(api_key=config.OPENAI_API_KEY)
 
+# Создание ассистента с инструкциями для анализа книги по нумерологии
 assistant = client.beta.assistants.create(
     name="Numerology Assistant",
-    instructions="You are an expert numerology analyst. Use your knowledge base to answer questions based on the "
-                 "provided book.",
+    instructions="You are an expert numerology analyst. Use your knowledge base to answer questions based on the provided book.",
     model="gpt-4-turbo",
     tools=[{"type": "file_search"}],
 )
 
+# Создание векторного хранилища для загруженного файла
 vector_store = client.beta.vector_stores.create(name="Numerology Book")
 
+# Загрузка файла книги
 book_file = client.files.create(
     file=open("/app/matrix.pdf", "rb"),
     purpose="assistants"
 )
 
+# Добавление файла в векторное хранилище
 file_streams = [open("/app/matrix.pdf", "rb")]
-
 file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
     vector_store_id=vector_store.id,
     files=file_streams
 )
 
-
+# Обновление ассистента с указанием на новое векторное хранилище
 assistant = client.beta.assistants.update(
     assistant_id=assistant.id,
     tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
 )
 
-
+# Функция для генерации ответа от GPT на основе значений
 async def generate_gpt_response(values):
+    # Достаем значения для нумерологического расклада
     A = values.get('A')
     X = values.get('X')
     Y = values.get('Y')
@@ -62,6 +66,7 @@ async def generate_gpt_response(values):
     M = values.get('M')
     Zh = values.get('Zh')
 
+    # Формирование запроса для GPT
     prompt = (
         f"Чат, тебе необходимо составить личный расклад на основе загруженного файла.\n\n"
         f"1) Объем каждого пункта должен быть около 5-6 предложений.\n"
@@ -164,6 +169,7 @@ async def generate_gpt_response(values):
         f"Значение каст находится на 137-140 страницах книги, нужно описать касту, к которой человек относится."
     )
 
+    # Создание нового потока для запроса
     thread = client.beta.threads.create(
         messages=[
             {
@@ -176,12 +182,15 @@ async def generate_gpt_response(values):
         ]
     )
 
+    # Получение ответа от GPT
     response = client.beta.threads.retrieve(thread.id)
     print("FULL RESPONSE", response)
 
+    # Обработка ответа
     full_response = response.messages[-1]['content']
     sections = full_response.split('\n\n')
 
+    # Разделение ответа на категории
     categories = {
         "Личные качества": sections[0],
         "Предназначение": sections[1],
