@@ -6,6 +6,9 @@ client = OpenAI(api_key=config.OPENAI_API_KEY)
 
 
 class EventHandler(AssistantEventHandler):
+    def __init__(self):
+        self.response_text = None
+
     def on_text_created(self, text) -> None:
         print(f"\nassistant > ", end="", flush=True)
 
@@ -24,8 +27,7 @@ class EventHandler(AssistantEventHandler):
                 cited_file = client.files.retrieve(file_citation.file_id)
                 citations.append(f"[{index}] {cited_file.filename}")
 
-        print("вот запрос", message_content.value)
-        print("\n".join(citations))
+        self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
 
 
 assistant = client.beta.assistants.create(
@@ -52,6 +54,7 @@ assistant = client.beta.assistants.update(
 
 
 async def generate_gpt_response(user_name, values):
+    handler = EventHandler()
     A = values.get('A')
     X = values.get('X')
     Y = values.get('Y')
@@ -209,4 +212,4 @@ async def generate_gpt_response(user_name, values):
     ) as stream:
         stream.until_done()
 
-    return thread.tool_resources.file_search
+    return handler.response_text
