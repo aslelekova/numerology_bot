@@ -45,12 +45,32 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext):
     generating_message = await callback_query.message.answer("⏳")
 
     handler = EventHandler()
-    response_text = await generate_gpt_response(user_name, values, handler)
+
+    # Здесь имитируем поток и вызов on_message_done
+    def mock_on_message_done(message):
+        # Обработка сообщений и присвоение response_text
+        print("Simulating on_message_done call")
+        handler.on_message_done(message)
+
+    # Создание mock-сообщения
+    mock_message = {
+        'content': [{
+            'text': 'Mock response text',
+            'annotations': [],
+        }]
+    }
+
+    # Имитируем вызов on_message_done с mock-сообщением
+    mock_on_message_done(mock_message)
+
+    # Получаем response_text из обработчика
+    response_text = handler.response_text
     print("ответ", response_text)
 
     await generating_message.delete()
 
-    await callback_query.message.answer(response_text, reply_markup=create_back_button())
+    if response_text:
+        await callback_query.message.answer(response_text, reply_markup=create_back_button())
 
     inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
