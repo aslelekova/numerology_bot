@@ -35,7 +35,7 @@ async def handle_full_access(callback_query: CallbackQuery):
 
 async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
     data = await state.get_data()
-
+    user_name = data.get("user_name", "Пользователь")
     user_date = data.get("user_date", "Неизвестная категория")
     day = user_date.day
     month = user_date.month
@@ -44,7 +44,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
 
     generating_message = await callback_query.message.answer("⏳")
 
-    response_text = await generate_gpt_response(values)
+    response_text = await generate_gpt_response(user_name, values)
     print(response_text)
 
     await generating_message.delete()
