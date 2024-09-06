@@ -10,7 +10,7 @@ class EventHandler(AssistantEventHandler):
     def __init__(self):
         super().__init__()
         self.response_text = None
-        self.event = asyncio.Event()  # Создаем объект Event
+        self.event = asyncio.Event()
 
     def on_text_created(self, text) -> None:
         print(f"\nassistant > ", end="", flush=True)
@@ -31,6 +31,7 @@ class EventHandler(AssistantEventHandler):
                     citations.append(f"[{index}] {cited_file.filename}")
 
             self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
+            print(self.response_text)
         else:
             print("Message has no content")
 
@@ -212,7 +213,7 @@ async def generate_gpt_response(user_name, values, handler):
             instructions=f"Please address the user as {user_name}.",
             event_handler=handler,
     ) as stream:
-        await handler.event.wait()  # Ожидаем завершения обработки сообщения
+        await handler.event.wait()
 
     return handler.response_text
 
