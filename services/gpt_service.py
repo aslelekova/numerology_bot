@@ -1,7 +1,31 @@
 import config
-from openai import OpenAI
+from openai import OpenAI, AssistantEventHandler
 
 client = OpenAI(api_key=config.OPENAI_API_KEY)
+
+# Создаем обработчик событий
+class EventHandler(AssistantEventHandler):
+    def on_text_created(self, text) -> None:
+        print(f"\nassistant > ", end="", flush=True)
+
+    def on_tool_call_created(self, tool_call):
+        print(f"\nassistant > {tool_call.type}\n", flush=True)
+
+    def on_message_done(self, message) -> None:
+        # print a citation to the file searched
+        message_content = message.content[0].text
+        annotations = message_content.annotations
+        citations = []
+        for index, annotation in enumerate(annotations):
+            message_content.value = message_content.value.replace(
+                annotation.text, f"[{index}]"
+            )
+            if file_citation := getattr(annotation, "file_citation", None):
+                cited_file = client.files.retrieve(file_citation.file_id)
+                citations.append(f"[{index}] {cited_file.filename}")
+
+        print(message_content.value)
+        print("\n".join(citations))
 
 assistant = client.beta.assistants.create(
     name="Numerology Assistant",
@@ -23,12 +47,10 @@ file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
 print(file_batch.status)
 print(file_batch.file_counts)
 
-
 assistant = client.beta.assistants.update(
   assistant_id=assistant.id,
   tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
 )
-
 
 async def generate_gpt_response(values):
     A = values.get('A')
@@ -58,6 +80,7 @@ async def generate_gpt_response(values):
     ZZ = values.get('ZZ')
     M = values.get('M')
     Zh = values.get('Zh')
+
     prompt = (
         f"Чат, тебе необходимо составить личный расклад на основе загруженного файла.\n\n"
         f"1) Объем каждого пункта должен быть около 5-6 предложений.\n"
@@ -163,6 +186,7 @@ async def generate_gpt_response(values):
         file=open("/app/matrix.pdf", "rb"), purpose="assistants"
     )
 
+    # Создание потока с использованием обработчика событий
     thread = client.beta.threads.create(
         messages=[
             {
@@ -174,5 +198,14 @@ async def generate_gpt_response(values):
             }
         ]
     )
+
+    # Запуск потока с обработчиком событий
+    with client.beta.threads.runs.stream(
+        thread_id=thread.id,
+        assistant_id=assistant.id,
+        instructions="Please address the user as Jane Doe. The user has a premium account.",
+        event_handler=EventHandler(),
+    ) as stream:
+        stream.until_done()
 
     print(thread.tool_resources.file_search)
