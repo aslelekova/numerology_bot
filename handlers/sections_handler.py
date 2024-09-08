@@ -33,7 +33,7 @@ async def handle_full_access(callback_query: CallbackQuery):
     )
 
 
-async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
+async def handle_section(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     user_name = data.get("user_name", "Пользователь")
     user_date = data.get("user_date", "Неизвестная категория")
