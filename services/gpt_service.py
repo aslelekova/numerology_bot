@@ -198,7 +198,7 @@ async def generate_gpt_response(user_name, values, handler):
             thread_id=thread.id,
             assistant_id=assistant.id,
             instructions=f"Please address the user as {user_name}.",
-            event_handler=EventHandler(),
+            event_handler=handler,
     ) as stream:
         stream.until_done()
 
