@@ -208,7 +208,6 @@ async def generate_gpt_response(user_name, values, handler):
             instructions=f"Please address the user as {user_name}.",
             event_handler=handler,
     ) as stream:
-        await stream.until_done()  # Убедитесь, что этот процесс завершается
-        print("Stream processing completed")  # Логирование завершения потока
+        stream.until_done()
 
     return handler.response_text
