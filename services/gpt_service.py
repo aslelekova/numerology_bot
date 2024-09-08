@@ -1,5 +1,3 @@
-import asyncio
-
 import config
 from openai import OpenAI, AssistantEventHandler
 
