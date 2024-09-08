@@ -48,10 +48,8 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext):
     response_text = await generate_gpt_response(user_name, values, handler)
 
     if response_text:
-        # Разбираем ответ на категории
         response_dict = parse_gpt_response_to_dict(response_text)
 
-        # Печатаем каждую категорию и её содержимое
         for category, content in response_dict.items():
             print(f"\n{category}\n{content}")
     else:

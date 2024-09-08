@@ -29,6 +29,7 @@ class EventHandler(AssistantEventHandler):
                     citations.append(f"[{index}] {cited_file.filename}")
 
             self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
+            print("Updated response text:", self.response_text)
         else:
             print("Message has no content")
 
