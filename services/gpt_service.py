@@ -1,5 +1,4 @@
 import config
-import tiktoken
 from openai import OpenAI, AssistantEventHandler
 
 client = OpenAI(api_key=config.OPENAI_API_KEY)
@@ -17,11 +16,8 @@ class EventHandler(AssistantEventHandler):
         print(f"\nassistant > {tool_call.type}\n", flush=True)
 
     def on_message_done(self, message) -> None:
-        print("Message done called with message:", message)
         if hasattr(message, 'content'):
-            print("Message content:", message.content)
             message_content = message.content[0].text
-            print("Extracted message content:", message_content)
 
             annotations = message_content.annotations if hasattr(message_content, 'annotations') else []
             citations = []
@@ -61,7 +57,6 @@ assistant = client.beta.assistants.update(
 
 
 async def generate_gpt_response(user_name, values, handler):
-    handler = EventHandler()
     A = values.get('A')
     X = values.get('X')
     Y = values.get('Y')
@@ -190,10 +185,6 @@ async def generate_gpt_response(user_name, values, handler):
         f"Шудра – 4, 7, 8\n"
         f"Значение каст находится на 137-140 страницах книги, нужно описать касту, к которой человек относится."
     )
-
-    encoder = tiktoken.get_encoding("cl100k_base")  # Замените на нужный тип кодировщика
-    num_tokens = len(encoder.encode(prompt))
-    print(f"Number of tokens: {num_tokens}")
 
     message_file = client.files.create(
         file=open("/app/matrix.pdf", "rb"), purpose="assistants"
