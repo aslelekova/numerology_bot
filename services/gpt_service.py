@@ -1,4 +1,5 @@
 import config
+import tiktoken
 from openai import OpenAI, AssistantEventHandler
 
 client = OpenAI(api_key=config.OPENAI_API_KEY)
@@ -8,16 +9,19 @@ class EventHandler(AssistantEventHandler):
     def __init__(self):
         super().__init__()
         self.response_text = None
-        print("EventHandler initialized")
 
     def on_text_created(self, text) -> None:
-        print(f"\nassistant > {text}", flush=True)  # Логирование текста
+        print(f"\nassistant > ", end="", flush=True)
+
+    def on_tool_call_created(self, tool_call):
+        print(f"\nassistant > {tool_call.type}\n", flush=True)
 
     def on_message_done(self, message) -> None:
-        print("Message done event triggered")  # Логирование начала обработки
+        print("Message done called with message:", message)
         if hasattr(message, 'content'):
-            print("Message has content")  # Проверка наличия контента
+            print("Message content:", message.content)
             message_content = message.content[0].text
+            print("Extracted message content:", message_content)
 
             annotations = message_content.annotations if hasattr(message_content, 'annotations') else []
             citations = []
@@ -28,9 +32,9 @@ class EventHandler(AssistantEventHandler):
                     citations.append(f"[{index}] {cited_file.filename}")
 
             self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
-            print("Updated response text:", self.response_text)  # Логирование результата
+            print("Updated response text:", self.response_text)
         else:
-            print("Message has no content")  # Логирование ошибки
+            print("Message has no content")
 
 
 assistant = client.beta.assistants.create(
@@ -56,7 +60,7 @@ assistant = client.beta.assistants.update(
 )
 
 
-def generate_gpt_response(user_name, values, handler):
+async def generate_gpt_response(user_name, values, handler):
     A = values.get('A')
     X = values.get('X')
     Y = values.get('Y')
@@ -186,6 +190,10 @@ def generate_gpt_response(user_name, values, handler):
         f"Значение каст находится на 137-140 страницах книги, нужно описать касту, к которой человек относится."
     )
 
+    encoder = tiktoken.get_encoding("cl100k_base")  # Замените на нужный тип кодировщика
+    num_tokens = len(encoder.encode(prompt))
+    print(f"Number of tokens: {num_tokens}")
+
     message_file = client.files.create(
         file=open("/app/matrix.pdf", "rb"), purpose="assistants"
     )
@@ -206,7 +214,7 @@ def generate_gpt_response(user_name, values, handler):
             thread_id=thread.id,
             assistant_id=assistant.id,
             instructions=f"Please address the user as {user_name}.",
-            event_handler=handler,
+            event_handler=EventHandler(),
     ) as stream:
         stream.until_done()
 
