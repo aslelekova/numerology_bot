@@ -39,7 +39,7 @@ class EventHandler(AssistantEventHandler):
 
 assistant = client.beta.assistants.create(
     name="Numerology Assistant",
-    instructions="You are an expert numerology analyst. Use your knowledge base to answer questions based on the "
+    instructions="You're an expert on the Matrix of Destiny. Use your knowledge base to answer questions based on the "
                  "provided book.",
     model="gpt-4o",
     tools=[{"type": "file_search"}],
@@ -94,7 +94,8 @@ async def generate_gpt_response(user_name, values, handler):
         f"1) Объем каждого пункта должен быть около 5-6 предложений.\n"
         f"2) Ты должен выдавать только интерпретации, но не включай ссылки на документы или индексы (например, "
         f"\"[18] matrix.pdf\".\n\n"
-        f"3) Обязательно используй чёткие разделители между категориями '\\n\\n', чтобы можно было легко сделать split по '\\n\\n'.\n\n"
+        f"3) Обязательно используй чёткие разделители между категориями '\\n\\n', чтобы можно было легко сделать "
+        f"split по '\\n\\n'.\n\n"
 
 
         f"Порядок трактования расклада:\n\n"
