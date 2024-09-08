@@ -70,7 +70,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
 
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
-async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext, category: str):
+async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
     free_categories = {
         "section_personal": "Личные качества",
         "section_destiny": "Предназначение",
