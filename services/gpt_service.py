@@ -17,8 +17,11 @@ class EventHandler(AssistantEventHandler):
         print(f"\nassistant > {tool_call.type}\n", flush=True)
 
     def on_message_done(self, message) -> None:
+        print("Message done called with message:", message)
         if hasattr(message, 'content'):
+            print("Message content:", message.content)
             message_content = message.content[0].text
+            print("Extracted message content:", message_content)
 
             annotations = message_content.annotations if hasattr(message_content, 'annotations') else []
             citations = []
@@ -199,9 +202,7 @@ async def generate_gpt_response(user_name, values, handler):
             instructions=f"Please address the user as {user_name}.",
             event_handler=handler,
     ) as stream:
-        try:
-            stream.until_done()
-        except Exception as e:
-            print(f"Error during stream: {e}")
+        stream.until_done()
 
     return handler.response_text
+
