@@ -7,7 +7,7 @@ import config
 from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_matrix import create_sections_keyboard
 from services.birthday_service import calculate_values
-from services.gpt_service import generate_gpt_response, EventHandler
+from services.gpt_service import generate_gpt_response
 from states import QuestionState
 
 router = Router()
@@ -33,7 +33,7 @@ async def handle_full_access(callback_query: CallbackQuery):
     )
 
 
-async def handle_section(callback_query: CallbackQuery, state: FSMContext):
+async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
     data = await state.get_data()
     user_name = data.get("user_name", "Пользователь")
     user_date = data.get("user_date", "Неизвестная категория")
@@ -44,8 +44,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext):
 
     generating_message = await callback_query.message.answer("⏳")
 
-    handler = EventHandler()
-    response_text = await generate_gpt_response(user_name, values, handler)
+    response_text = await generate_gpt_response(user_name, user_date, category)
     print("ответ", response_text)
 
     await generating_message.delete()
@@ -71,7 +70,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
-async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
+async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext, category: str):
     free_categories = {
         "section_personal": "Личные качества",
         "section_destiny": "Предназначение",
@@ -119,7 +118,7 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         await state.update_data(previous_warning_message_id=warning_message.message_id)
         return
 
-    await handle_section(callback_query, state)
+    await handle_section(callback_query, state, category)
 
 
 @router.callback_query(lambda callback: callback.data == "go_back_to_categories")
