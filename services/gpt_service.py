@@ -56,7 +56,7 @@ assistant = client.beta.assistants.update(
 )
 
 
-async def generate_gpt_response(user_name, values, handler):
+def generate_gpt_response(user_name, values, handler):
     A = values.get('A')
     X = values.get('X')
     Y = values.get('Y')
