@@ -10,13 +10,13 @@ class EventHandler(AssistantEventHandler):
         super().__init__()
         self.response_text = None
 
-    def on_text_created(self, text) -> None:
+    async def on_text_created(self, text) -> None:
         print(f"\nassistant > ", end="", flush=True)
 
-    def on_tool_call_created(self, tool_call):
+    async def on_tool_call_created(self, tool_call):
         print(f"\nassistant > {tool_call.type}\n", flush=True)
 
-    def on_message_done(self, message) -> None:
+    async def on_message_done(self, message) -> None:
         print("Message done called with message:", message)
         if hasattr(message, 'content'):
             print("Message content:", message.content)
