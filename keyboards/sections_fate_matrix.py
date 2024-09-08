@@ -25,7 +25,6 @@ def create_sections_keyboard() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text="Главный кармический урок 🔐", callback_data="section_karmic_lesson")],
             [InlineKeyboardButton(text="Отношения 🔐", callback_data="section_relationships")],
             [InlineKeyboardButton(text="Деньги 🔐", callback_data="section_money")],
-            [InlineKeyboardButton(text="Определение каст 🔐", callback_data="section_definition_of_castes")]
         ]
     )
 

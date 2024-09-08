@@ -89,7 +89,6 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         "section_karmic_lesson": "Главный кармический урок",
         "section_relationships": "Отношения",
         "section_money": "Деньги",
-        "section_definition_of_castes": "Определение каст"
     }
 
     category_key = callback_query.data
