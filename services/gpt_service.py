@@ -202,21 +202,3 @@ async def generate_gpt_response(user_name, values, handler):
         stream.until_done()
 
     return handler.response_text
-
-
-def parse_gpt_response_to_dict(response_text):
-    sections = response_text.split("\n\n")
-
-    response_dict = {}
-    current_category = None
-
-    for section in sections:
-        if section.strip().endswith(":"):
-            current_category = section.strip()
-            response_dict[current_category] = ""
-        elif current_category:
-            response_dict[current_category] += section.strip() + " "
-
-    response_dict = {key: value.strip() for key, value in response_dict.items()}
-
-    return response_dict
