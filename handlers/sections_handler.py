@@ -7,7 +7,7 @@ import config
 from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_matrix import create_sections_keyboard
 from services.birthday_service import calculate_values
-from services.gpt_service import generate_gpt_response, EventHandler
+from services.gpt_service import generate_gpt_response, EventHandler, parse_gpt_response_to_dict
 from states import QuestionState
 
 router = Router()
@@ -46,7 +46,18 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext):
 
     handler = EventHandler()
     response_text = await generate_gpt_response(user_name, values, handler)
-    print("ответ", response_text)
+
+    if response_text:
+        # Разбираем ответ на категории
+        response_dict = parse_gpt_response_to_dict(response_text)
+
+        # Проходим по каждой категории и выводим её содержимое
+        for category, content in response_dict.items():
+            # Отправляем каждую категорию с её содержимым пользователю
+            await callback_query.message.answer(f"*{category}*\n{content}", parse_mode="Markdown")
+    else:
+        await callback_query.message.answer("Ответ не получен.")
+
 
     await generating_message.delete()
 

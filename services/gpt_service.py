@@ -92,8 +92,10 @@ async def generate_gpt_response(user_name, values, handler):
     prompt = (
         f"Чат, тебе необходимо составить расклад на основе загруженного файла для каждой из категорий.\n\n"
         f"1) Объем каждого пункта должен быть около 5-6 предложений.\n"
-        f"2) Ты должен выдавать только интерпретации.\n\n"
-        f"3) Используй чёткие разделители между категориями, чтобы можно было легко сделать split по '\\n\\n'.\n\n"
+        f"2) Ты должен выдавать только интерпретации, но не включай ссылки на документы или индексы (например, "
+        f"\"[18] matrix.pdf\".\n\n"
+        f"3) Используй чёткие разделители между категориями (важно, чтобы такие разделители были только между "
+        f"категориями и нигде больше), чтобы можно было легко сделать split по '\\n\\n'.\n\n"
 
 
         f"Порядок трактования расклада:\n\n"
@@ -203,3 +205,27 @@ async def generate_gpt_response(user_name, values, handler):
         stream.until_done()
 
     return handler.response_text
+
+
+def parse_gpt_response_to_dict(response_text):
+    # Разделяем ответ по двум новым строкам (это граница между категориями)
+    sections = response_text.split("\n\n")
+
+    # Создаем словарь, где ключами будут названия категорий, а значениями - текст внутри категории
+    response_dict = {}
+    current_category = None
+
+    for section in sections:
+        # Проверяем, начинается ли секция с заголовка категории (например, "Личные качества:")
+        if section.strip().endswith(":"):
+            # Если найден заголовок категории, сохраняем его как текущую категорию
+            current_category = section.strip()
+            response_dict[current_category] = ""
+        elif current_category:
+            # Если это текст внутри текущей категории, добавляем его в словарь
+            response_dict[current_category] += section.strip() + " "
+
+    # Убираем лишние пробелы из текста в каждой категории
+    response_dict = {key: value.strip() for key, value in response_dict.items()}
+
+    return response_dict
