@@ -8,15 +8,15 @@ class EventHandler(AssistantEventHandler):
     def __init__(self):
         super().__init__()
         self.response_text = None
+        print("EventHandler initialized")
 
     def on_text_created(self, text) -> None:
-        print(f"\nassistant > ", end="", flush=True)
-
-    def on_tool_call_created(self, tool_call):
-        print(f"\nassistant > {tool_call.type}\n", flush=True)
+        print(f"\nassistant > {text}", flush=True)  # Логирование текста
 
     def on_message_done(self, message) -> None:
+        print("Message done event triggered")  # Логирование начала обработки
         if hasattr(message, 'content'):
+            print("Message has content")  # Проверка наличия контента
             message_content = message.content[0].text
 
             annotations = message_content.annotations if hasattr(message_content, 'annotations') else []
@@ -28,9 +28,9 @@ class EventHandler(AssistantEventHandler):
                     citations.append(f"[{index}] {cited_file.filename}")
 
             self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
-            print("Updated response text:", self.response_text)
+            print("Updated response text:", self.response_text)  # Логирование результата
         else:
-            print("Message has no content")
+            print("Message has no content")  # Логирование ошибки
 
 
 assistant = client.beta.assistants.create(
@@ -206,8 +206,9 @@ async def generate_gpt_response(user_name, values, handler):
             thread_id=thread.id,
             assistant_id=assistant.id,
             instructions=f"Please address the user as {user_name}.",
-            event_handler=EventHandler(),
+            event_handler=handler,
     ) as stream:
-        stream.until_done()
+        await stream.until_done()  # Убедитесь, что этот процесс завершается
+        print("Stream processing completed")  # Логирование завершения потока
 
     return handler.response_text
