@@ -17,11 +17,8 @@ class EventHandler(AssistantEventHandler):
         print(f"\nassistant > {tool_call.type}\n", flush=True)
 
     def on_message_done(self, message) -> None:
-        print("Message done called with message:", message)
         if hasattr(message, 'content'):
-            print("Message content:", message.content)
             message_content = message.content[0].text
-            print("Extracted message content:", message_content)
 
             annotations = message_content.annotations if hasattr(message_content, 'annotations') else []
             citations = []
@@ -32,7 +29,6 @@ class EventHandler(AssistantEventHandler):
                     citations.append(f"[{index}] {cited_file.filename}")
 
             self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
-            print("Updated response text:", self.response_text)
         else:
             print("Message has no content")
 
@@ -208,24 +204,18 @@ async def generate_gpt_response(user_name, values, handler):
 
 
 def parse_gpt_response_to_dict(response_text):
-    # Разделяем ответ по двум новым строкам (это граница между категориями)
     sections = response_text.split("\n\n")
 
-    # Создаем словарь, где ключами будут названия категорий, а значениями - текст внутри категории
     response_dict = {}
     current_category = None
 
     for section in sections:
-        # Проверяем, начинается ли секция с заголовка категории (например, "Личные качества:")
         if section.strip().endswith(":"):
-            # Если найден заголовок категории, сохраняем его как текущую категорию
             current_category = section.strip()
             response_dict[current_category] = ""
         elif current_category:
-            # Если это текст внутри текущей категории, добавляем его в словарь
             response_dict[current_category] += section.strip() + " "
 
-    # Убираем лишние пробелы из текста в каждой категории
     response_dict = {key: value.strip() for key, value in response_dict.items()}
 
     return response_dict

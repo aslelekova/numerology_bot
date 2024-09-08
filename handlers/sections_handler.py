@@ -51,13 +51,11 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext):
         # Разбираем ответ на категории
         response_dict = parse_gpt_response_to_dict(response_text)
 
-        # Проходим по каждой категории и выводим её содержимое
+        # Печатаем каждую категорию и её содержимое
         for category, content in response_dict.items():
-            # Отправляем каждую категорию с её содержимым пользователю
-            await callback_query.message.answer(f"*{category}*\n{content}", parse_mode="Markdown")
+            print(f"\n{category}\n{content}")
     else:
-        await callback_query.message.answer("Ответ не получен.")
-
+        print("Ответ не получен.")
 
     await generating_message.delete()
 
