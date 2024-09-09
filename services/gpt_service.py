@@ -175,30 +175,22 @@ async def generate_gpt_response(user_name, values, handler):
         f"знак – на что тратить часть денег.\n"
         f"Трактовка энергии находится на 116-125 страницах книги.\n\n"
     )
+    try:
+        message_file = client.files.create(
+            file=open("/app/matrix.pdf", "rb"), purpose="assistants"
+        )
 
-    message_file = client.files.create(
-        file=open("/app/matrix.pdf", "rb"), purpose="assistants"
-    )
+        with client.beta.threads.runs.stream(
+                thread_id=thread.id,
+                assistant_id=assistant.id,
+                instructions=f"Please address the user as {user_name}.",
+                event_handler=handler,
+        ) as stream:
+            stream.until_done()
 
-    thread = client.beta.threads.create(
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-                "attachments": [
-                    {"file_id": message_file.id, "tools": [{"type": "file_search"}]}
-                ],
-            }
-        ]
-    )
+        return handler.response_text
+    except Exception as e:
+        print(f"Error in generate_gpt_response: {e}")
+        return None
 
-    with client.beta.threads.runs.stream(
-            thread_id=thread.id,
-            assistant_id=assistant.id,
-            instructions=f"Please address the user as {user_name}.",
-            event_handler=handler,
-    ) as stream:
-        stream.until_done()
-
-    return handler.response_text
 
