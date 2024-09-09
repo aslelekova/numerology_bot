@@ -81,10 +81,12 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         day, month, year = date.day, date.month, date.year
         values = calculate_values(day, month, year)
 
+        generating_message = await callback_query.message.answer("⏳")
 
         handler = EventHandler()
         response_text = await generate_gpt_response(user_name, values, handler)
 
+        await generating_message.delete()
 
         await state.update_data(full_response=response_text)
 
