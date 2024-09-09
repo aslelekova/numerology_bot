@@ -123,18 +123,3 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
             reply_markup=sections_keyboard
         )
         await state.update_data(first_message_id=first_message.message_id)
-
-        inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-            [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
-            [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-        ])
-        
-        question_prompt_message = await callback_query.message.answer(
-            f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
-            " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-            "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
-            reply_markup=inline_keyboard,
-            parse_mode="HTML"
-        )
-        await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
