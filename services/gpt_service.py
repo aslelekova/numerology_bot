@@ -21,7 +21,6 @@ class EventHandler(AssistantEventHandler):
         if hasattr(message, 'content'):
             print("Message content:", message.content)
             message_content = message.content[0].text
-            print("Extracted message content:", message_content)
 
             annotations = message_content.annotations if hasattr(message_content, 'annotations') else []
             citations = []
@@ -32,7 +31,6 @@ class EventHandler(AssistantEventHandler):
                     citations.append(f"[{index}] {cited_file.filename}")
 
             self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
-            print("Updated response text:", self.response_text)
         else:
             print("Message has no content")
 

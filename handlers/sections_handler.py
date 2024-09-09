@@ -48,6 +48,19 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext):
     response_text = await generate_gpt_response(user_name, values, handler)
     print("ответ", response_text)
 
+
+    split_text = response_text.split("---")
+
+
+    categories_dict = {}
+
+    for i, block in enumerate(split_text):
+        categories_dict[f"Блок {i+1}"] = block.strip()
+
+    for key, value in categories_dict.items():
+        print(f"{key}:\n{value}\n\n")
+
+
     await generating_message.delete()
 
     await callback_query.message.answer(response_text, reply_markup=create_back_button())
