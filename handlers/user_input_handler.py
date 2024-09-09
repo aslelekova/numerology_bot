@@ -8,6 +8,7 @@ from aiogram.filters.state import StateFilter
 
 from calendar_module.calendar_utils import get_user_locale
 from calendar_module.schemas import DialogCalendarCallback
+from handlers.start_handler import cmd_start
 from keyboards.sections_fate_matrix import create_sections_keyboard, create_reply_keyboard
 from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
@@ -77,15 +78,25 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         user_name, _ = await get_user_data(state)
         await update_user_date(state, date)
 
-        # Генерация значений матрицы судьбы
+
         day, month, year = date.day, date.month, date.year
         values = calculate_values(day, month, year)
 
-        # Генерация полного ответа с помощью GPT
+        generating_message = await callback_query.message.answer("⏳")
+
         handler = EventHandler()
         response_text = await generate_gpt_response(user_name, values, handler)
+        
+        await generating_message.delete()
 
-        # Разделяем сгенерированный текст по категориям
+        if not response_text:
+            await callback_query.message.answer(
+                "Не удалось сгенерировать ответ. Пожалуйста, повторите попытку.",
+            )
+            
+            await cmd_start(callback_query.message, state)
+            return
+
         split_text = response_text.split("---")
         categories = [
             "Личные качества",
@@ -98,14 +109,11 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
             "Отношения",
             "Деньги"
         ]
-        
-        # Сохраняем категории в виде словаря
+
         categories_dict = {category: split_text[i].strip() for i, category in enumerate(categories) if i < len(split_text)}
 
-        # Сохраняем словарь в состояние
         await state.update_data(full_response=categories_dict)
 
-        # Отправляем сообщение о готовности матрицы судьбы
         sections_keyboard = create_sections_keyboard()
         first_message = await callback_query.message.answer(
             "Ура, ваша матрица судьбы готова 🔮\n\n"
