@@ -109,8 +109,6 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
 
 @router.callback_query(lambda callback: callback.data == "go_back_to_categories")
 async def create_back_button(callback_query: CallbackQuery, state: FSMContext):
-    await callback_query.message.delete()
-
     sections_keyboard = create_sections_keyboard()
     first_message = await callback_query.message.answer(
         "Ура, ваша матрица судьбы готова 🔮\n\n"
