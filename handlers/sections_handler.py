@@ -88,4 +88,22 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
         return
 
+    # Получаем идентификаторы сообщений из состояния
+    first_message_id = data.get("first_message_id")
+    question_prompt_message_id = data.get("question_prompt_message_id")
+
+    # Удаляем предыдущие сообщения, если они есть
+    if first_message_id:
+        try:
+            await callback_query.message.chat.delete_message(message_id=first_message_id)
+        except Exception as e:
+            print(f"Ошибка при удалении первого сообщения: {e}")
+
+    if question_prompt_message_id:
+        try:
+            await callback_query.message.chat.delete_message(message_id=question_prompt_message_id)
+        except Exception as e:
+            print(f"Ошибка при удалении второго сообщения: {e}")
+
+    # Отправляем новое сообщение с выбранной категорией
     await callback_query.message.answer(selected_category, reply_markup=create_back_button())
