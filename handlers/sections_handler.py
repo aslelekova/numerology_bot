@@ -1,3 +1,5 @@
+# handlers/sections_handler.py
+
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
@@ -34,53 +36,41 @@ async def handle_full_access(callback_query: CallbackQuery):
 
 
 async def handle_section(callback_query: CallbackQuery, state: FSMContext):
+
     data = await state.get_data()
-    user_name = data.get("user_name", "Пользователь")
-    user_date = data.get("user_date", "Неизвестная категория")
-    day = user_date.day
-    month = user_date.month
-    year = user_date.year
-    values = calculate_values(day, month, year)
-
-    generating_message = await callback_query.message.answer("⏳")
-
-    handler = EventHandler()
-    response_text = await generate_gpt_response(user_name, values, handler)
-    print("ответ", response_text)
+    response_text = data.get("full_response", "")
 
 
     split_text = response_text.split("---")
 
+    categories = [
+        "Личные качества",
+        "Предназначение",
+        "Таланты",
+        "Детско-родительские отношения",
+        "Родовые программы",
+        "Кармический хвост",
+        "Главный кармический урок",
+        "Отношения",
+        "Деньги"
+    ]
 
     categories_dict = {}
 
     for i, block in enumerate(split_text):
-        categories_dict[f"Блок {i+1}"] = block.strip()
+        if i < len(categories):
+            categories_dict[categories[i]] = block.strip()
 
-    for key, value in categories_dict.items():
-        print(f"{key}:\n{value}\n\n")
+    category_key = callback_query.data
+    selected_category = categories_dict.get(category_key, "Неизвестная категория")
+
+    if selected_category == "Неизвестная категория":
+        await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
+        return
 
 
-    await generating_message.delete()
+    await callback_query.message.answer(selected_category, reply_markup=create_back_button())
 
-    await callback_query.message.answer(response_text, reply_markup=create_back_button())
-
-    inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-        [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
-        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-    ])
-
-    question_prompt_message = await callback_query.message.answer(
-        f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
-        " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
-        reply_markup=inline_keyboard,
-        parse_mode="HTML"
-    )
-
-    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-    await state.set_state(QuestionState.waiting_for_question)
 
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))

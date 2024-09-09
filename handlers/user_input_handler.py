@@ -9,7 +9,9 @@ from aiogram.filters.state import StateFilter
 from calendar_module.calendar_utils import get_user_locale
 from calendar_module.schemas import DialogCalendarCallback
 from keyboards.sections_fate_matrix import create_sections_keyboard, create_reply_keyboard
+from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
+from services.gpt_service import EventHandler, generate_gpt_response
 from services.user_service import update_user_name, get_user_data, update_user_date
 from states import Form
 
@@ -75,6 +77,18 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         user_name, _ = await get_user_data(state)
         await update_user_date(state, date)
 
+
+        day, month, year = date.day, date.month, date.year
+        values = calculate_values(day, month, year)
+
+
+        handler = EventHandler()
+        response_text = await generate_gpt_response(user_name, values, handler)
+
+
+        await state.update_data(full_response=response_text)
+
+
         data = await state.get_data()
         date_prompt_message_id = data.get("date_prompt_message_id")
         if date_prompt_message_id:
@@ -83,6 +97,7 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
                                                         message_id=date_prompt_message_id)
             except Exception as e:
                 print(f"Ошибка при удалении сообщения: {e}")
+        
 
         sections_keyboard = create_sections_keyboard()
         first_message = await callback_query.message.answer(
@@ -93,6 +108,7 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
             reply_markup=sections_keyboard
         )
         await state.update_data(first_message_id=first_message.message_id)
+        
 
         inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
