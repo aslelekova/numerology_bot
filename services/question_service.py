@@ -1,5 +1,19 @@
 # services/question_service.py
 
+from services.gpt_service import client
+
+async def generate_question_response(question: str, user_name: str, birth_date: str) -> str:
+
+    prompt = (
+        f"Меня зовут {user_name}, моя дата рождения {birth_date}. "
+        f"Я хочу задать следующий вопрос: {question}."
+    )
+    
+    response_text = await generate_response(prompt, client)
+    
+    return response_text
+
+
 async def generate_response(prompt: str, client) -> str:
     messages = [{"role": "user", "content": prompt}]
     response = await client.chat.completions.create(

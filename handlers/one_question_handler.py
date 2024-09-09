@@ -1,12 +1,10 @@
-# handlers/one_question_handler.py
-
 from aiogram import Router, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from keyboards.main_menu_keyboard import main_menu_keyboard
-from services.gpt_service import client, generate_gpt_response
+from services.gpt_service import client, generate_question_response  # Импортируем новую функцию
 from services.question_service import generate_suggestions
 from states import QuestionState
 
@@ -35,14 +33,16 @@ async def process_question(message: types.Message, state: FSMContext):
 
     user_name = user_data.get('user_name', 'Пользователь')
     birth_date = user_data.get('user_date', 'неизвестна')
-    category = message.text
+    question = message.text  # Используем текст сообщения как вопрос
 
-    response_text = await generate_gpt_response(user_name, birth_date, category)
+    # Используем новую функцию для генерации ответа на вопрос
+    response_text = await generate_question_response(question, user_name, birth_date)
 
     await generating_message.delete()
 
     await message.answer(response_text)
 
+    # Генерируем предложения на основе заданного вопроса
     suggestions_text = await generate_suggestions(message.text, client)
 
     inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
