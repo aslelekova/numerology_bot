@@ -34,32 +34,14 @@ async def handle_full_access(callback_query: CallbackQuery):
         reply_markup=keyboard
     )
 
-
 async def handle_section(callback_query: CallbackQuery, state: FSMContext):
 
     data = await state.get_data()
-    response_text = data.get("full_response", "")
 
 
-    split_text = response_text.split("---")
+    categories_dict = data.get("full_response", {})
+    print(categories_dict)
 
-    categories = [
-        "Личные качества",
-        "Предназначение",
-        "Таланты",
-        "Детско-родительские отношения",
-        "Родовые программы",
-        "Кармический хвост",
-        "Главный кармический урок",
-        "Отношения",
-        "Деньги"
-    ]
-
-    categories_dict = {}
-
-    for i, block in enumerate(split_text):
-        if i < len(categories):
-            categories_dict[categories[i]] = block.strip()
 
     category_key = callback_query.data
     selected_category = categories_dict.get(category_key, "Неизвестная категория")
@@ -71,15 +53,9 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext):
 
     await callback_query.message.answer(selected_category, reply_markup=create_back_button())
 
+
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
 async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
-    free_categories = {
-        "section_personal": "Личные качества",
-        "section_destiny": "Предназначение",
-        "section_family_relationships": "Детско-родительские отношения",
-        "section_talents": "Таланты",
-    }
-
     category_mapping = {
         "section_personal": "Личные качества",
         "section_destiny": "Предназначение",
@@ -99,30 +75,17 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
         return
 
-    if category_key not in free_categories:
-        await callback_query.message.answer("Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ.")
+    data = await state.get_data()
+    response_text = data.get("full_response", {})
+
+    if not isinstance(response_text, dict):
+        await callback_query.message.answer("Произошла ошибка при обработке данных. Пожалуйста, повторите попытку.")
         return
 
-    data = await state.get_data()
-    first_message_id = data.get("first_message_id")
-    question_prompt_message_id = data.get("question_prompt_message_id")
+    selected_category = response_text.get(category, "Неизвестная категория")
 
-    if first_message_id:
-        try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=first_message_id
-            )
-        except Exception as e:
-            print(f"Ошибка при удалении сообщения с категориями: {e}")
+    if selected_category == "Неизвестная категория":
+        await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
+        return
 
-    if question_prompt_message_id:
-        try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=question_prompt_message_id
-            )
-        except Exception as e:
-            print(f"Ошибка при удалении сообщения с предложением задать вопрос: {e}")
-
-    await handle_section(callback_query, state)
+    await callback_query.message.answer(selected_category, reply_markup=create_back_button())
