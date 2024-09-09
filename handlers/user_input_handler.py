@@ -88,7 +88,7 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         response_text = await generate_gpt_response(user_name, values, handler)
         
         await generating_message.delete()
-
+        response_text = None
         if not response_text:
             await callback_query.message.answer(
                 "Не удалось сгенерировать ответ. Пожалуйста, повторите попытку.",
