@@ -105,3 +105,35 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
 
     await callback_query.message.answer(selected_category, reply_markup=create_back_button())
 
+
+@router.callback_query(lambda callback: callback.data == "go_back_to_categories")
+async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.message.delete()
+
+    sections_keyboard = create_sections_keyboard()
+
+    first_message = await callback_query.message.answer(
+        "Ура, ваша матрица судьбы готова 🔮\n\n"
+        "Вы можете посмотреть расклад по каждому из разделов.\n"
+        "✅ - доступно бесплатно\n"
+        "🔐 - требуется полный доступ",
+        reply_markup=sections_keyboard
+    )
+    await state.update_data(first_message_id=first_message.message_id)
+
+    inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
+        [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
+        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
+    ])
+
+    question_prompt_message = await callback_query.message.answer(
+        f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
+        " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
+        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
+        reply_markup=inline_keyboard,
+        parse_mode="HTML"
+    )
+
+    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+
