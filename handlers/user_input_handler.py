@@ -80,6 +80,14 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
 
         day, month, year = date.day, date.month, date.year
         values = calculate_values(day, month, year)
+        data = await state.get_data()
+        previous_message_id = data.get("date_prompt_message_id")
+
+        if previous_message_id:
+            try:
+                await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id, message_id=previous_message_id)
+            except Exception as e:
+                print(f"Ошибка при удалении сообщения с календарем: {e}")
 
         generating_message = await callback_query.message.answer("⏳")
 
