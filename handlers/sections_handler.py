@@ -35,42 +35,50 @@ async def handle_full_access(callback_query: CallbackQuery):
     )
 
 
-async def handle_section(callback_query: CallbackQuery, state: FSMContext):
+@router.callback_query(DialogCalendarCallback.filter())
+async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
+    selected, date = await process_calendar_selection(callback_query, callback_data)
 
-    data = await state.get_data()
-    response_text = data.get("full_response", "")
+    if selected:
+        user_name, _ = await get_user_data(state)
+        await update_user_date(state, date)
 
+        # Генерация значений матрицы судьбы
+        day, month, year = date.day, date.month, date.year
+        values = calculate_values(day, month, year)
 
-    split_text = response_text.split("---")
+        # Генерация полного ответа с помощью GPT
+        handler = EventHandler()
+        response_text = await generate_gpt_response(user_name, values, handler)
 
-    categories = [
-        "Личные качества",
-        "Предназначение",
-        "Таланты",
-        "Детско-родительские отношения",
-        "Родовые программы",
-        "Кармический хвост",
-        "Главный кармический урок",
-        "Отношения",
-        "Деньги"
-    ]
+        # Разделяем сгенерированный текст по категориям
+        split_text = response_text.split("---")
+        categories = [
+            "Личные качества",
+            "Предназначение",
+            "Таланты",
+            "Детско-родительские отношения",
+            "Родовые программы",
+            "Кармический хвост",
+            "Главный кармический урок",
+            "Отношения",
+            "Деньги"
+        ]
+        
+        categories_dict = {category: split_text[i].strip() for i, category in enumerate(categories) if i < len(split_text)}
 
-    categories_dict = {}
+        await state.update_data(full_response=categories_dict)
 
-    for i, block in enumerate(split_text):
-        if i < len(categories):
-            categories_dict[categories[i]] = block.strip()
-
-    category_key = callback_query.data
-    selected_category = categories_dict.get(category_key, "Неизвестная категория")
-
-    if selected_category == "Неизвестная категория":
-        await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
-        return
-
-
-    await callback_query.message.answer(selected_category, reply_markup=create_back_button())
-
+        # Отправляем сообщение о готовности матрицы судьбы
+        sections_keyboard = create_sections_keyboard()
+        first_message = await callback_query.message.answer(
+            "Ура, ваша матрица судьбы готова 🔮\n\n"
+            "Вы можете посмотреть расклад по каждому из разделов.\n"
+            "✅ - доступно бесплатно\n"
+            "🔐 - требуется полный доступ",
+            reply_markup=sections_keyboard
+        )
+        await state.update_data(first_message_id=first_message.message_id)
 
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
@@ -102,6 +110,7 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
         return
 
+    # Проверяем доступ к категории
     if category_key not in free_categories:
         data = await state.get_data()
         previous_warning_message_id = data.get("previous_warning_message_id")
@@ -121,57 +130,9 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         await state.update_data(previous_warning_message_id=warning_message.message_id)
         return
 
-    await handle_section(callback_query, state)
-
-
-@router.callback_query(lambda callback: callback.data == "go_back_to_categories")
-async def go_back_to_categories(callback_query: CallbackQuery, state: FSMContext):
+    # Извлекаем текст из сохраненного ответа
     data = await state.get_data()
-    first_message_id = data.get("first_message_id")
-    question_prompt_message_id = data.get("question_prompt_message_id")
+    full_response = data.get("full_response", {})
+    selected_category_text = full_response.get(category, "Текст по данной категории не найден.")
 
-    if first_message_id:
-        try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=callback_query.message.message_id
-            )
-        except Exception as e:
-            if "message to delete not found" not in str(e):
-                print(f"Error deleting current message: {e}")
-
-    if question_prompt_message_id:
-        try:
-            await callback_query.bot.delete_message(
-                chat_id=callback_query.message.chat.id,
-                message_id=question_prompt_message_id
-            )
-        except Exception as e:
-            if "message to delete not found" not in str(e):
-                print(f"Error deleting question prompt message: {e}")
-
-    sections_keyboard = create_sections_keyboard()
-    first_message = await callback_query.message.answer(
-        "Ура, ваша матрица судьбы готова 🔮\n\n"
-        "Вы можете посмотреть расклад по каждому из разделов.\n"
-        "✅ - доступно бесплатно\n"
-        "🔐 - требуется полный доступ",
-        reply_markup=sections_keyboard
-    )
-
-    inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-        [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
-        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-    ])
-
-    question_prompt_message = await callback_query.message.answer(
-        f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
-        " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
-        reply_markup=inline_keyboard,
-        parse_mode="HTML"
-    )
-    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-
-    await state.update_data(first_message_id=first_message.message_id)
+    await callback_query.message.answer(selected_category_text, reply_markup=create_back_button())
