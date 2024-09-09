@@ -33,7 +33,7 @@ async def process_question(message: types.Message, state: FSMContext):
 
     user_name = user_data.get('user_name', 'Пользователь')
     birth_date = user_data.get('user_date', 'неизвестна')
-    question = message.text  # Используем текст сообщения как вопрос
+    question = message.text
 
 
     response_text = await generate_question_response(question, user_name, birth_date)
@@ -42,7 +42,7 @@ async def process_question(message: types.Message, state: FSMContext):
 
     await message.answer(response_text)
 
-    # Генерируем предложения на основе заданного вопроса
+
     suggestions_text = await generate_suggestions(message.text, client)
 
     inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
