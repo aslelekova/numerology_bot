@@ -71,7 +71,6 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext):
 
     await callback_query.message.answer(selected_category, reply_markup=create_back_button())
 
-
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
 async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
     free_categories = {
@@ -97,33 +96,33 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     category = category_mapping.get(category_key, "Неизвестная категория")
 
     if category == "Неизвестная категория":
-        print(f"Error: Category '{callback_query.data}' not found.")
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
         return
 
-    # Проверяем доступ к категории
     if category_key not in free_categories:
-        data = await state.get_data()
-        previous_warning_message_id = data.get("previous_warning_message_id")
-        if previous_warning_message_id:
-            try:
-                await callback_query.bot.delete_message(
-                    chat_id=callback_query.message.chat.id,
-                    message_id=previous_warning_message_id
-                )
-            except Exception as e:
-                if "message to delete not found" not in str(e):
-                    print(f"Error deleting previous warning message: {e}")
-
-        warning_message = await callback_query.message.answer(
-            "Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ."
-        )
-        await state.update_data(previous_warning_message_id=warning_message.message_id)
+        await callback_query.message.answer("Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ.")
         return
 
-    # Извлекаем текст из сохраненного ответа
     data = await state.get_data()
-    full_response = data.get("full_response", {})
-    selected_category_text = full_response.get(category, "Текст по данной категории не найден.")
+    first_message_id = data.get("first_message_id")
+    question_prompt_message_id = data.get("question_prompt_message_id")
 
-    await callback_query.message.answer(selected_category_text, reply_markup=create_back_button())
+    if first_message_id:
+        try:
+            await callback_query.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=first_message_id
+            )
+        except Exception as e:
+            print(f"Ошибка при удалении сообщения с категориями: {e}")
+
+    if question_prompt_message_id:
+        try:
+            await callback_query.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=question_prompt_message_id
+            )
+        except Exception as e:
+            print(f"Ошибка при удалении сообщения с предложением задать вопрос: {e}")
+
+    await handle_section(callback_query, state)
