@@ -103,7 +103,7 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         except Exception as e:
             print(f"Ошибка при удалении второго сообщения: {e}")
 
-    await callback_query.message.answer(selected_category, reply_markup=create_back_button(callback_query, state))
+    await callback_query.message.answer(selected_category, reply_markup=await create_back_button(callback_query, state))
 
 
 
