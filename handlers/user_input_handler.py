@@ -77,30 +77,35 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         user_name, _ = await get_user_data(state)
         await update_user_date(state, date)
 
-
+        # Генерация значений матрицы судьбы
         day, month, year = date.day, date.month, date.year
         values = calculate_values(day, month, year)
 
-        generating_message = await callback_query.message.answer("⏳")
-
+        # Генерация полного ответа с помощью GPT
         handler = EventHandler()
         response_text = await generate_gpt_response(user_name, values, handler)
 
-        await generating_message.delete()
-
-        await state.update_data(full_response=response_text)
-
-
-        data = await state.get_data()
-        date_prompt_message_id = data.get("date_prompt_message_id")
-        if date_prompt_message_id:
-            try:
-                await callback_query.bot.delete_message(chat_id=callback_query.message.chat.id,
-                                                        message_id=date_prompt_message_id)
-            except Exception as e:
-                print(f"Ошибка при удалении сообщения: {e}")
+        # Разделяем сгенерированный текст по категориям
+        split_text = response_text.split("---")
+        categories = [
+            "Личные качества",
+            "Предназначение",
+            "Таланты",
+            "Детско-родительские отношения",
+            "Родовые программы",
+            "Кармический хвост",
+            "Главный кармический урок",
+            "Отношения",
+            "Деньги"
+        ]
         
+        # Сохраняем категории в виде словаря
+        categories_dict = {category: split_text[i].strip() for i, category in enumerate(categories) if i < len(split_text)}
 
+        # Сохраняем словарь в состояние
+        await state.update_data(full_response=categories_dict)
+
+        # Отправляем сообщение о готовности матрицы судьбы
         sections_keyboard = create_sections_keyboard()
         first_message = await callback_query.message.answer(
             "Ура, ваша матрица судьбы готова 🔮\n\n"
@@ -110,20 +115,3 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
             reply_markup=sections_keyboard
         )
         await state.update_data(first_message_id=first_message.message_id)
-        
-
-        inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-            [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
-            [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-        ])
-
-        second_message = await callback_query.message.answer(
-            f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
-            " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-            "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с "
-            "партнером?</b>)",
-            reply_markup=inline_keyboard,
-            parse_mode="HTML"
-        )
-        await state.update_data(second_message_id=second_message.message_id)
