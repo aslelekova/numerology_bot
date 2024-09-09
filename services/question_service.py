@@ -4,7 +4,7 @@ async def generate_response(prompt: str, client) -> str:
     messages = [{"role": "user", "content": prompt}]
     response = await client.chat.completions.create(
         messages=messages,
-        model="gpt-4o-2024-08-06"
+        model="gpt-4o"
     )
     return response.choices[0].message.content
 
@@ -17,6 +17,6 @@ async def generate_suggestions(user_question: str, client) -> str:
     messages = [{"role": "user", "content": suggestion_prompt}]
     suggestion_response = await client.chat.completions.create(
         messages=messages,
-        model="gpt-4o-2024-08-06"
+        model="gpt-4o"
     )
     return suggestion_response.choices[0].message.content
