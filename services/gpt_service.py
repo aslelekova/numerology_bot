@@ -19,7 +19,6 @@ class EventHandler(AssistantEventHandler):
     def on_message_done(self, message) -> None:
         print("Message done called with message:", message)
         if hasattr(message, 'content'):
-            print("Message content:", message.content)
             message_content = message.content[0].text
 
             annotations = message_content.annotations if hasattr(message_content, 'annotations') else []

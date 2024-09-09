@@ -34,42 +34,24 @@ async def handle_full_access(callback_query: CallbackQuery):
         reply_markup=keyboard
     )
 
-
+    
 async def handle_section(callback_query: CallbackQuery, state: FSMContext):
-    # Получаем сохраненный ответ из состояния
     data = await state.get_data()
-    response_text = data.get("full_response", "")
+    response_text = data.get("full_response", {})
 
-
-    split_text = response_text.split("---")
-
-    categories = [
-        "Личные качества",
-        "Предназначение",
-        "Таланты",
-        "Детско-родительские отношения",
-        "Родовые программы",
-        "Кармический хвост",
-        "Главный кармический урок",
-        "Отношения",
-        "Деньги"
-    ]
-
-    categories_dict = {}
-
-    for i, block in enumerate(split_text):
-        if i < len(categories):
-            categories_dict[categories[i]] = block.strip()
+    if not isinstance(response_text, dict):
+        await callback_query.message.answer("Произошла ошибка при обработке данных. Пожалуйста, повторите попытку.")
+        return
 
     category_key = callback_query.data
-    selected_category = categories_dict.get(category_key, "Неизвестная категория")
+    selected_category = response_text.get(category_key, "Неизвестная категория")
 
     if selected_category == "Неизвестная категория":
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
         return
 
-
     await callback_query.message.answer(selected_category, reply_markup=create_back_button())
+
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
 async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
