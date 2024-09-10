@@ -17,7 +17,7 @@ def create_sections_keyboard() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [InlineKeyboardButton(text="Личные качества ✅", callback_data="section_personal")],
             [InlineKeyboardButton(text="Предназначение ✅", callback_data="section_destiny")],
-            [InlineKeyboardButton(text="Детско родительские отношения ✅",
+            [InlineKeyboardButton(text="Детско-родительские отношения ✅",
                                   callback_data="section_family_relationships")],
             [InlineKeyboardButton(text="Таланты ✅", callback_data="section_talents")],
             [InlineKeyboardButton(text="Родовые программы 🔐", callback_data="section_generic_programs")],

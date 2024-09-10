@@ -37,7 +37,7 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         "section_personal": "Личные качества",
         "section_destiny": "Предназначение",
         "section_talents": "Таланты",
-        "section_family_relationships": "Детско родительские отношения",
+        "section_family_relationships": "Детско-родительские отношения",
         "section_generic_programs": "Родовые программы",
         "section_karmic_tail": "Кармический хвост",
         "section_karmic_lesson": "Главный кармический урок",

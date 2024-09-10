@@ -138,5 +138,5 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
             reply_markup=three_functions,
             parse_mode="HTML"
         )
-        
+
         await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
