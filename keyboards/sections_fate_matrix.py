@@ -39,5 +39,12 @@ def create_reply_keyboard():
         ]
     )
     return keyboard
-# ToDo: add a token for paying and try it with the test data.
-# ToDo: check if user have a subscription, he can get answers for all categories.
+
+
+def functions_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
+                [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
+                [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
+            ])
+            

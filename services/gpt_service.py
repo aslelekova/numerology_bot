@@ -1,3 +1,4 @@
+# services/gpt_service.py
 import config
 import tiktoken
 from openai import OpenAI, AssistantEventHandler

@@ -7,7 +7,7 @@ from openai import AsyncOpenAI
 
 import config
 from keyboards.back_to_menu import create_back_button
-from keyboards.sections_fate_matrix import create_sections_keyboard
+from keyboards.sections_fate_matrix import create_sections_keyboard, functions_keyboard
 from services.birthday_service import calculate_values
 from services.gpt_service import generate_gpt_response, EventHandler
 from states import QuestionState
@@ -17,39 +17,16 @@ router = Router()
 client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
 
 
-@router.callback_query(lambda callback: callback.data == "get_full_access")
-async def handle_full_access(callback_query: CallbackQuery):
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="Тариф 1 (290 руб.)", callback_data="tariff_1")],
-            [InlineKeyboardButton(text="Тариф 2 (490 руб.)", callback_data="tariff_2")],
-            [InlineKeyboardButton(text="Тариф 3 (790 руб.)", callback_data="tariff_3")]
-        ]
-    )
-
-    await callback_query.message.answer(
-        "Тариф 1. \n- 5 раскладов (любых) \n- 10 вопросов \n💲 290 рублей\n\n"
-        "Тариф 2.\n- 8 раскладов (любых)\n- 20 вопросов\n💲 490 рублей\n\n"
-        "Тариф 3.\n- 15 раскладов (любых)\n- 40 вопросов\n💲 790 рублей",
-        reply_markup=keyboard
-    )
-
 async def handle_section(callback_query: CallbackQuery, state: FSMContext):
-
     data = await state.get_data()
 
-
     categories_dict = data.get("full_response", {})
-    print(categories_dict)
-
-
     category_key = callback_query.data
     selected_category = categories_dict.get(category_key, "Неизвестная категория")
 
     if selected_category == "Неизвестная категория":
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
         return
-
 
     await callback_query.message.answer(selected_category, reply_markup=create_back_button())
 
@@ -121,17 +98,13 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     )
     await state.update_data(first_message_id=first_message.message_id)
 
-    inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-        [InlineKeyboardButton(text="Задать бесплатный вопрос", callback_data="ask_free_question")],
-        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-    ])
+    three_functions = functions_keyboard()
 
     question_prompt_message = await callback_query.message.answer(
         f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
         " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
         "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
-        reply_markup=inline_keyboard,
+        reply_markup=three_functions,
         parse_mode="HTML"
     )
 

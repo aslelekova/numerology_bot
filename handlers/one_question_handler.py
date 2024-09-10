@@ -1,9 +1,12 @@
+# handlers/one_question_handler.py
+
 from aiogram import Router, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from keyboards.main_menu_keyboard import main_menu_keyboard
+from keyboards.sections_fate_matrix import functions_keyboard
 from services.gpt_service import client
 from services.question_service import generate_question_response, generate_suggestions
 from states import QuestionState
@@ -44,12 +47,8 @@ async def process_question(message: types.Message, state: FSMContext):
 
 
     suggestions_text = await generate_suggestions(message.text, client)
-
-    inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-        [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
-        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")],
-    ])
+    
+    three_functions = functions_keyboard()
 
     suggestion_message_text = (
         f"💫 Задавайте еще больше вопросов своему ассистенту! Вот примеры вопросов, которые могут вас "
@@ -58,7 +57,7 @@ async def process_question(message: types.Message, state: FSMContext):
         f"боту, чтобы задавать неограниченное количество вопросов и делать любые расклады! 😍"
     )
 
-    suggestion_message = await message.answer(suggestion_message_text, reply_markup=inline_keyboard)
+    suggestion_message = await message.answer(suggestion_message_text, reply_markup=three_functions)
 
     previous_message_ids = user_data.get("previous_message_ids", [])
     previous_message_ids.append(suggestion_message.message_id)
