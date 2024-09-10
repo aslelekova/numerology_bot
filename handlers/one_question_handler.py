@@ -46,7 +46,7 @@ async def process_question(message: types.Message, state: FSMContext):
     await message.answer(response_text)
 
 
-    suggestions_text = await generate_suggestions(message.text, client)
+    suggestions_text = await generate_suggestions(message.text)
     
     three_functions = functions_keyboard()
 
