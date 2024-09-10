@@ -48,7 +48,11 @@ async def process_question(message: types.Message, state: FSMContext):
 
     suggestions_text = await generate_suggestions(message.text)
     
-    three_functions = functions_keyboard()
+    three_functions = inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
+        [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
+        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")],
+    ])
 
     suggestion_message_text = (
         f"💫 Задавайте еще больше вопросов своему ассистенту! Вот примеры вопросов, которые могут вас "
