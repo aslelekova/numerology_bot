@@ -1,6 +1,5 @@
 # services/gpt_service.py
 import config
-import tiktoken
 from openai import OpenAI, AssistantEventHandler
 
 client = OpenAI(api_key=config.OPENAI_API_KEY)
