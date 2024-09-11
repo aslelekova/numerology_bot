@@ -204,9 +204,7 @@ async def generate_gpt_response(user_name, values, handler):
                 instructions=f"Please address the user as {user_name}.",
                 event_handler=handler,
         ) as stream:
-            print("Stream started")
             stream.until_done()
-            print("Stream finished")
             
         return handler.response_text
     except Exception as e:
