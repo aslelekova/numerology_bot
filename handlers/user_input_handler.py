@@ -99,9 +99,10 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         while response_text is None and attempt < max_retries:
             attempt += 1
             response_text = await generate_gpt_response(user_name, values, handler)
-            response_text = response_text.replace("#", "").replace("*", "")
             if not response_text:
                 print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
+
+        response_text = response_text.replace("#", "").replace("*", "")
 
         await generating_message.delete()
 
