@@ -107,8 +107,8 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         categories = [
             "Личные качества",
             "Предназначение",
-            "Таланты",
             "Детско-родительские отношения",
+            "Таланты",
             "Родовые программы",
             "Кармический хвост",
             "Главный кармический урок",
