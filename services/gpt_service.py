@@ -40,7 +40,7 @@ class EventHandler(AssistantEventHandler):
 
 
 assistant = client.beta.assistants.create(
-    name="Numerology Assistant",
+    name="Matrix of Destiny Assistant",
     instructions="You're an expert on the Matrix of Destiny. Use your knowledge base to answer questions based on the "
                  "provided book.",
     model="gpt-4o",
@@ -204,7 +204,9 @@ async def generate_gpt_response(user_name, values, handler):
                 instructions=f"Please address the user as {user_name}.",
                 event_handler=handler,
         ) as stream:
+            print("Stream started")
             stream.until_done()
+            print("Stream finished")
             
         return handler.response_text
     except Exception as e:
