@@ -91,18 +91,16 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
 
         generating_message = await callback_query.message.answer("⏳")
 
-        handler = EventHandler()
         response_text = None
         max_retries = 10
         attempt = 0
 
         while response_text is None and attempt < max_retries:
             attempt += 1
-            response_text = await generate_gpt_response(user_name, values, handler)
+            response_text = await generate_gpt_response(user_name, values)
             if not response_text:
                 print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
 
-        response_text = response_text.replace("#", "").replace("*", "")
 
         await generating_message.delete()
 
@@ -112,6 +110,8 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
             )
             await cmd_start(callback_query.message, state)
             return
+
+        response_text = response_text.replace("#", "").replace("*", "")
 
         split_text = response_text.split("---")
         categories = [

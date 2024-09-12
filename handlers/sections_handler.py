@@ -9,7 +9,6 @@ import config
 from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_matrix import create_sections_keyboard, functions_keyboard
 from services.birthday_service import calculate_values
-from services.gpt_service import generate_gpt_response, EventHandler
 from states import QuestionState
 
 router = Router()
