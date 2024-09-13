@@ -80,13 +80,27 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
 
     await callback_query.message.answer(selected_category, reply_markup=create_back_button())
 
-
 @router.callback_query(lambda callback: callback.data == "go_back_to_categories")
 async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.message.delete()
 
-    sections_keyboard = create_sections_keyboard()
+    data = await state.get_data()
+    first_message_id = data.get("first_message_id")
+    question_prompt_message_id = data.get("question_prompt_message_id")
 
+    if first_message_id:
+        try:
+            await callback_query.message.chat.delete_message(message_id=first_message_id)
+        except Exception as e:
+            print(f"Ошибка при удалении первого сообщения: {e}")
+
+    if question_prompt_message_id:
+        try:
+            await callback_query.message.chat.delete_message(message_id=question_prompt_message_id)
+        except Exception as e:
+            print(f"Ошибка при удалении второго сообщения: {e}")
+
+    sections_keyboard = create_sections_keyboard()
     first_message = await callback_query.message.answer(
         "Ура, ваша матрица судьбы готова 🔮\n\n"
         "Вы можете посмотреть расклад по каждому из разделов.\n"
@@ -97,7 +111,6 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     await state.update_data(first_message_id=first_message.message_id)
 
     three_functions = functions_keyboard()
-
     question_prompt_message = await callback_query.message.answer(
         f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
         " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
@@ -105,6 +118,4 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
         reply_markup=three_functions,
         parse_mode="HTML"
     )
-
     await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-
