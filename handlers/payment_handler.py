@@ -11,7 +11,23 @@ from keyboards.sections_fate_matrix import create_sections_keyboard, functions_k
 router = Router()
 
 @router.callback_query(lambda callback: callback.data == "get_full_access")
-async def handle_full_access(callback_query: CallbackQuery):
+async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    first_message_id = data.get("first_message_id")
+    question_prompt_message_id = data.get("question_prompt_message_id")
+
+    if first_message_id:
+        try:
+            await callback_query.message.chat.delete_message(message_id=first_message_id)
+        except Exception as e:
+            print(f"Ошибка при удалении первого сообщения: {e}")
+
+    if question_prompt_message_id:
+        try:
+            await callback_query.message.chat.delete_message(message_id=question_prompt_message_id)
+        except Exception as e:
+            print(f"Ошибка при удалении второго сообщения: {e}")
+
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="290 руб", callback_data="tariff_1")],
@@ -29,7 +45,6 @@ async def handle_full_access(callback_query: CallbackQuery):
 
 @router.callback_query(lambda callback: callback.data == "back")
 async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
-    # Удаление текущего сообщения
     await callback_query.message.delete()
 
     sections_keyboard = create_sections_keyboard()
