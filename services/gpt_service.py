@@ -43,7 +43,7 @@ assistant = client.beta.assistants.create(
     name="Matrix of Destiny Assistant",
     instructions="You're an expert on the Matrix of Destiny. Use your knowledge base to answer questions based on the "
                  "provided book.",
-    model="gpt-4o",
+    model="gpt-4o-2024-08-06",
     tools=[{"type": "file_search"}],
 )
 

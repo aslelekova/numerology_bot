@@ -20,7 +20,7 @@ async def generate_response(prompt: str) -> str:
     
     response = client.chat.completions.create(
         messages=messages,
-        model="gpt-4o"
+        model="gpt-4o-2024-08-06"
     )
     
     return response.choices[0].message.content
@@ -36,7 +36,7 @@ async def generate_suggestions(user_question: str) -> str:
     # Синхронный вызов
     suggestion_response = client.chat.completions.create(
         messages=messages,
-        model="gpt-4o"
+        model="gpt-4o-2024-08-06"
     )
     
     return suggestion_response.choices[0].message.content
