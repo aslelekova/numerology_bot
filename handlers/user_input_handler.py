@@ -8,6 +8,7 @@ from aiogram.filters.state import StateFilter
 
 from calendar_module.calendar_utils import get_user_locale
 from calendar_module.schemas import DialogCalendarCallback
+from handlers.sections_handler import handle_section
 from handlers.start_handler import cmd_start
 from keyboards.sections_fate_matrix import create_sections_keyboard, create_reply_keyboard, functions_keyboard
 from services.birthday_service import calculate_values
@@ -68,7 +69,6 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data)
-
 
 @router.callback_query(DialogCalendarCallback.filter())
 async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
@@ -152,34 +152,34 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
 
         await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
 
+
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
 async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
     free_categories = {
         "section_personal": "Личные качества",
         "section_destiny": "Предназначение",
-        "section_family_relationships": "Детско-родительские отношения",
         "section_talents": "Таланты",
+        "section_family_relationships": "Детско-родительские отношения",
     }
 
     category_mapping = {
         "section_personal": "Личные качества",
         "section_destiny": "Предназначение",
-        "section_family_relationships": "Детско-родительские отношения",
         "section_talents": "Таланты",
+        "section_family_relationships": "Детско-родительские отношения",
         "section_generic_programs": "Родовые программы",
         "section_karmic_tail": "Кармический хвост",
         "section_karmic_lesson": "Главный кармический урок",
         "section_relationships": "Отношения",
         "section_money": "Деньги",
-        "section_definition_of_castes": "Определение каст",
     }
 
     category = category_mapping.get(callback_query.data, "Неизвестная категория")
 
+    # Проверка, если категория не является бесплатной
     if callback_query.data not in free_categories:
         data = await state.get_data()
         previous_warning_message_id = data.get("previous_warning_message_id")
-
         if previous_warning_message_id:
             try:
                 await callback_query.bot.delete_message(
@@ -188,12 +188,14 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
                 )
             except Exception as e:
                 if "message to delete not found" not in str(e):
-                    print(f"Error deleting previous warning message: {e}")
+                    print(f"Ошибка при удалении предыдущего сообщения о платной категории: {e}")
 
+        # Отправка одного сообщения о необходимости оплаты
         warning_message = await callback_query.message.answer(
             "Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ."
         )
         await state.update_data(previous_warning_message_id=warning_message.message_id)
         return
 
+    # Обработка бесплатных категорий
     await handle_section(callback_query, state, category)
