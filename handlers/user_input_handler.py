@@ -94,7 +94,7 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         response_text = None
         max_retries = 10
         attempt = 0
-        response_text = await generate_gpt_response(user_name, values, handler)
+        response_text = await generate_gpt_response(user_name, values)
     
         while response_text is None and attempt < max_retries:
             attempt += 1
