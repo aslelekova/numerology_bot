@@ -69,46 +69,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data)
 
-def create_sections_keyboard():
-    categories = [
-        "Личные качества",
-        "Предназначение",
-        "Детско-родительские отношения",
-        "Таланты",
-        "Родовые программы",
-        "Кармический хвост",
-        "Главный кармический урок",
-        "Отношения",
-        "Деньги"
-    ]
 
-    keyboard = InlineKeyboardMarkup(row_width=1)
-    for i, category in enumerate(categories):
-        if i < 4:
-            keyboard.add(InlineKeyboardButton(text=f"✅ {category}", callback_data=f"category_{i}"))
-        else:
-            keyboard.add(InlineKeyboardButton(text=f"🔐 {category}", callback_data=f"category_{i}"))
-
-    return keyboard
-
-# Handler to process category selection
-@router.callback_query(lambda c: c.data and c.data.startswith('category_'))
-async def process_category_selection(callback_query: CallbackQuery, state: FSMContext):
-    category_index = int(callback_query.data.split('_')[1])
-    if category_index < 4:
-        # Process the available category
-        data = await state.get_data()
-        full_response = data.get('full_response', {})
-        category_name = list(full_response.keys())[category_index]
-        response_text = full_response.get(category_name, "Информация недоступна.")
-        await callback_query.message.answer(response_text)
-    else:
-        # Inform the user that the category is locked
-        await callback_query.message.answer(
-            "Данная категория недоступна. Для доступа к этому разделу необходимо оплатить полный доступ."
-        )
-
-# Original handler for processing calendar selection
 @router.callback_query(DialogCalendarCallback.filter())
 async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
@@ -180,7 +141,6 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         )
         await state.update_data(first_message_id=first_message.message_id)
 
-
         three_functions = functions_keyboard()
         question_prompt_message = await callback_query.message.answer(
             f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
@@ -191,3 +151,49 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         )
 
         await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+
+@router.callback_query(lambda callback: callback.data.startswith("section_"))
+async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
+    free_categories = {
+        "section_personal": "Личные качества",
+        "section_destiny": "Предназначение",
+        "section_family_relationships": "Детско-родительские отношения",
+        "section_talents": "Таланты",
+    }
+
+    category_mapping = {
+        "section_personal": "Личные качества",
+        "section_destiny": "Предназначение",
+        "section_family_relationships": "Детско-родительские отношения",
+        "section_talents": "Таланты",
+        "section_generic_programs": "Родовые программы",
+        "section_karmic_tail": "Кармический хвост",
+        "section_karmic_lesson": "Главный кармический урок",
+        "section_relationships": "Отношения",
+        "section_money": "Деньги",
+        "section_definition_of_castes": "Определение каст",
+    }
+
+    category = category_mapping.get(callback_query.data, "Неизвестная категория")
+
+    if callback_query.data not in free_categories:
+        data = await state.get_data()
+        previous_warning_message_id = data.get("previous_warning_message_id")
+
+        if previous_warning_message_id:
+            try:
+                await callback_query.bot.delete_message(
+                    chat_id=callback_query.message.chat.id,
+                    message_id=previous_warning_message_id
+                )
+            except Exception as e:
+                if "message to delete not found" not in str(e):
+                    print(f"Error deleting previous warning message: {e}")
+
+        warning_message = await callback_query.message.answer(
+            "Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ."
+        )
+        await state.update_data(previous_warning_message_id=warning_message.message_id)
+        return
+
+    await handle_section(callback_query, state, category)
