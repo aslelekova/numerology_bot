@@ -69,7 +69,46 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data)
 
+def create_sections_keyboard():
+    categories = [
+        "Личные качества",
+        "Предназначение",
+        "Детско-родительские отношения",
+        "Таланты",
+        "Родовые программы",
+        "Кармический хвост",
+        "Главный кармический урок",
+        "Отношения",
+        "Деньги"
+    ]
 
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    for i, category in enumerate(categories):
+        if i < 4:
+            keyboard.add(InlineKeyboardButton(text=f"✅ {category}", callback_data=f"category_{i}"))
+        else:
+            keyboard.add(InlineKeyboardButton(text=f"🔐 {category}", callback_data=f"category_{i}"))
+
+    return keyboard
+
+# Handler to process category selection
+@router.callback_query(lambda c: c.data and c.data.startswith('category_'))
+async def process_category_selection(callback_query: CallbackQuery, state: FSMContext):
+    category_index = int(callback_query.data.split('_')[1])
+    if category_index < 4:
+        # Process the available category
+        data = await state.get_data()
+        full_response = data.get('full_response', {})
+        category_name = list(full_response.keys())[category_index]
+        response_text = full_response.get(category_name, "Информация недоступна.")
+        await callback_query.message.answer(response_text)
+    else:
+        # Inform the user that the category is locked
+        await callback_query.message.answer(
+            "Данная категория недоступна. Для доступа к этому разделу необходимо оплатить полный доступ."
+        )
+
+# Original handler for processing calendar selection
 @router.callback_query(DialogCalendarCallback.filter())
 async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
@@ -140,25 +179,6 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
             reply_markup=sections_keyboard
         )
         await state.update_data(first_message_id=first_message.message_id)
-
-        unavailable_message_id = data.get("unavailable_message_id")
-        if unavailable_message_id:
-            try:
-                await callback_query.message.bot.delete_message(
-                    chat_id=callback_query.message.chat.id,
-                    message_id=unavailable_message_id
-                )
-            except Exception as e:
-                print(f"Ошибка при удалении предыдущего сообщения о недоступности: {e}")
-
-        category_name = callback_data.category_name
-        if category_name in ["Личные качества", "Предназначение", "Детско-родительские отношения", "Таланты"]:
-            await callback_query.message.answer(f"Вы выбрали категорию {category_name}:\n\n{categories_dict[category_name]}")
-        else:
-            unavailable_message = await callback_query.message.answer(
-                f"Категория {category_name} недоступна. Для доступа к этому разделу необходимо оплатить полный доступ."
-            )
-            await state.update_data(unavailable_message_id=unavailable_message.message_id)
 
 
         three_functions = functions_keyboard()
