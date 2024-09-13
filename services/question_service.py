@@ -1,11 +1,13 @@
 # services/question_service.py
-
+from aiogram.fsm.context import FSMContext
 from services.gpt_service import client
 
-async def generate_question_response(question: str, user_name: str, birth_date: str) -> str:
+async def generate_question_response(question: str, user_name: str, birth_date: str, state: FSMContext) -> str:
+    user_data = await state.get_data()
+    response_text = user_data.get('response_text')
     prompt = (
         f"Меня зовут {user_name}, моя дата рождения {birth_date}. "
-        f"Я хочу задать следующий вопрос: {question}."
+        f"Я хочу задать следующий вопрос: {question}. Ответь на него на основе расклада {response_text}"
     )
     
     response_text = await generate_response(prompt)

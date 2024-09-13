@@ -10,3 +10,7 @@ class Form(StatesGroup):
 class QuestionState(StatesGroup):
     waiting_for_question = State()
     question_asked = State()
+
+
+class UserState(StatesGroup):
+    response_text = State() 

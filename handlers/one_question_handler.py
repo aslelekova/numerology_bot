@@ -39,7 +39,7 @@ async def process_question(message: types.Message, state: FSMContext):
     question = message.text
 
 
-    response_text = await generate_question_response(question, user_name, birth_date)
+    response_text = await generate_question_response(question, user_name, birth_date, state)
 
     await generating_message.delete()
 
