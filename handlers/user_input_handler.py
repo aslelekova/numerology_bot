@@ -176,7 +176,6 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
 
     category = category_mapping.get(callback_query.data, "Неизвестная категория")
 
-    # Проверка, если категория не является бесплатной
     if callback_query.data not in free_categories:
         data = await state.get_data()
         previous_warning_message_id = data.get("previous_warning_message_id")
@@ -190,12 +189,10 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
                 if "message to delete not found" not in str(e):
                     print(f"Ошибка при удалении предыдущего сообщения о платной категории: {e}")
 
-        # Отправка одного сообщения о необходимости оплаты
         warning_message = await callback_query.message.answer(
             "Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ."
         )
         await state.update_data(previous_warning_message_id=warning_message.message_id)
         return
 
-    # Обработка бесплатных категорий
     await handle_section(callback_query, state, category)

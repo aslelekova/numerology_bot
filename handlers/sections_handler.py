@@ -16,12 +16,11 @@ router = Router()
 client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
 
 
-async def handle_section(callback_query: CallbackQuery, state: FSMContext):
+async def handle_section(callback_query: CallbackQuery, state: FSMContext, category: str):
     data = await state.get_data()
 
     categories_dict = data.get("full_response", {})
-    category_key = callback_query.data
-    selected_category = categories_dict.get(category_key, "Неизвестная категория")
+    selected_category = categories_dict.get(category, "Неизвестная категория")
 
     if selected_category == "Неизвестная категория":
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
