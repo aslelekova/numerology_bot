@@ -41,6 +41,9 @@ async def process_question(message: types.Message, state: FSMContext):
 
     response_text = await generate_question_response(question, user_name, birth_date, state)
 
+    if response_text != None:
+        response_text = response_text.replace("#", "").replace("*", "")
+
     await generating_message.delete()
 
     await message.answer(response_text)
