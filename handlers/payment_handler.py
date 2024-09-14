@@ -5,8 +5,12 @@ from aiogram import Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from services.message_service import delete_messages, send_initial_messages
 from keyboards.sections_fate_matrix import create_sections_keyboard, functions_keyboard
+from config import secret_key, shop_id
 
 router = Router()
+
+Configuration.account_id = shop_id
+Configuration.secret_key = secret_key
 
 @router.callback_query(lambda callback: callback.data == "get_full_access")
 async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
