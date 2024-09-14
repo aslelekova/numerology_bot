@@ -57,7 +57,7 @@ async def create_payment(amount, description, return_url):
 
 @router.callback_query(lambda callback: callback.data == "tariff_1")
 async def handle_tariff_1(callback_query: CallbackQuery):
-    return_url = "https://t.me/MakeMyMatrix_Bot"
+    return_url = "t.me/MakeMyMatrix_Bot"
     confirmation_url = await create_payment(290, "Тариф 1: 290 рублей", return_url)
     
     if confirmation_url:
@@ -68,7 +68,7 @@ async def handle_tariff_1(callback_query: CallbackQuery):
 
 @router.callback_query(lambda callback: callback.data == "tariff_2")
 async def handle_tariff_2(callback_query: CallbackQuery):
-    return_url = "https://t.me/MakeMyMatrix_Bot"
+    return_url = "t.me/MakeMyMatrix_Bot"
     confirmation_url = await create_payment(450, "Тариф 2: 450 рублей", return_url)
     
     if confirmation_url:
@@ -79,7 +79,7 @@ async def handle_tariff_2(callback_query: CallbackQuery):
 
 @router.callback_query(lambda callback: callback.data == "tariff_3")
 async def handle_tariff_3(callback_query: CallbackQuery):
-    return_url = "https://t.me/MakeMyMatrix_Bot"
+    return_url = "t.me/MakeMyMatrix_Bot"
     confirmation_url = await create_payment(650, "Тариф 3: 650 рублей", return_url)
     
     if confirmation_url:
