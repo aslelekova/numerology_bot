@@ -1,3 +1,5 @@
+from yookassa import Configuration, Payment
+import uuid
 from aiogram.fsm.context import FSMContext
 from aiogram import Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
@@ -27,6 +29,64 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
         "Мы подготовили для тебя 3 тарифа 💫\n\nТариф 1.  290 рублей\n🔮 5 любых раскладов\n⚡️ 10 ответов на любые вопросы \n\nТариф 2.  450 рублей  (популярный)\n🔮 8 любых раскладов\n⚡️ 20 ответов на любые вопросы \n\nТариф 3.  650 рублей \n🔮 15 любых раскладов\n⚡️ 40 ответов на любые вопросы \n\nВыберите один из тарифов",
         reply_markup=keyboard
     )
+
+
+async def create_payment(amount, description, return_url):
+    try:
+        payment = Payment.create({
+            "amount": {
+                "value": f"{amount:.2f}",
+                "currency": "RUB"
+            },
+            "confirmation": {
+                "type": "redirect",
+                "return_url": return_url
+            },
+            "capture": True,
+            "description": description
+        }, uuid.uuid4())
+
+        return payment.confirmation.confirmation_url
+    except Exception as e:
+        print(f"Ошибка при создании платежа: {e}")
+        return None
+
+@router.callback_query(lambda callback: callback.data == "tariff_1")
+async def handle_tariff_1(callback_query: CallbackQuery):
+    return_url = "https://t.me/MakeMyMatrix_Bot"
+    confirmation_url = await create_payment(290, "Тариф 1: 290 рублей", return_url)
+    
+    if confirmation_url:
+        await callback_query.message.answer(f"Для завершения оплаты перейдите по ссылке: {confirmation_url}")
+    else:
+        await callback_query.message.answer("Произошла ошибка при создании платежа. Попробуйте позже.")
+
+
+@router.callback_query(lambda callback: callback.data == "tariff_2")
+async def handle_tariff_2(callback_query: CallbackQuery):
+    return_url = "https://t.me/MakeMyMatrix_Bot"
+    confirmation_url = await create_payment(450, "Тариф 2: 450 рублей", return_url)
+    
+    if confirmation_url:
+        await callback_query.message.answer(f"Для завершения оплаты перейдите по ссылке: {confirmation_url}")
+    else:
+        await callback_query.message.answer("Произошла ошибка при создании платежа. Попробуйте позже.")
+
+
+@router.callback_query(lambda callback: callback.data == "tariff_3")
+async def handle_tariff_3(callback_query: CallbackQuery):
+    return_url = "https://t.me/MakeMyMatrix_Bot"
+    confirmation_url = await create_payment(650, "Тариф 3: 650 рублей", return_url)
+    
+    if confirmation_url:
+        await callback_query.message.answer(f"Для завершения оплаты перейдите по ссылке: {confirmation_url}")
+    else:
+        await callback_query.message.answer("Произошла ошибка при создании платежа. Попробуйте позже.")
+
+
+async def check_payment_status(payment_id):
+    payment_info = Payment.find_one(payment_id)
+    return payment_info.status
 
 
 @router.callback_query(lambda callback: callback.data == "back")
