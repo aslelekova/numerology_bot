@@ -12,6 +12,7 @@ router = Router()
 Configuration.account_id = shop_id
 Configuration.secret_key = secret_key
 
+print(shop_id, secret_key)
 @router.callback_query(lambda callback: callback.data == "get_full_access")
 async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
