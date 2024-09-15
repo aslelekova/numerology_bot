@@ -1,3 +1,4 @@
+import requests
 from yookassa import Configuration, Payment
 import uuid
 import traceback
@@ -10,8 +11,8 @@ from config import secret_key, shop_id
   
 router = Router()
 
-Configuration.account_id = '<Shop ID>'
-Configuration.secret_key = '<Secret Key>'
+Configuration.account_id = shop_id
+Configuration.secret_key = secret_key
 
 print(shop_id, secret_key)
 @router.callback_query(lambda callback: callback.data == "get_full_access")
@@ -117,3 +118,22 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
                         " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
                         "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)")
     await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard(), functions_keyboard())
+
+
+# def check_api_key(account_id, secret_key):
+#     url = 'https://api.yookassa.ru/v3/payments'
+#     headers = {
+#         'Authorization': f'Basic {secret_key}',
+#         'Content-Type': 'application/json'
+#     }
+#     response = requests.get(url, headers=headers)
+    
+#     if response.status_code == 200:
+#         print("API ключ верный. Ответ:", response.json())
+#     else:
+#         print(f"Ошибка: {response.status_code} - {response.text}")
+
+
+# account_id = '<Your Account ID>'
+# secret_key = '<Your Secret Key>'
+# check_api_key(account_id, secret_key)
