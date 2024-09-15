@@ -53,8 +53,10 @@ async def create_payment(amount, chat_id):
             "capture": True,
             "metadata": {
                 "chat_id": chat_id
+            },
+            "description": {
+                 "dd"
             }
-            "description": "dd"
         }, id_key)
 
         return payment.confirmation.confirmation_url, payment.id
