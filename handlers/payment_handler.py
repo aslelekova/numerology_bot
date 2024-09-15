@@ -2,16 +2,16 @@ from yookassa import Configuration, Payment
 import uuid
 import traceback
 from aiogram.fsm.context import FSMContext
-from aiogram import Router
+from aiogram import Router, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from services.message_service import delete_messages, send_initial_messages
 from keyboards.sections_fate_matrix import create_sections_keyboard, functions_keyboard
 from config import secret_key, shop_id
-
+  
 router = Router()
 
-Configuration.account_id = shop_id
-Configuration.secret_key = secret_key
+Configuration.account_id = '<Shop ID>'
+Configuration.secret_key = '<Secret Key>'
 
 print(shop_id, secret_key)
 @router.callback_query(lambda callback: callback.data == "get_full_access")
@@ -37,13 +37,13 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     )
 
 
-async def create_payment(amount, description):
-
+async def create_payment(amount, chat_id):
+    id_key = str(uuid.uuid64())
 
     try:
         payment = Payment.create({
             "amount": {
-                "value": f"{amount}",
+                "value": amount,
                 "currency": "RUB"
             },
             "confirmation": {
@@ -51,11 +51,14 @@ async def create_payment(amount, description):
                 "return_url": "https://t.me/MakeMyMatrix_Bot"
             },
             "capture": True,
-            "description": description
-        }, uuid.uuid4())
+            "metadata": {
+                "chat_id": chat_id
+            }
+            "description": "dd"
+        }, id_key)
 
-        return payment.confirmation.confirmation_url
-    except Exception as e:
+        return payment.confirmation.confirmation_url, payment.id
+    except Exception as e: 
         print(f"Ошибка при создании платежа: {e}")
         print(f"Параметры платежа: Amount: {amount}, Currency: RUB, Description: {description}")
         print(traceback.format_exc())
@@ -63,13 +66,15 @@ async def create_payment(amount, description):
 
 
 @router.callback_query(lambda callback: callback.data == "tariff_1")
-async def handle_tariff_1(callback_query: CallbackQuery):
-    confirmation_url = await create_payment("290.00", "Тариф 1: 290 рублей")
+async def handle_tariff_1(message: types.Message, callback_query: CallbackQuery):
+    payment_url, payment_id = create_payment("290.00", message.chat.id)
+    await message.answer  (f"{payment_url} {payment_id}")
+    # confirmation_url = await create_payment("290.00", "Тариф 1: 290 рублей")
     
-    if confirmation_url:
-        await callback_query.message.answer(f"Для завершения оплаты перейдите по ссылке: {confirmation_url}")
-    else:
-        await callback_query.message.answer("Произошла ошибка при создании платежа. Попробуйте позже.")
+    # if confirmation_url:
+    #     await callback_query.message.answer(f"Для завершения оплаты перейдите по ссылке: {confirmation_url}")
+    # else:
+    #     await callback_query.message.answer("Произошла ошибка при создании платежа. Попробуйте позже.")
 
 
 @router.callback_query(lambda callback: callback.data == "tariff_2")
