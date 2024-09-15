@@ -43,12 +43,12 @@ async def create_payment(amount, description):
     try:
         payment = Payment.create({
             "amount": {
-                "value": f"{amount:.2f}",
+                "value": f"{amount}",
                 "currency": "RUB"
             },
             "confirmation": {
                 "type": "redirect",
-                "return_url": "https://www.google.com"
+                "return_url": "https://t.me/MakeMyMatrix_Bot"
             },
             "capture": True,
             "description": description
@@ -64,7 +64,7 @@ async def create_payment(amount, description):
 
 @router.callback_query(lambda callback: callback.data == "tariff_1")
 async def handle_tariff_1(callback_query: CallbackQuery):
-    confirmation_url = await create_payment(290, "Тариф 1: 290 рублей")
+    confirmation_url = await create_payment("290.00", "Тариф 1: 290 рублей")
     
     if confirmation_url:
         await callback_query.message.answer(f"Для завершения оплаты перейдите по ссылке: {confirmation_url}")
