@@ -1,5 +1,6 @@
 from yookassa import Configuration, Payment
 import uuid
+import traceback
 from aiogram.fsm.context import FSMContext
 from aiogram import Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
@@ -53,8 +54,10 @@ async def create_payment(amount, description, return_url):
 
         return payment.confirmation.confirmation_url
     except Exception as e:
+    
         print(f"Ошибка при создании платежа: {e}")
-        return None
+        print(traceback.format_exc())
+
 
 @router.callback_query(lambda callback: callback.data == "tariff_1")
 async def handle_tariff_1(callback_query: CallbackQuery):
