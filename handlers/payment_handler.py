@@ -62,15 +62,17 @@ async def create_payment(amount, chat_id):
         return payment.confirmation.confirmation_url, payment.id
     except Exception as e: 
         print(f"Ошибка при создании платежа: {e}")
-        print(f"Параметры платежа: Amount: {amount}, Currency: RUB, Description: {description}")
+        print(f"Параметры платежа: Amount: {amount}, Currency: RUB")
         print(traceback.format_exc())
 
 
 
 @router.callback_query(lambda callback: callback.data == "tariff_1")
-async def handle_tariff_1(message: types.Message, callback_query: CallbackQuery):
-    payment_url, payment_id = create_payment("290.00", message.chat.id)
-    await message.answer  (f"{payment_url} {payment_id}")
+async def handle_tariff_1(callback_query: CallbackQuery):
+    chat_id = callback_query.message.chat.id
+
+    payment_url, payment_id = create_payment("290.00", chat_id)
+    await callback_query.message.answer(f"{payment_url} {payment_id}")
     # confirmation_url = await create_payment("290.00", "Тариф 1: 290 рублей")
     
     # if confirmation_url:
