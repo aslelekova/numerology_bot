@@ -10,8 +10,6 @@ from config import secret_key, shop_id
 
 router = Router()
 
-Configuration.account_id = shop_id
-Configuration.secret_key = secret_key
 
 print(shop_id, secret_key)
 @router.callback_query(lambda callback: callback.data == "get_full_access")
@@ -61,12 +59,21 @@ async def create_payment(amount, description):
 
 @router.callback_query(lambda callback: callback.data == "tariff_1")
 async def handle_tariff_1(callback_query: CallbackQuery):
-    confirmation_url = await create_payment(290, "Тариф 1: 290 рублей")
-    
-    if confirmation_url:
-        await callback_query.message.answer(f"Для завершения оплаты перейдите по ссылке: {confirmation_url}")
-    else:
-        await callback_query.message.answer("Произошла ошибка при создании платежа. Попробуйте позже.")
+    Configuration.account_id = shop_id
+    Configuration.secret_key = secret_key
+
+    payment = Payment.create({
+        "amount": {
+            "value": "290.00",
+            "currency": "RUB"
+        },
+        "confirmation": {
+            "type": "redirect",
+            "return_url": "https://t.me/MakeMyMatrix_Bot"
+        },
+        "capture": True,
+        "description": "Order No. 1"
+    }, uuid.uuid4())
 
 
 @router.callback_query(lambda callback: callback.data == "tariff_2")
