@@ -120,20 +120,19 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard(), functions_keyboard())
 
 
-# def check_api_key(account_id, secret_key):
-#     url = 'https://api.yookassa.ru/v3/payments'
-#     headers = {
-#         'Authorization': f'Basic {secret_key}',
-#         'Content-Type': 'application/json'
-#     }
-#     response = requests.get(url, headers=headers)
+def check_api_key(account_id, secret_key):
+    url = 'https://api.yookassa.ru/v3/payments'
+    headers = {
+        'Authorization': f'Basic {secret_key}',
+        'Content-Type': 'application/json'
+    }
+    response = requests.get(url, headers=headers)
     
-#     if response.status_code == 200:
-#         print("API ключ верный. Ответ:", response.json())
-#     else:
-#         print(f"Ошибка: {response.status_code} - {response.text}")
+    if response.status_code == 200:
+        print("API ключ верный. Ответ:", response.json())
+    else:
+        print(f"Ошибка: {response.status_code} - {response.text}")
 
 
-# account_id = '<Your Account ID>'
-# secret_key = '<Your Secret Key>'
-# check_api_key(account_id, secret_key)
+account_id = shop_id
+check_api_key(account_id, secret_key)
