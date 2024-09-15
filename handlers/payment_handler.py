@@ -38,7 +38,7 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
 
 async def create_payment(amount, chat_id):
-    id_key = str(uuid.uuid64())
+    id_key = str(uuid.uuid4())
 
     try:
         payment = Payment.create({
