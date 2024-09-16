@@ -14,7 +14,6 @@ router = Router()
 Configuration.account_id = shop_id
 Configuration.secret_key = secret_key
 
-print(shop_id, secret_key)
 @router.callback_query(lambda callback: callback.data == "get_full_access")
 async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
@@ -23,12 +22,16 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
 
+    payment_url_1, _ = await create_payment("290.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
+    payment_url_2, _ = await create_payment("450.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
+    payment_url_3, _ = await create_payment("650.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
+
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="290 руб", callback_data="tariff_1")],
-            [InlineKeyboardButton(text="450 руб", callback_data="tariff_2"),
-             InlineKeyboardButton(text="650 руб", callback_data="tariff_3")],
-             [InlineKeyboardButton(text="Назад", callback_data="back")]
+            [InlineKeyboardButton(text="290 руб", url=payment_url_1)],
+            [InlineKeyboardButton(text="450 руб", url=payment_url_2),
+             InlineKeyboardButton(text="650 руб", url=payment_url_3)],
+            [InlineKeyboardButton(text="Назад", callback_data="back")]
         ]
     )
 
@@ -38,11 +41,12 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     )
 
 
-async def create_payment(amount, chat_id):
+
+async def create_payment(amount, chat_id, description):
     try:
         payment = Payment.create({
             "amount": {
-                "value": "100.00",  # Можно указать значение параметра `amount`
+                "value": amount,
                 "currency": "RUB"
             },
             "confirmation": {
@@ -50,7 +54,7 @@ async def create_payment(amount, chat_id):
                 "return_url": "https://t.me/MakeMyMatrix_Bot"
             },
             "capture": True,
-            "description": "Order No. 1",
+            "description": description,
             "receipt": {
                 "customer": {
                     "full_name": "Имя Фамилия",
@@ -62,10 +66,10 @@ async def create_payment(amount, chat_id):
                         "description": "Услуга по созданию матрицы судьбы",
                         "quantity": "1.00",
                         "amount": {
-                            "value": "100.00",
+                            "value": amount,
                             "currency": "RUB"
                         },
-                        "vat_code": 1,  # Если нужно применить НДС, используйте корректный код
+                        "vat_code": 1,
                         "payment_mode": "full_prepayment",
                         "payment_subject": "service"
                     }
@@ -79,68 +83,3 @@ async def create_payment(amount, chat_id):
         print(f"Параметры платежа: Amount: {amount}, Currency: RUB")
         print(traceback.format_exc())
 
-
-@router.callback_query(lambda callback: callback.data == "tariff_1")
-async def handle_tariff_1(callback_query: CallbackQuery):
-    chat_id = callback_query.message.chat.id
-
-    payment_url, payment_id = await create_payment("290.00", chat_id)
-    await callback_query.message.answer(f"{payment_url} {payment_id}")
-    # confirmation_url = await create_payment("290.00", "Тариф 1: 290 рублей")
-    
-    # if confirmation_url:
-    #     await callback_query.message.answer(f"Для завершения оплаты перейдите по ссылке: {confirmation_url}")
-    # else:
-    #     await callback_query.message.answer("Произошла ошибка при создании платежа. Попробуйте позже.")
-
-
-@router.callback_query(lambda callback: callback.data == "tariff_2")
-async def handle_tariff_2(callback_query: CallbackQuery):
-
-    confirmation_url = await create_payment(450, "Тариф 2: 450 рублей")
-    
-    if confirmation_url:
-        await callback_query.message.answer(f"Для завершения оплаты перейдите по ссылке: {confirmation_url}")
-    else:
-        await callback_query.message.answer("Произошла ошибка при создании платежа. Попробуйте позже.")
-
-
-@router.callback_query(lambda callback: callback.data == "tariff_3")
-async def handle_tariff_3(callback_query: CallbackQuery):
-
-    confirmation_url = await create_payment(650, "Тариф 3: 650 рублей")
-    
-    if confirmation_url:
-        await callback_query.message.answer(f"Для завершения оплаты перейдите по ссылке: {confirmation_url}")
-    else:
-        await callback_query.message.answer("Произошла ошибка при создании платежа. Попробуйте позже.")
-
-
-async def check_payment_status(payment_id):
-    payment_info = Payment.find_one(payment_id)
-    return payment_info.status
-
-
-@router.callback_query(lambda callback: callback.data == "back")
-async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
-    await callback_query.message.delete()
-
-    section_message = "Ура, ваша матрица судьбы готова 🔮\n\nВы можете посмотреть расклад по каждому из разделов.\n✅ - доступно бесплатно\n🔐 - требуется полный доступ"
-    question_message = ("Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
-                        " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-                        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)")
-    await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard(), functions_keyboard())
-
-
-def check_api_key(account_id, secret_key):
-    url = 'https://api.yookassa.ru/v3/payments'
-    headers = {
-        'Authorization': f'Basic {secret_key}',
-        'Content-Type': 'application/json'
-    }
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code == 200:
-        print("API ключ верный. Ответ:", response.json())
-    else:
-        print(f"Ошибка: {response.status_code} - {response.text}")
