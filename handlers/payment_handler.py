@@ -22,9 +22,9 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
 
-    payment_url_1, _ = await create_payment("290.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
-    payment_url_2, _ = await create_payment("450.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
-    payment_url_3, _ = await create_payment("650.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
+    payment_url_1, _ = await create_payment("290.00", callback_query.message.chat.id, "Тариф 1. 290 руб", callback_query)
+    payment_url_2, _ = await create_payment("450.00", callback_query.message.chat.id, "Тариф 2. 450 руб", callback_query)
+    payment_url_3, _ = await create_payment("650.00", callback_query.message.chat.id, "Тариф 3. 650 руб", callback_query)
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -42,7 +42,7 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
 
 
-async def create_payment(amount, chat_id, description):
+async def create_payment(amount, chat_id, description, callback_query: CallbackQuery):
     try:
         payment = Payment.create({
             "amount": {
@@ -77,10 +77,38 @@ async def create_payment(amount, chat_id, description):
             }
         }, uuid.uuid4())
 
-        return payment.confirmation.confirmation_url, payment.id
+        keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Проверить оплату", callback_data=f"check_payment_{payment.id}")],
+            [InlineKeyboardButton(text="Назад", callback_data="back")]
+        ]
+    )
+        await callback_query.message.answer(
+            "После оплаты нажмите кнопку ниже, чтобы проверить статус платежа:",
+            reply_markup=keyboard
+        )
+
     except Exception as e:
         print(f"Ошибка при создании платежа: {e}")
         print(traceback.format_exc())
+
+
+@router.callback_query(lambda callback: callback.data.startswith("check_payment_"))
+async def check_payment_status(callback_query: CallbackQuery, state: FSMContext):
+    payment_id = callback_query.data.split("_")[-1]
+    try:
+        payment = Payment.find_one(payment_id)
+
+        if payment.status == "succeeded":
+            await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
+        elif payment.status == "pending":
+            await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
+        else:
+            await callback_query.message.answer("Оплата не прошла. Попробуйте снова.")
+    except Exception as e:
+        print(f"Ошибка при проверке платежа: {e}")
+        print(traceback.format_exc())
+        await callback_query.message.answer("Произошла ошибка при проверке платежа. Пожалуйста, свяжитесь с поддержкой.")
 
 
 @router.callback_query(lambda callback: callback.data == "back")
