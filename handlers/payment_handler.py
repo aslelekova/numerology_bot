@@ -39,12 +39,11 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
 
 async def create_payment(amount, chat_id):
-    id_key = str(uuid.uuid4())
-
     try:
+        
         payment = Payment.create({
             "amount": {
-                "value": amount,
+                "value": "100.00",
                 "currency": "RUB"
             },
             "confirmation": {
@@ -52,13 +51,8 @@ async def create_payment(amount, chat_id):
                 "return_url": "https://t.me/MakeMyMatrix_Bot"
             },
             "capture": True,
-            "metadata": {
-                "chat_id": chat_id
-            },
-            "description": {
-                 "dd"
-            }
-        }, id_key)
+            "description": "Order No. 1"
+        }, uuid.uuid4())
 
         return payment.confirmation.confirmation_url, payment.id
     except Exception as e: 
