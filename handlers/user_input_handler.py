@@ -14,6 +14,7 @@ from keyboards.sections_fate_matrix import create_sections_keyboard, create_repl
 from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.gpt_service import EventHandler, generate_gpt_response
+from services.message_service import delete_messages
 from services.user_service import update_user_name, get_user_data, update_user_date
 from states import Form
 
@@ -176,6 +177,12 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     }
 
     category = category_mapping.get(callback_query.data, "Неизвестная категория")
+
+    data = await state.get_data()
+    first_message_id = data.get("first_message_id")
+    question_prompt_message_id = data.get("question_prompt_message_id")
+
+    await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
 
     if callback_query.data not in free_categories:
         data = await state.get_data()

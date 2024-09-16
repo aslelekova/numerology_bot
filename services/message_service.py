@@ -28,7 +28,6 @@ async def send_message_with_keyboard(message: types.Message, text: str, keyboard
 
 
 async def delete_messages(bot, chat_id: int, message_ids: list[int]):
-    """Удаляет несколько сообщений по их ID"""
     for message_id in message_ids:
         if message_id:
             try:
@@ -39,7 +38,6 @@ async def delete_messages(bot, chat_id: int, message_ids: list[int]):
 
 async def send_initial_messages(bot, chat_id: int, state: FSMContext, section_message: str, question_message: str,
                                 sections_keyboard, functions_keyboard):
-    """Отправляет два сообщения с секциями и предложением задать вопрос, сохраняет их ID в состояние"""
     first_message = await bot.send_message(chat_id, section_message, reply_markup=sections_keyboard)
     await state.update_data(first_message_id=first_message.message_id)
 
