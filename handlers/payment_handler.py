@@ -13,6 +13,8 @@ router = Router()
 
 Configuration.account_id = shop_id
 Configuration.secret_key = secret_key
+
+
 @router.callback_query(lambda callback: callback.data == "get_full_access")
 async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
@@ -25,6 +27,9 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
     payment_url_2, payment_id_2 = await create_payment("450.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
     payment_url_3, payment_id_3 = await create_payment("650.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
+
+    # Сохраняем payment_id для последующей проверки
+    await state.update_data(payment_id=payment_id_1)
 
     # Создаем клавиатуру с тарифами
     keyboard = InlineKeyboardMarkup(
@@ -95,10 +100,10 @@ async def create_payment(amount, chat_id, description):
         print(f"Ошибка при создании платежа: {e}")
         print(traceback.format_exc())
 
+
 # Хендлер для проверки статуса платежа
 @router.callback_query(lambda callback: callback.data == "check_payment")
 async def check_payment_status(callback_query: CallbackQuery, state: FSMContext):
-    # Здесь вам нужно как-то сохранить payment_id. Например, использовать state для сохранения его после создания платежа
     data = await state.get_data()
     payment_id = data.get("payment_id")  # Получаем сохраненный payment_id
 
