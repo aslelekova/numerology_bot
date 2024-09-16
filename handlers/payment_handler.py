@@ -40,10 +40,9 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
 async def create_payment(amount, chat_id):
     try:
-        
         payment = Payment.create({
             "amount": {
-                "value": "100.00",
+                "value": "100.00",  # Можно указать значение параметра `amount`
                 "currency": "RUB"
             },
             "confirmation": {
@@ -51,15 +50,34 @@ async def create_payment(amount, chat_id):
                 "return_url": "https://t.me/MakeMyMatrix_Bot"
             },
             "capture": True,
-            "description": "Order No. 1"
+            "description": "Order No. 1",
+            "receipt": {
+                "customer": {
+                    "full_name": "Имя Фамилия",
+                    "email": "example@example.com",
+                    "phone": "+79000000000"
+                },
+                "items": [
+                    {
+                        "description": "Услуга по созданию матрицы судьбы",
+                        "quantity": "1.00",
+                        "amount": {
+                            "value": "100.00",
+                            "currency": "RUB"
+                        },
+                        "vat_code": 1,  # Если нужно применить НДС, используйте корректный код
+                        "payment_mode": "full_prepayment",
+                        "payment_subject": "service"
+                    }
+                ]
+            }
         }, uuid.uuid4())
 
         return payment.confirmation.confirmation_url, payment.id
-    except Exception as e: 
+    except Exception as e:
         print(f"Ошибка при создании платежа: {e}")
         print(f"Параметры платежа: Amount: {amount}, Currency: RUB")
         print(traceback.format_exc())
-
 
 
 @router.callback_query(lambda callback: callback.data == "tariff_1")
@@ -126,7 +144,3 @@ def check_api_key(account_id, secret_key):
         print("API ключ верный. Ответ:", response.json())
     else:
         print(f"Ошибка: {response.status_code} - {response.text}")
-
-
-account_id = shop_id
-check_api_key(account_id, secret_key)
