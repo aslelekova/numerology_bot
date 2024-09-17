@@ -36,7 +36,6 @@ async def main():
         dp.include_router(sections_handler.router)
         dp.include_router(one_question_handler.router)
         dp.include_router(payment_handler.router)
-        dp.include_router(db.router)
 
         # Start the bot.
         await dp.start_polling(bot)
