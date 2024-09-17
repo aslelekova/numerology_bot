@@ -12,27 +12,29 @@ router = Router()
 
 @router.message(CommandStart())
 async def cmd_start(message: types.Message, state: FSMContext):
-    connect = sqlite3. connect( 'users.db')
-    cursor = connect. cursor()
-    cursor.execute("""CREATE TABLE IF NOT EXISTS login_id(
-                   id INTEGER
-                   )""")
-    cursor.execute("""ALTER TABLE login_id
-                   ADD COLUMN tariff TEXT DEFAULT 'none',
-                   ADD COLUMN readings_left INTEGER DEFAULT 0,
-                   ADD COLUMN questions_left INTEGER DEFAULT 0""")
+    connect = sqlite3.connect('users.db')
+    cursor = connect.cursor()
 
-    connect.commit()   
-    people_id = message. chat.id
-    cursor.execute(f"SELECT id FROM login_id WHERE id = {people_id}")
+    # Создаем таблицу с нужными столбцами, если её нет
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS login_id (
+            id INTEGER PRIMARY KEY,
+            tariff TEXT DEFAULT 'none',
+            readings_left INTEGER DEFAULT 0,
+            questions_left INTEGER DEFAULT 0
+        )
+    """)
+    connect.commit()
+
+    people_id = message.chat.id
+    cursor.execute("SELECT id FROM login_id WHERE id = ?", (people_id,))
     data = cursor.fetchone()
-    if data is None:
-        user_id = [message.chat.id]
-        cursor.execute("INSERT INTO login_id VALUES(?);", user_id)
-        connect.commit()
-    
-    user_data = await state.get_data()
 
+    if data is None:
+        cursor.execute("INSERT INTO login_id (id) VALUES (?)", (people_id,))
+        connect.commit()
+
+    user_data = await state.get_data()
     user_name = user_data.get("user_name") or message.from_user.first_name
 
     await state.clear()
