@@ -5,7 +5,7 @@ import traceback
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
-from handlers.dp import create_user, get_user_by_telegram_id, update_subscription_status
+from handlers.db import create_user, get_user_by_telegram_id, update_subscription_status
 from services.message_service import delete_messages, send_initial_messages
 from keyboards.sections_fate_matrix import create_sections_keyboard, functions_keyboard
 from config import secret_key, shop_id

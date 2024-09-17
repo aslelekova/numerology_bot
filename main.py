@@ -7,7 +7,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from handlers import payment_handler, start_handler, matrix_handler, numerology_handler, \
+from handlers import db, payment_handler, start_handler, matrix_handler, numerology_handler, \
     compatibility_handler, user_input_handler, sections_handler, one_question_handler
 from config import BOT_TOKEN
 
@@ -36,6 +36,7 @@ async def main():
         dp.include_router(sections_handler.router)
         dp.include_router(one_question_handler.router)
         dp.include_router(payment_handler.router)
+        dp.include_router(db.router)
 
         # Start the bot.
         await dp.start_polling(bot)
@@ -44,5 +45,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    print_users()
     asyncio.run(main())
