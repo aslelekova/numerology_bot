@@ -15,7 +15,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
     connect = sqlite3.connect('users.db')
     cursor = connect.cursor()
 
-    # Создаем таблицу с нужными столбцами, если её нет
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS login_id (
             id INTEGER PRIMARY KEY,
@@ -24,7 +23,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
             questions_left INTEGER DEFAULT 0
         )
     """)
-    
+
     connect.commit()
 
     people_id = message.chat.id

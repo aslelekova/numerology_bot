@@ -17,8 +17,27 @@ logger = logging.getLogger(__name__)
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher(storage=MemoryStorage())
 
+
+def initialize_database():
+    connect = sqlite3.connect('users.db')
+    cursor = connect.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            tariff TEXT DEFAULT 'none',
+            readings_left INTEGER DEFAULT 0,
+            questions_left INTEGER DEFAULT 0
+        )
+    """)
+    connect.commit()
+    connect.close()
+
+
 async def main():
     try:
+        initialize_database()
+
         dp.include_router(start_handler.router)
         dp.include_router(matrix_handler.router)
         dp.include_router(user_input_handler.router)
