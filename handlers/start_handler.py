@@ -16,7 +16,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
     cursor = connect.cursor()
 
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS login_id (
+        CREATE TABLE IF NOT EXISTS user (
             id INTEGER PRIMARY KEY,
             tariff TEXT DEFAULT 'none',
             readings_left INTEGER DEFAULT 0,
