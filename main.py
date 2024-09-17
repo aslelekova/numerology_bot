@@ -1,6 +1,7 @@
 # main.py
 import logging
 import asyncio
+import sqlite3
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
@@ -16,6 +17,14 @@ logger = logging.getLogger(__name__)
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher(storage=MemoryStorage())
 
+def print_users():
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users")
+    rows = cursor.fetchall()
+    for row in rows:
+        print(row)
+    conn.close()
 
 async def main():
     try:
@@ -35,4 +44,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    print_users()
     asyncio.run(main())
