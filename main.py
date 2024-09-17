@@ -17,17 +17,14 @@ logger = logging.getLogger(__name__)
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher(storage=MemoryStorage())
 
-def print_users():
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users")
-    rows = cursor.fetchall()
-    for row in rows:
-        print(row)
-    conn.close()
+
+def initialize_database():
+    db.create_users_table()
 
 async def main():
     try:
+        initialize_database()
+
         dp.include_router(start_handler.router)
         dp.include_router(matrix_handler.router)
         dp.include_router(user_input_handler.router)
