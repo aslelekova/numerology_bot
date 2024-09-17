@@ -1,5 +1,4 @@
 # handlers/start_handler.py
-import sqlite3
 from aiogram import Router, types
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
@@ -12,28 +11,6 @@ router = Router()
 
 @router.message(CommandStart())
 async def cmd_start(message: types.Message, state: FSMContext):
-    connect = sqlite3.connect('users.db')
-    cursor = connect.cursor()
-
-    # Создаем таблицу с нужными столбцами, если её нет
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS login_id (
-            id INTEGER PRIMARY KEY,
-            tariff TEXT DEFAULT 'none',
-            readings_left INTEGER DEFAULT 0,
-            questions_left INTEGER DEFAULT 0
-        )
-    """)
-    connect.commit()
-
-    people_id = message.chat.id
-    cursor.execute("SELECT id FROM login_id WHERE id = ?", (people_id,))
-    data = cursor.fetchone()
-
-    if data is None:
-        cursor.execute("INSERT INTO login_id (id) VALUES (?)", (people_id,))
-        connect.commit()
-
     user_data = await state.get_data()
     user_name = user_data.get("user_name") or message.from_user.first_name
 

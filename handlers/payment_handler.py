@@ -112,7 +112,6 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         payment = Payment.find_one(payment_id)
 
         if payment.status == "succeeded":
-            # Определяем тариф и обновляем данные
             await update_user_tariff(callback_query.message.chat.id, payment.description)
             await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
         elif payment.status == "pending":
@@ -125,7 +124,6 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         await callback_query.message.answer("Произошла ошибка при проверке платежа. Пожалуйста, свяжитесь с поддержкой.")
 
 async def update_user_tariff(chat_id, description):
-    # Определяем тариф в зависимости от описания
     tariff = None
     readings_left = 0
     questions_left = 0

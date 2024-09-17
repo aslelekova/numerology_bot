@@ -7,6 +7,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
 
+from db import initialize_database
 from handlers import payment_handler, start_handler, matrix_handler, numerology_handler, \
     compatibility_handler, user_input_handler, sections_handler, one_question_handler
 from config import BOT_TOKEN
@@ -19,6 +20,8 @@ dp = Dispatcher(storage=MemoryStorage())
 
 async def main():
     try:
+        initialize_database()
+
         dp.include_router(start_handler.router)
         dp.include_router(matrix_handler.router)
         dp.include_router(user_input_handler.router)
