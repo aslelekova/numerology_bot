@@ -5,15 +5,23 @@ import traceback
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from handlers.dp import create_user, get_user_by_telegram_id, update_subscription_status
 from services.message_service import delete_messages, send_initial_messages
 from keyboards.sections_fate_matrix import create_sections_keyboard, functions_keyboard
 from config import secret_key, shop_id
-  
+
 router = Router()
 
 Configuration.account_id = shop_id
 Configuration.secret_key = secret_key
 
+# Функция для получения/создания пользователя
+async def get_or_create_user(chat_id):
+    user = get_user_by_telegram_id(chat_id)
+    if not user:
+        create_user(chat_id)
+        user = get_user_by_telegram_id(chat_id)
+    return user
 
 @router.callback_query(lambda callback: callback.data == "get_full_access")
 async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
@@ -23,20 +31,20 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
 
-    # Генерируем ссылки на оплату
+    # Создание платежей
     payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
     payment_url_2, payment_id_2 = await create_payment("450.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
     payment_url_3, payment_id_3 = await create_payment("650.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
 
-    # Сохраняем payment_id для последующей проверки
+    # Сохраняем payment_id в состоянии
     await state.update_data(payment_id=payment_id_1)
 
-    # Создаем клавиатуру с тарифами
+    # Отправка клавиатуры с тарифами
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="290 руб", url=payment_url_1)],
-            [InlineKeyboardButton(text="450 руб", url=payment_url_2)],
-            [InlineKeyboardButton(text="650 руб", url=payment_url_3)],
+            [InlineKeyboardButton(text="450 руб", url=payment_url_2),
+             InlineKeyboardButton(text="650 руб", url=payment_url_3)],
             [InlineKeyboardButton(text="Назад", callback_data="back")]
         ]
     )
@@ -46,7 +54,6 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
         reply_markup=keyboard
     )
 
-    # После выбора тарифа отправляем сообщение с кнопкой для проверки оплаты
     await callback_query.message.answer(
         "После оплаты нажмите кнопку ниже, чтобы проверить статус платежа:",
         reply_markup=InlineKeyboardMarkup(
@@ -57,8 +64,6 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
         )
     )
 
-
-# Функция для создания платежа
 async def create_payment(amount, chat_id, description):
     try:
         payment = Payment.create({
@@ -68,7 +73,7 @@ async def create_payment(amount, chat_id, description):
             },
             "confirmation": {
                 "type": "redirect",
-                "return_url": "https://t.me/MakeMyMatrix_Bot"  # Сюда вернется пользователь после оплаты
+                "return_url": "https://t.me/MakeMyMatrix_Bot"
             },
             "capture": True,
             "description": description,
@@ -100,12 +105,10 @@ async def create_payment(amount, chat_id, description):
         print(f"Ошибка при создании платежа: {e}")
         print(traceback.format_exc())
 
-
-# Хендлер для проверки статуса платежа
 @router.callback_query(lambda callback: callback.data == "check_payment")
 async def check_payment_status(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    payment_id = data.get("payment_id")  # Получаем сохраненный payment_id
+    payment_id = data.get("payment_id")  
 
     if not payment_id:
         await callback_query.message.answer("Ошибка: идентификатор платежа не найден.")
@@ -115,6 +118,8 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         payment = Payment.find_one(payment_id)
 
         if payment.status == "succeeded":
+            # Обновление статуса подписки в базе данных
+            update_subscription_status(callback_query.message.chat.id, True)
             await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
         elif payment.status == "pending":
             await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
