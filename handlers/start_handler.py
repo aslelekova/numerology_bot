@@ -17,6 +17,11 @@ async def cmd_start(message: types.Message, state: FSMContext):
     cursor.execute("""CREATE TABLE IF NOT EXISTS login_id(
                    id INTEGER
                    )""")
+    cursor.execute("""ALTER TABLE login_id
+                   ADD COLUMN tariff TEXT DEFAULT 'none',
+                   ADD COLUMN readings_left INTEGER DEFAULT 0,
+                   ADD COLUMN questions_left INTEGER DEFAULT 0""")
+
     connect.commit()   
     people_id = message. chat.id
     cursor.execute(f"SELECT id FROM login_id WHERE id = {people_id}")

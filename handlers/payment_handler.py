@@ -1,3 +1,4 @@
+import sqlite3
 import requests
 from yookassa import Configuration, Payment
 import uuid
@@ -57,8 +58,6 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
         )
     )
 
-
-# Функция для создания платежа
 async def create_payment(amount, chat_id, description):
     try:
         payment = Payment.create({
@@ -100,7 +99,6 @@ async def create_payment(amount, chat_id, description):
         print(f"Ошибка при создании платежа: {e}")
         print(traceback.format_exc())
 
-
 @router.callback_query(lambda callback: callback.data == "check_payment")
 async def check_payment_status(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
@@ -114,6 +112,8 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         payment = Payment.find_one(payment_id)
 
         if payment.status == "succeeded":
+            # Определяем тариф и обновляем данные
+            await update_user_tariff(callback_query.message.chat.id, payment.description)
             await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
         elif payment.status == "pending":
             await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
@@ -123,6 +123,34 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         print(f"Ошибка при проверке платежа: {e}")
         print(traceback.format_exc())
         await callback_query.message.answer("Произошла ошибка при проверке платежа. Пожалуйста, свяжитесь с поддержкой.")
+
+async def update_user_tariff(chat_id, description):
+    # Определяем тариф в зависимости от описания
+    tariff = None
+    readings_left = 0
+    questions_left = 0
+
+    if "Тариф 1" in description:
+        tariff = "Тариф 1"
+        readings_left = 5
+        questions_left = 10
+    elif "Тариф 2" in description:
+        tariff = "Тариф 2"
+        readings_left = 8
+        questions_left = 20
+    elif "Тариф 3" in description:
+        tariff = "Тариф 3"
+        readings_left = 15
+        questions_left = 40
+
+    if tariff:
+        connect = sqlite3.connect('users.db')
+        cursor = connect.cursor()
+        cursor.execute("UPDATE login_id SET tariff = ?, readings_left = ?, questions_left = ? WHERE id = ?",
+                       (tariff, readings_left, questions_left, chat_id))
+        connect.commit()
+        connect.close()
+
 
 @router.callback_query(lambda callback: callback.data == "back")
 async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
