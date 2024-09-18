@@ -1,6 +1,7 @@
 # services/message_service.py
 from aiogram.fsm.context import FSMContext
-
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import CallbackQuery
 from aiogram import types
 
 from aiogram.types import InlineKeyboardMarkup
@@ -51,4 +52,26 @@ async def send_initial_messages(bot, chat_id: int, state: FSMContext, section_me
 
 
 
+async def notify_subscription_expired(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.message.answer(
+        "Упс, похоже у вас закончился тариф, откройте полный доступ к приложению чтобы продолжить расчет 🫶"
+    )
 
+    full_access_message = (
+        "Получите ответы на все свои вопросы с ПОЛНЫМ доступом к:\n"
+        "🔮 Матрице судьбы\n"
+        "💸 Нумерологии | Личному успеху | Финансам\n"
+        "💕 Совместимости с партнером\n\n"
+        "Или задайте любой вопрос нашему персональному ассистенту и получите мгновенный ответ (например: 💕 Как улучшить отношения с партнером?)"
+    )
+    
+    access_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
+        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
+    ])
+
+    await callback_query.message.answer(
+        full_access_message,
+        reply_markup=access_keyboard,
+        parse_mode="HTML"
+    )

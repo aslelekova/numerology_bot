@@ -16,7 +16,7 @@ from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details, update_user_readings_left
 from services.gpt_service import EventHandler, generate_gpt_response
-from services.message_service import delete_messages
+from services.message_service import delete_messages, notify_subscription_expired
 from services.user_service import update_user_name, get_user_data, update_user_date
 from states import Form
 
@@ -223,17 +223,23 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         await state.update_data(previous_warning_message_id=warning_message.message_id)
         return
 
-    if subscription_active and readings_left <= 0:
-        await callback_query.message.answer(
-            "Упс, похоже у вас закончился тариф, откройте полный доступ к приложению чтобы продолжить расчет 🫶"
-        )
+    if subscription_active and readings_left <= 0 and category not in [
+        "Личные качества",
+        "Предназначение",
+        "Таланты",
+        "Детско-родительские отношения"
+    ]:
+        await notify_subscription_expired(callback_query)
         return
 
-    if subscription_active:
+    if subscription_active and category not in [
+        "Личные качества",
+        "Предназначение",
+        "Таланты",
+        "Детско-родительские отношения"
+    ]:
         new_readings_left = readings_left - 1
         await update_user_readings_left(user_id, new_readings_left)
-
-        await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
-        await handle_section(callback_query, state, category)
-
-
+    
+    await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
+    await handle_section(callback_query, state, category)
