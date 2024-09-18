@@ -182,8 +182,6 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     first_message_id = data.get("first_message_id")
     question_prompt_message_id = data.get("question_prompt_message_id")
 
-    await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
-
     if callback_query.data not in free_categories:
         data = await state.get_data()
         previous_warning_message_id = data.get("previous_warning_message_id")
@@ -203,4 +201,5 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         await state.update_data(previous_warning_message_id=warning_message.message_id)
         return
 
+    await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
     await handle_section(callback_query, state, category)
