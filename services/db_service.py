@@ -22,3 +22,13 @@ async def get_subscription_details(user_id: int):
         "readings_left": 0,
         "questions_left": 0
     }
+
+async def update_user_readings_left(user_id: int, new_readings_left: int):
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE users SET readings_left = ? WHERE user_id = ?",
+        (new_readings_left, user_id)
+    )
+    conn.commit()
+    conn.close()
