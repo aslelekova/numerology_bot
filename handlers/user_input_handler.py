@@ -241,4 +241,5 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         new_readings_left = readings_left - 1
         await update_user_readings_left(user_id, new_readings_left)
     
+    await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
     await handle_section(callback_query, state, category)
