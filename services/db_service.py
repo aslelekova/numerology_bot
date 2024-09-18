@@ -27,7 +27,7 @@ async def update_user_readings_left(user_id: int, new_readings_left: int):
     conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE users SET readings_left = ? WHERE user_id = ?",
+        "UPDATE login_id SET readings_left = ? WHERE user_id = ?",
         (new_readings_left, user_id)
     )
     conn.commit()
