@@ -11,7 +11,7 @@ from keyboards.sections_fate_matrix import create_full_sections_keyboard, create
 from services.birthday_service import calculate_values
 from services.message_service import delete_messages, send_initial_messages
 from states import QuestionState
-from user_input_handler import get_subscription_details
+from handlers.user_input_handler import get_subscription_details
 
 router = Router()
 
