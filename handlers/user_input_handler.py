@@ -229,7 +229,7 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         "Таланты",
         "Детско-родительские отношения"
     ]:
-        await notify_subscription_expired(callback_query)
+        await notify_subscription_expired(callback_query, state)
         return
 
     if subscription_active and category not in [
