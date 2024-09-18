@@ -1,5 +1,5 @@
 # handlers/one_question_handler.py
-
+import sqlite3
 from aiogram import Router, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -13,11 +13,16 @@ from states import QuestionState
 
 router = Router()
 
-
 @router.callback_query(lambda callback: callback.data == "ask_free_question")
 async def ask_free_question_callback(callback_query: types.CallbackQuery, state: FSMContext):
-    user_data = await state.get_data()
-    if user_data.get("question_asked", False):
+    connect = sqlite3.connect('users.db')
+    cursor = connect.cursor()
+
+    user_id = callback_query.from_user.id
+    cursor.execute("SELECT questions_left FROM login_id WHERE id = ?", (user_id,))
+    data = cursor.fetchone()
+
+    if data and data[0] == 0:
         await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
     else:
         await callback_query.message.answer("Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить "
@@ -27,31 +32,38 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
 
 @router.message(StateFilter(QuestionState.waiting_for_question))
 async def process_question(message: types.Message, state: FSMContext):
-    user_data = await state.get_data()
-    if user_data.get("question_asked", False):
+    connect = sqlite3.connect('users.db')
+    cursor = connect.cursor()
+
+    user_id = message.from_user.id
+    cursor.execute("SELECT questions_left FROM login_id WHERE id = ?", (user_id,))
+    data = cursor.fetchone()
+
+    if data and data[0] == 0:
         await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
         return
 
     generating_message = await message.answer("⏳")
 
+    user_data = await state.get_data()
     user_name = user_data.get('user_name', 'Пользователь')
     birth_date = user_data.get('user_date', 'неизвестна')
     question = message.text
 
-
     response_text = await generate_question_response(question, user_name, birth_date, state)
 
-    if response_text != None:
+    if response_text is not None:
         response_text = response_text.replace("#", "").replace("*", "")
 
     await generating_message.delete()
-
     await message.answer(response_text)
 
+    cursor.execute("UPDATE login_id SET questions_left = 0 WHERE id = ?", (user_id,))
+    connect.commit()
 
     suggestions_text = await generate_suggestions(message.text)
     
-    three_functions = inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    three_functions = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
         [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
         [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")],
@@ -98,4 +110,3 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
         "<b>После каждого расчета вы сможете задать любой вопрос.</b> С чего начнем?",
         reply_markup=main_menu_keyboard()
     )
-

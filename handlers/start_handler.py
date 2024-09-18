@@ -20,7 +20,8 @@ async def cmd_start(message: types.Message, state: FSMContext):
             id INTEGER PRIMARY KEY,
             tariff TEXT DEFAULT 'none',
             readings_left INTEGER DEFAULT 0,
-            questions_left INTEGER DEFAULT 0
+            questions_left INTEGER DEFAULT 1, 
+            subscription_active BOOLEAN DEFAULT 0
         )
     """)
 
