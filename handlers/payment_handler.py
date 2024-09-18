@@ -123,6 +123,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         print(traceback.format_exc())
         await callback_query.message.answer("Произошла ошибка при проверке платежа. Пожалуйста, свяжитесь с поддержкой.")
 
+
 async def update_user_tariff(chat_id, description):
     tariff = None
     readings_left = 0
@@ -144,10 +145,16 @@ async def update_user_tariff(chat_id, description):
     if tariff:
         connect = sqlite3.connect('users.db')
         cursor = connect.cursor()
-        cursor.execute("UPDATE login_id SET tariff = ?, readings_left = ?, questions_left = ? WHERE id = ?",
-                       (tariff, readings_left, questions_left, chat_id))
+
+        cursor.execute("""
+            UPDATE login_id
+            SET tariff = ?, readings_left = ?, questions_left = ?, subscription_active = 1
+            WHERE id = ?
+        """, (tariff, readings_left, questions_left, chat_id))
+
         connect.commit()
         connect.close()
+
 
 
 @router.callback_query(lambda callback: callback.data == "back")

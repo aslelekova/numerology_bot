@@ -1,5 +1,6 @@
 # handlers/user_input_handler.py
 
+import sqlite3
 from aiogram import Router, types
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
@@ -10,7 +11,7 @@ from calendar_module.calendar_utils import get_user_locale
 from calendar_module.schemas import DialogCalendarCallback
 from handlers.sections_handler import handle_section
 from handlers.start_handler import cmd_start
-from keyboards.sections_fate_matrix import create_sections_keyboard, create_reply_keyboard, functions_keyboard
+from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_reply_keyboard, functions_keyboard
 from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.gpt_service import EventHandler, generate_gpt_response
@@ -121,38 +122,57 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
             "Личные качества",
             "Предназначение",
             "Детско-родительские отношения",
-            "Таланты",
-            "Родовые программы",
-            "Кармический хвост",
-            "Главный кармический урок",
-            "Отношения",
-            "Деньги"
+            "Таланты"
         ]
 
         categories_dict = {category: split_text[i].strip() for i, category in enumerate(categories) if i < len(split_text)}
 
         await state.update_data(full_response=categories_dict)
+        user_id = callback_query.from_user.id
+        subscription_details = await get_subscription_details(user_id)
+        subscription_active = subscription_details["subscription_active"]
+        readings_left = subscription_details["readings_left"]
+        questions_left = subscription_details["questions_left"]
+        
+        if subscription_active:  
+            sections_keyboard = create_full_sections_keyboard()
+            first_message = await callback_query.message.answer(
+                f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
+                reply_markup=sections_keyboard
+            )
+            await state.update_data(first_message_id=first_message.message_id)
 
-        sections_keyboard = create_sections_keyboard()
-        first_message = await callback_query.message.answer(
-            "Ура, ваша матрица судьбы готова 🔮\n\n"
-            "Вы можете посмотреть расклад по каждому из разделов.\n"
-            "✅ - доступно бесплатно\n"
-            "🔐 - требуется полный доступ",
-            reply_markup=sections_keyboard
-        )
-        await state.update_data(first_message_id=first_message.message_id)
+            question_prompt_message = await callback_query.message.answer(
+                    f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером",
+                    reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="Новый расчет", callback_data="main_menu")],
+                    [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_free_question")],
+                    [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
+                    ]),
+                    parse_mode="HTML"
+                )
 
-        three_functions = functions_keyboard()
-        question_prompt_message = await callback_query.message.answer(
-            f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
-            " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-            "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
-            reply_markup=three_functions,
-            parse_mode="HTML"
-        )
+            await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+        else:
+            sections_keyboard = create_sections_keyboard()
+            first_message = await callback_query.message.answer(
+                "Ура, ваша матрица судьбы готова 🔮\n\n"
+                "Вы можете посмотреть расклад по каждому из разделов.\n"
+                "✅ - доступно бесплатно\n"
+                "🔐 - требуется полный доступ",
+                reply_markup=sections_keyboard
+            )
+            await state.update_data(first_message_id=first_message.message_id)
 
-        await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+            three_functions = functions_keyboard()
+            question_prompt_message = await callback_query.message.answer(
+                f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
+                " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
+                "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
+                reply_markup=three_functions,
+                parse_mode="HTML"
+            )
+            await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
 
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
@@ -191,3 +211,24 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
 
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
     await handle_section(callback_query, state, category)
+
+async def get_subscription_details(user_id: int):
+    conn = sqlite3.connect('users.db') 
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT subscription_active, readings_left, questions_left FROM login_id WHERE id = ?", (user_id,))
+    result = cursor.fetchone()
+    
+    conn.close()
+    
+    if result:
+        return {
+            "subscription_active": bool(result[0]),
+            "readings_left": result[1],
+            "questions_left": result[2]
+        }
+    return {
+        "subscription_active": False,
+        "readings_left": 0,
+        "questions_left": 0
+    }
