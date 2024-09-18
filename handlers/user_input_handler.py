@@ -58,7 +58,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
         try:
             await message.bot.delete_message(chat_id=message.chat.id, message_id=prompt_message_id)
         except Exception as e:
-            print(f"Ошибка при удалении сообщения 2: {e}")
+            print(f"Ошибка при удалении сообщения: {e}")
 
     try:
         await message.delete()
@@ -241,5 +241,4 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         new_readings_left = readings_left - 1
         await update_user_readings_left(user_id, new_readings_left)
     
-    await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
     await handle_section(callback_query, state, category)
