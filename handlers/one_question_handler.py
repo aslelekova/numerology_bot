@@ -7,6 +7,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from keyboards.main_menu_keyboard import main_menu_keyboard
 from keyboards.sections_fate_matrix import functions_keyboard
+from services.db_service import get_questions_left
 from services.gpt_service import client
 from services.question_service import generate_question_response, generate_suggestions
 from states import QuestionState
@@ -15,31 +16,24 @@ router = Router()
 
 @router.callback_query(lambda callback: callback.data == "ask_free_question")
 async def ask_free_question_callback(callback_query: types.CallbackQuery, state: FSMContext):
-    connect = sqlite3.connect('users.db')
-    cursor = connect.cursor()
-
     user_id = callback_query.from_user.id
-    cursor.execute("SELECT questions_left FROM login_id WHERE id = ?", (user_id,))
-    data = cursor.fetchone()
+    questions_left = await get_questions_left(user_id)
 
-    if data and data[0] == 0:
+    if questions_left <= 0:
         await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
     else:
-        await callback_query.message.answer("Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить "
-                                            "мои отношения с партнером?)\n\n⚡️ У вас есть 1 бесплатный вопрос")
+        await callback_query.message.answer(
+            f"Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить мои отношения с партнером?)\n\n⚡️ У вас есть {questions_left} бесплатных вопросов"
+        )
         await state.set_state(QuestionState.waiting_for_question)
 
 
 @router.message(StateFilter(QuestionState.waiting_for_question))
 async def process_question(message: types.Message, state: FSMContext):
-    connect = sqlite3.connect('users.db')
-    cursor = connect.cursor()
-
     user_id = message.from_user.id
-    cursor.execute("SELECT questions_left FROM login_id WHERE id = ?", (user_id,))
-    data = cursor.fetchone()
+    questions_left = await get_questions_left(user_id)
 
-    if data and data[0] == 0:
+    if questions_left <= 0:
         await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
         return
 
@@ -58,8 +52,9 @@ async def process_question(message: types.Message, state: FSMContext):
     await generating_message.delete()
     await message.answer(response_text)
 
-    cursor.execute("UPDATE login_id SET questions_left = 0 WHERE id = ?", (user_id,))
-    connect.commit()
+    # Обновление количества оставшихся вопросов
+    new_questions_left = questions_left - 1
+    await update_questions_left(user_id, new_questions_left)
 
     suggestions_text = await generate_suggestions(message.text)
     
