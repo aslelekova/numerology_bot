@@ -34,7 +34,7 @@ async def delete_messages(bot, chat_id: int, message_ids: list[int]):
             try:
                 await bot.delete_message(chat_id=chat_id, message_id=message_id)
             except Exception as e:
-                print(f"Ошибка при удалении сообщения {message_id}: {e}")
+                print(f"Ошибка при удалении сообщения 1 {message_id}: {e}")
 
 
 async def send_initial_messages(bot, chat_id: int, state: FSMContext, section_message: str, question_message: str,

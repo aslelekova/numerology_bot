@@ -58,7 +58,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
         try:
             await message.bot.delete_message(chat_id=message.chat.id, message_id=prompt_message_id)
         except Exception as e:
-            print(f"Ошибка при удалении сообщения: {e}")
+            print(f"Ошибка при удалении сообщения 2: {e}")
 
     try:
         await message.delete()
