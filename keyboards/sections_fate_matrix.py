@@ -42,16 +42,16 @@ def create_full_sections_keyboard() -> InlineKeyboardMarkup:
     """
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Личные качества", callback_data="section_full_personal")],
-            [InlineKeyboardButton(text="Предназначение", callback_data="section_full_destiny")],
+            [InlineKeyboardButton(text="Личные качества", callback_data="section_personal")],
+            [InlineKeyboardButton(text="Предназначение", callback_data="section_destiny")],
             [InlineKeyboardButton(text="Детско-родительские отношения",
-                                  callback_data="section_full_family_relationships")],
-            [InlineKeyboardButton(text="Таланты", callback_data="section_full_talents")],
-            [InlineKeyboardButton(text="Родовые программы", callback_data="section_full_generic_programs")],
-            [InlineKeyboardButton(text="Кармический хвост", callback_data="section_full_karmic_tail")],
-            [InlineKeyboardButton(text="Главный кармический урок", callback_data="section_full_karmic_lesson")],
-            [InlineKeyboardButton(text="Отношения", callback_data="section_full_relationships")],
-            [InlineKeyboardButton(text="Деньги", callback_data="section_full_money")],
+                                  callback_data="section_family_relationships")],
+            [InlineKeyboardButton(text="Таланты", callback_data="section_talents")],
+            [InlineKeyboardButton(text="Родовые программы", callback_data="section_generic_programs")],
+            [InlineKeyboardButton(text="Кармический хвост", callback_data="section_karmic_tail")],
+            [InlineKeyboardButton(text="Главный кармический урок", callback_data="section_karmic_lesson")],
+            [InlineKeyboardButton(text="Отношения", callback_data="section_relationships")],
+            [InlineKeyboardButton(text="Деньги", callback_data="section_money")],
         ]
     )
 

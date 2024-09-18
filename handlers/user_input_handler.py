@@ -72,6 +72,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data)
 
+
 @router.callback_query(DialogCalendarCallback.filter())
 async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
@@ -182,13 +183,6 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
 async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
-    free_categories = {
-        "section_personal": "Личные качества",
-        "section_destiny": "Предназначение",
-        "section_talents": "Таланты",
-        "section_family_relationships": "Детско-родительские отношения",
-    }
-
     category_mapping = {
         "section_personal": "Личные качества",
         "section_destiny": "Предназначение",
@@ -207,37 +201,27 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     first_message_id = data.get("first_message_id")
     question_prompt_message_id = data.get("question_prompt_message_id")
 
-    if callback_query.data not in free_categories:
+    user_id = callback_query.from_user.id
+    subscription_details = await get_subscription_details(user_id)
+    subscription_active = subscription_details["subscription_active"]
+
+    # Check if the selected category is available
+    if category == "Неизвестная категория":
+        await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
+        return
+
+    # Check if the category requires a subscription
+    if not subscription_active and category not in [
+        "Личные качества",
+        "Предназначение",
+        "Таланты",
+        "Детско-родительские отношения"
+    ]:
         warning_message = await callback_query.message.answer(
             "Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ."
         )
         await state.update_data(previous_warning_message_id=warning_message.message_id)
         return
-
-    await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
-    await handle_section(callback_query, state, category)
-
-
-@router.callback_query(lambda callback: callback.data.startswith("section_full_"))
-async def handle_full_section_callback(callback_query: CallbackQuery, state: FSMContext):
-    print(f"Received callback_data: {callback_query.data}")
-    category_mapping = {
-        "section_personal": "Личные качества",
-        "section_destiny": "Предназначение",
-        "section_talents": "Таланты",
-        "section_family_relationships": "Детско-родительские отношения",
-        "section_generic_programs": "Родовые программы",
-        "section_karmic_tail": "Кармический хвост",
-        "section_karmic_lesson": "Главный кармический урок",
-        "section_relationships": "Отношения",
-        "section_money": "Деньги",
-    }
-
-    category = category_mapping.get(callback_query.data, "Неизвестная категория")
-
-    data = await state.get_data()
-    first_message_id = data.get("first_message_id")
-    question_prompt_message_id = data.get("question_prompt_message_id")
 
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
     await handle_section(callback_query, state, category)
