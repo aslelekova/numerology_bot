@@ -183,18 +183,6 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     question_prompt_message_id = data.get("question_prompt_message_id")
 
     if callback_query.data not in free_categories:
-        data = await state.get_data()
-        previous_warning_message_id = data.get("previous_warning_message_id")
-        if previous_warning_message_id:
-            try:
-                await callback_query.bot.delete_message(
-                    chat_id=callback_query.message.chat.id,
-                    message_id=previous_warning_message_id
-                )
-            except Exception as e:
-                if "message to delete not found" not in str(e):
-                    print(f"Ошибка при удалении предыдущего сообщения о платной категории: {e}")
-
         warning_message = await callback_query.message.answer(
             "Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ."
         )
