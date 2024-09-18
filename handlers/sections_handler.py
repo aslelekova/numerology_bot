@@ -9,9 +9,9 @@ import config
 from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, functions_keyboard
 from services.birthday_service import calculate_values
+from services.db_service import get_subscription_details
 from services.message_service import delete_messages, send_initial_messages
 from states import QuestionState
-from handlers.user_input_handler import get_subscription_details
 
 router = Router()
 

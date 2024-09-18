@@ -14,6 +14,7 @@ from handlers.start_handler import cmd_start
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_reply_keyboard, functions_keyboard
 from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
+from services.db_service import get_subscription_details
 from services.gpt_service import EventHandler, generate_gpt_response
 from services.message_service import delete_messages
 from services.user_service import update_user_name, get_user_data, update_user_date
@@ -227,24 +228,3 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     await handle_section(callback_query, state, category)
 
 
-
-async def get_subscription_details(user_id: int):
-    conn = sqlite3.connect('users.db') 
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT subscription_active, readings_left, questions_left FROM login_id WHERE id = ?", (user_id,))
-    result = cursor.fetchone()
-    
-    conn.close()
-    
-    if result:
-        return {
-            "subscription_active": bool(result[0]),
-            "readings_left": result[1],
-            "questions_left": result[2]
-        }
-    return {
-        "subscription_active": False,
-        "readings_left": 0,
-        "questions_left": 0
-    }
