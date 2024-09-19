@@ -9,7 +9,7 @@ import config
 from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, functions_keyboard
 from services.birthday_service import calculate_values
-from services.db_service import get_subscription_details
+from services.db_service import get_subscription_details, update_user_readings_left
 from services.message_service import delete_messages, send_initial_messages
 from states import QuestionState
 
@@ -29,6 +29,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
     if selected_category == "Неизвестная категория":
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.", reply_markup=create_back_button())
         readings_left += 1
+        await update_user_readings_left(user_id, readings_left)
         return
 
     await callback_query.message.answer(selected_category, reply_markup=create_back_button())
