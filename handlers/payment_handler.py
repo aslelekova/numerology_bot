@@ -6,6 +6,7 @@ import traceback
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from services.db_service import get_subscription_details
 from services.message_service import delete_messages, send_initial_messages
 from keyboards.sections_fate_matrix import create_sections_keyboard, functions_keyboard
 from config import secret_key, shop_id
@@ -24,15 +25,12 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
 
-    # Генерируем ссылки на оплату
     payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
     payment_url_2, payment_id_2 = await create_payment("450.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
     payment_url_3, payment_id_3 = await create_payment("650.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
 
-    # Сохраняем payment_id для последующей проверки
     await state.update_data(payment_id=payment_id_1)
 
-    # Создаем клавиатуру с тарифами
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="290 руб", url=payment_url_1)],
@@ -47,7 +45,6 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
         reply_markup=keyboard
     )
 
-    # После выбора тарифа отправляем сообщение с кнопкой для проверки оплаты
     await callback_query.message.answer(
         "После оплаты нажмите кнопку ниже, чтобы проверить статус платежа:",
         reply_markup=InlineKeyboardMarkup(
@@ -112,7 +109,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         payment = Payment.find_one(payment_id)
 
         if payment.status == "succeeded":
-            await update_user_tariff(callback_query.message.chat.id, payment.description)
+            await update_user_tariff(callback_query, callback_query.message.chat.id, payment.description)
             await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
         elif payment.status == "pending":
             await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
@@ -124,23 +121,26 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         await callback_query.message.answer("Произошла ошибка при проверке платежа. Пожалуйста, свяжитесь с поддержкой.")
 
 
-async def update_user_tariff(chat_id, description):
+async def update_user_tariff(callback_query: CallbackQuery, chat_id, description):
+    user_id = callback_query.from_user.id
+
+    subscription_details = await get_subscription_details(user_id)
+    readings_left = subscription_details["readings_left"]
+    questions_left = subscription_details["questions_left"]
     tariff = None
-    readings_left = 0
-    questions_left = 0
 
     if "Тариф 1" in description:
         tariff = "Тариф 1"
-        readings_left = 5
-        questions_left = 10
+        readings_left += 5
+        questions_left += 10
     elif "Тариф 2" in description:
         tariff = "Тариф 2"
-        readings_left = 8
-        questions_left = 20
+        readings_left += 8
+        questions_left += 20
     elif "Тариф 3" in description:
         tariff = "Тариф 3"
-        readings_left = 15
-        questions_left = 40
+        readings_left += 15
+        questions_left += 40
 
     if tariff:
         connect = sqlite3.connect('users.db')
