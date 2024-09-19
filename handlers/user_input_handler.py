@@ -201,14 +201,12 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     question_prompt_message_id = data.get("question_prompt_message_id")
     previous_warning_message_id = data.get("previous_warning_message_id")
 
-    # Удаление предыдущего предупреждающего сообщения, если оно существует
     if previous_warning_message_id:
         try:
             await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id, message_id=previous_warning_message_id)
         except Exception as e:
             print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
 
-    # Если категория не найдена, отправляем предупреждение, но НЕ удаляем основное сообщение с категориями
     if category == "Неизвестная категория":
         warning_message = await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
         await state.update_data(previous_warning_message_id=warning_message.message_id)
@@ -229,7 +227,6 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         "Таланты",
         "Детско-родительские отношения"
     ]:
-        # Отправка нового предупреждающего сообщения
         warning_message = await callback_query.message.answer(
             "Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ."
         )
@@ -254,5 +251,5 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         new_readings_left = readings_left - 1
         await update_user_readings_left(user_id, new_readings_left)
     
-    await delete_messages(callback_query.bot, callback_query.message.chat.id, [question_prompt_message_id])
+    await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
     await handle_section(callback_query, state, category)
