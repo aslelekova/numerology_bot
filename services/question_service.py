@@ -10,8 +10,8 @@ async def generate_question_response(question: str, user_name: str, birth_date: 
         f"Я хочу задать следующий вопрос: {question}. Ответь на него на основе расклада {response_text}"
     )
     
-    response_text = await generate_response(prompt)
-    
+    # response_text = await generate_response(prompt)
+    response_text = "Используя эти советы, вы сможете создать более прочные и гармоничные отношения с партнером, опираясь на ваши сильные стороны и жизненные уроки."
     return response_text
 
 

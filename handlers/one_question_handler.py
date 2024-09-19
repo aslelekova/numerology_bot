@@ -23,7 +23,7 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
         await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
     else:
         await callback_query.message.answer(
-            f"Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить мои отношения с партнером?)\n\n⚡️ У вас доступно:\n {questions_left} ответа на любые вопросы"
+            f"Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить мои отношения с партнером?)\n\nУ вас доступно:\n ⚡️ {questions_left} ответа на любые вопросы"
         )
         await state.set_state(QuestionState.waiting_for_question)
 
@@ -60,10 +60,9 @@ async def process_question(message: types.Message, state: FSMContext):
     suggestions_text = await generate_suggestions(message.text)
     
     if subscription_active and new_questions_left > 0:
-        # Если подписка активна и вопросы еще есть
         three_functions = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-            [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
+            [InlineKeyboardButton(text="Задать еще один вопрос", callback_data="share_and_ask")],
         ])
         suggestion_message_text = (
             f"💫 Задавайте еще больше вопросов своему ассистенту! Вот примеры вопросов, которые могут вас "
@@ -72,10 +71,9 @@ async def process_question(message: types.Message, state: FSMContext):
             f"боту, чтобы задавать неограниченное количество вопросов и делать любые расклады! 😍"
         )
     else:
-        # Если подписка не активна или вопросы закончились
         three_functions = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-            [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
+            [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="ask_free_question")],
             [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")],
         ])
         suggestion_message_text = (
