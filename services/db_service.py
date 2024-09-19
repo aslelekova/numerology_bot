@@ -42,7 +42,7 @@ async def update_user_readings_left(user_id: int, new_readings_left: int):
     conn.close()
 
 async def update_subscription_status(user_id: int, status: str):
-    connection = sqlite3.connect("your_database.db")
+    connection = sqlite3.connect("users.db")
     cursor = connection.cursor()
     cursor.execute(
         "UPDATE login_id SET subscription_status = ? WHERE id = ?",
