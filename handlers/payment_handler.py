@@ -144,7 +144,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                     )
 
                     await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-                    return  # Прекращаем цикл после успешной оплаты
+                    return 
 
                 elif payment.status == "pending":
                     await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")

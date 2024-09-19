@@ -2,6 +2,7 @@
 from aiogram.fsm.context import FSMContext
 from services.gpt_service import client
 
+
 async def generate_question_response(question: str, user_name: str, birth_date: str, state: FSMContext) -> str:
     user_data = await state.get_data()
     response_text = user_data.get('response_text')
