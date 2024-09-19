@@ -10,6 +10,7 @@ from keyboards.sections_fate_matrix import functions_keyboard
 from services.db_service import get_questions_left, update_questions_left
 from services.gpt_service import client
 from services.question_service import generate_question_response, generate_suggestions
+from services.user_service import get_user_data
 from states import QuestionState
 
 router = Router()
