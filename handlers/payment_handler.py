@@ -8,7 +8,7 @@ from aiogram import Router, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from services.db_service import get_subscription_details
 from services.message_service import delete_messages, send_initial_messages
-from keyboards.sections_fate_matrix import create_sections_keyboard, functions_keyboard
+from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, functions_keyboard
 from config import secret_key, shop_id
   
 router = Router()
@@ -111,6 +111,30 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         if payment.status == "succeeded":
             await update_user_tariff(callback_query, callback_query.message.chat.id, payment.description)
             await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
+            user_id = callback_query.from_user.id
+
+            subscription_details = await get_subscription_details(user_id)
+            readings_left = subscription_details["readings_left"]
+            questions_left = subscription_details["questions_left"]
+            sections_keyboard = create_full_sections_keyboard()
+            first_message = await callback_query.message.answer(
+                f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
+                reply_markup=sections_keyboard
+            )
+            await state.update_data(first_message_id=first_message.message_id)
+
+            question_prompt_message = await callback_query.message.answer(
+                    f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
+                "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
+                    reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="Новый расчет", callback_data="main_menu")],
+                    [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_free_question")],
+                    [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
+                    ]),
+                    parse_mode="HTML"
+                )
+
+            await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
         elif payment.status == "pending":
             await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
         else:
