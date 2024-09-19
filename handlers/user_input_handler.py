@@ -208,11 +208,6 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         except Exception as e:
             print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
 
-    if category == "Неизвестная категория":
-        await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
-        readings_left += 1
-        return
-
     user_id = callback_query.from_user.id
     subscription_details = await get_subscription_details(user_id)
     subscription_active = subscription_details["subscription_active"]
