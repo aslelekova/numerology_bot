@@ -45,7 +45,7 @@ async def update_subscription_status(user_id: int, status: str):
     connection = sqlite3.connect("users.db")
     cursor = connection.cursor()
     cursor.execute(
-        "UPDATE login_id SET subscription_status = ? WHERE id = ?",
+        "UPDATE login_id SET subscription_active = ? WHERE id = ?",
         (status, user_id)
     )
     connection.commit()
