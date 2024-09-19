@@ -29,7 +29,7 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     payment_url_2, payment_id_2 = await create_payment("2.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
     payment_url_3, payment_id_3 = await create_payment("3.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
 
-    await state.update_data(payment_id=payment_id_1)
+    await state.update_data(payment_id_1=payment_id_1, payment_id_2=payment_id_2, payment_id_3=payment_id_3)
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -96,49 +96,60 @@ async def create_payment(amount, chat_id, description):
         print(f"Ошибка при создании платежа: {e}")
         print(traceback.format_exc())
 
+
 @router.callback_query(lambda callback: callback.data == "check_payment")
 async def check_payment_status(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    payment_id = data.get("payment_id")  
+    
+    payment_id_1 = data.get("payment_id_1")
+    payment_id_2 = data.get("payment_id_2")
+    payment_id_3 = data.get("payment_id_3")
 
-    if not payment_id:
-        await callback_query.message.answer("Ошибка: идентификатор платежа не найден.")
+    if not any([payment_id_1, payment_id_2, payment_id_3]):
+        await callback_query.message.answer("Ошибка: идентификаторы платежей не найдены.")
         return
 
+    payment_ids = [payment_id_1, payment_id_2, payment_id_3]
+
     try:
-        payment = Payment.find_one(payment_id)
+        for payment_id in payment_ids:
+            if payment_id:
+                payment = Payment.find_one(payment_id)
 
-        if payment.status == "succeeded":
-            await update_user_tariff(callback_query, callback_query.message.chat.id, payment.description)
-            await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
-            user_id = callback_query.from_user.id
+                if payment.status == "succeeded":
+                    await update_user_tariff(callback_query, callback_query.message.chat.id, payment.description)
+                    await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
+                    
+                    user_id = callback_query.from_user.id
+                    subscription_details = await get_subscription_details(user_id)
+                    readings_left = subscription_details["readings_left"]
+                    questions_left = subscription_details["questions_left"]
 
-            subscription_details = await get_subscription_details(user_id)
-            readings_left = subscription_details["readings_left"]
-            questions_left = subscription_details["questions_left"]
-            sections_keyboard = create_full_sections_keyboard()
-            first_message = await callback_query.message.answer(
-                f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
-                reply_markup=sections_keyboard
-            )
-            await state.update_data(first_message_id=first_message.message_id)
+                    sections_keyboard = create_full_sections_keyboard()
+                    first_message = await callback_query.message.answer(
+                        f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
+                        reply_markup=sections_keyboard
+                    )
+                    await state.update_data(first_message_id=first_message.message_id)
 
-            question_prompt_message = await callback_query.message.answer(
-                    f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-                "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
-                    reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text="Новый расчет", callback_data="main_menu")],
-                    [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_free_question")],
-                    [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-                    ]),
-                    parse_mode="HTML"
-                )
+                    question_prompt_message = await callback_query.message.answer(
+                        f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
+                        "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
+                        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                            [InlineKeyboardButton(text="Новый расчет", callback_data="main_menu")],
+                            [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_free_question")],
+                            [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
+                        ]),
+                        parse_mode="HTML"
+                    )
 
-            await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-        elif payment.status == "pending":
-            await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
-        else:
-            await callback_query.message.answer("Оплата не прошла. Попробуйте снова.")
+                    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+                    return  # Прекращаем цикл после успешной оплаты
+
+                elif payment.status == "pending":
+                    await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
+                else:
+                    await callback_query.message.answer("Оплата не прошла. Попробуйте снова.")
     except Exception as e:
         print(f"Ошибка при проверке платежа: {e}")
         print(traceback.format_exc())
