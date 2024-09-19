@@ -10,7 +10,7 @@ async def generate_question_response(question: str, user_name: str, birth_date: 
         f"Я хочу задать следующий вопрос: {question}. Ответь на него на основе расклада {response_text}"
     )
     
-    response_text = "Используя эти советы, вы сможете создать более прочные и гармоничные отношения с партнером, опираясь на ваши сильные стороны и жизненные уроки."
+    response_text = await generate_response(prompt)
     return response_text
 
 
@@ -32,6 +32,7 @@ async def generate_suggestions(user_question: str) -> str:
     )
     messages = [{"role": "user", "content": suggestion_prompt}]
     
+
     suggestion_response = client.chat.completions.create(
         messages=messages,
         model="gpt-4o-2024-08-06"

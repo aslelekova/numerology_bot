@@ -26,8 +26,8 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
 
     payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
-    payment_url_2, payment_id_2 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
-    payment_url_3, payment_id_3 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
+    payment_url_2, payment_id_2 = await create_payment("2.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
+    payment_url_3, payment_id_3 = await create_payment("3.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
 
     await state.update_data(payment_id=payment_id_1)
 
