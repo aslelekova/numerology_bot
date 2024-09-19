@@ -208,7 +208,7 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     readings_left = subscription_details["readings_left"]
     questions_left = subscription_details["questions_left"]
     if readings_left <= 0 and questions_left <= 0:
-        await update_subscription_status(user_id, "negative")
+        await update_subscription_status(user_id, 0)
 
     if category == "Неизвестная категория":
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.")
