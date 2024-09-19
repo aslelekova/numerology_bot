@@ -62,7 +62,7 @@ async def process_question(message: types.Message, state: FSMContext):
     if subscription_active and new_questions_left > 0:
         three_functions = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-            [InlineKeyboardButton(text="Задать еще один вопрос", callback_data="share_and_ask")],
+            [InlineKeyboardButton(text="Задать еще один вопрос", callback_data="ask_free_question")],
         ])
         suggestion_message_text = (
             f"💫 Задавайте еще больше вопросов своему ассистенту! Вот примеры вопросов, которые могут вас "
@@ -73,7 +73,7 @@ async def process_question(message: types.Message, state: FSMContext):
     else:
         three_functions = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-            [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="ask_free_question")],
+            [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
             [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")],
         ])
         suggestion_message_text = (
