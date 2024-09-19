@@ -7,7 +7,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from keyboards.main_menu_keyboard import main_menu_keyboard
 from keyboards.sections_fate_matrix import functions_keyboard
-from services.db_service import get_questions_left
+from services.db_service import get_questions_left, update_questions_left
 from services.gpt_service import client
 from services.question_service import generate_question_response, generate_suggestions
 from states import QuestionState
@@ -31,7 +31,7 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
 @router.message(StateFilter(QuestionState.waiting_for_question))
 async def process_question(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    questions_left = await get_questions_left(user_id)
+    questions_left, subscription_active = await get_user_data(user_id)
 
     if questions_left <= 0:
         await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
@@ -52,27 +52,39 @@ async def process_question(message: types.Message, state: FSMContext):
     await generating_message.delete()
     await message.answer(response_text)
 
-    # Обновление количества оставшихся вопросов
     new_questions_left = questions_left - 1
     await update_questions_left(user_id, new_questions_left)
 
     suggestions_text = await generate_suggestions(message.text)
     
-    three_functions = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
-        [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
-        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")],
-    ])
-
-    suggestion_message_text = (
-        f"💫 Задавайте еще больше вопросов своему ассистенту! Вот примеры вопросов, которые могут вас "
-        f"заинтересовать:\n\n{suggestions_text}\n\n"
-        f"ПОДЕЛИТЕСЬ с другом и получите возможность задать еще один бесплатный вопрос, или ПОЛУЧИТЕ ПОЛНЫЙ ДОСТУП к "
-        f"боту, чтобы задавать неограниченное количество вопросов и делать любые расклады! 😍"
-    )
+    if subscription_active and new_questions_left > 0:
+        # Если подписка активна и вопросы еще есть
+        three_functions = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
+            [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
+        ])
+        suggestion_message_text = (
+            f"💫 Задавайте еще больше вопросов своему ассистенту! Вот примеры вопросов, которые могут вас "
+            f"заинтересовать:\n\n{suggestions_text}\n\n"
+            f"ПОДЕЛИТЕСЬ с другом и получите возможность задать еще один бесплатный вопрос, или ПОЛУЧИТЕ ПОЛНЫЙ ДОСТУП к "
+            f"боту, чтобы задавать неограниченное количество вопросов и делать любые расклады! 😍"
+        )
+    else:
+        # Если подписка не активна или вопросы закончились
+        three_functions = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
+            [InlineKeyboardButton(text="Задать еще один вопрос (поделиться с другом)", callback_data="share_and_ask")],
+            [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")],
+        ])
+        suggestion_message_text = (
+            f"💫 Задавайте еще больше вопросов своему ассистенту! Вот примеры вопросов, которые могут вас "
+            f"заинтересовать:\n\n{suggestions_text}\n\n"
+            f"ПОДЕЛИТЕСЬ с другом и получите возможность задать еще один бесплатный вопрос, или ПОЛУЧИТЕ ПОЛНЫЙ ДОСТУП к "
+            f"боту, чтобы задавать неограниченное количество вопросов и делать любые расклады! 😍"
+        )
 
     suggestion_message = await message.answer(suggestion_message_text, reply_markup=three_functions)
-
+    
     previous_message_ids = user_data.get("previous_message_ids", [])
     previous_message_ids.append(suggestion_message.message_id)
     await state.update_data(previous_message_ids=previous_message_ids)
