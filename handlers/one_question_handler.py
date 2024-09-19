@@ -7,10 +7,9 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from keyboards.main_menu_keyboard import main_menu_keyboard
 from keyboards.sections_fate_matrix import functions_keyboard
-from services.db_service import get_questions_left, update_questions_left
+from services.db_service import get_questions_left, get_subscription_details, update_questions_left
 from services.gpt_service import client
 from services.question_service import generate_question_response, generate_suggestions
-from services.user_service import get_user_data
 from states import QuestionState
 
 router = Router()
@@ -24,7 +23,7 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
         await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
     else:
         await callback_query.message.answer(
-            f"Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить мои отношения с партнером?)\n\n⚡️ У вас есть {questions_left} бесплатных вопросов"
+            f"Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить мои отношения с партнером?)\n\n⚡️ У вас доступно:\n {questions_left} ответа на любые вопросы"
         )
         await state.set_state(QuestionState.waiting_for_question)
 
@@ -32,8 +31,10 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
 @router.message(StateFilter(QuestionState.waiting_for_question))
 async def process_question(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
-    questions_left, subscription_active = await get_user_data(user_id)
 
+    subscription_details = await get_subscription_details(user_id)
+    subscription_active = subscription_details["subscription_active"]
+    questions_left = subscription_details["questions_left"]
     if questions_left <= 0:
         await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
         return
