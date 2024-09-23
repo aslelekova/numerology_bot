@@ -71,9 +71,7 @@ async def create_payment(amount, chat_id, description):
             "payment_method_data": {
                 "type": "bank_card"
             },
-            "payment_method_data": {
-                "type": "sbp"
-            },
+
             "receipt": {
                 "customer": {
                     "full_name": "Имя Фамилия",
