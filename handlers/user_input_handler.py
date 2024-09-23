@@ -277,16 +277,14 @@ async def show_current_tariff(callback_query: CallbackQuery, state: FSMContext):
             f"• ⚡️ {questions_left} ответа на любые вопросы\n\n"
             "Обновить тариф?"
         )
+        new_message = await callback_query.message.answer(status_message, reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="Обновить тариф", callback_data="get_full_access_main")],
+                [InlineKeyboardButton(text="Назад", callback_data="main_menu")]
+            ]
+        ))
         
-        await state.update_data(tariff_message_id=callback_query.message.message_id)
-
-
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="Обновить тариф", callback_data="get_full_access_main")],
-            [InlineKeyboardButton(text="Назад", callback_data="main_menu")]
-        ])
-        
-        await callback_query.message.answer(status_message, reply_markup=keyboard)
+        await state.update_data(tariff_message_id=new_message.message_id)
     else:
         await callback_query.message.answer("Ошибка: информация о тарифе не найдена.")
 

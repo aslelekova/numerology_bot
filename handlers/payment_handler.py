@@ -56,6 +56,7 @@ async def handle_full_access_main(callback_query: CallbackQuery, state: FSMConte
 
     tariff_message_id = data.get("tariff_message_id")
     print(tariff_message_id)
+    
     await delete_message(callback_query.bot, callback_query.message.chat.id, tariff_message_id)
 
     payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
