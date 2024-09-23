@@ -272,8 +272,8 @@ async def show_current_tariff(callback_query: CallbackQuery, state: FSMContext):
         status_message = (
             f"Ваш тариф: {tariff_price}\n\n"
             f"💫 У вас осталось:\n"
-            f"🔮 {readings_left} любых раскладов\n"
-            f"⚡️ {questions_left} ответа на любые вопросы\n"
+            f"• 🔮 {readings_left} любых раскладов\n"
+            f"• ⚡️ {questions_left} ответа на любые вопросы\n\n"
             "Обновить тариф?"
         )
         
