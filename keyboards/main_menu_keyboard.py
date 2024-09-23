@@ -13,5 +13,7 @@ def main_menu_keyboard():
     kb = InlineKeyboardBuilder()
     kb.row(types.InlineKeyboardButton(text="🔮 Матрица судьбы", callback_data="matrix"))
     kb.row(types.InlineKeyboardButton(text="💸 Нумерология | Личный успех | Финансы", callback_data="numerology"))
-    kb.row(types.InlineKeyboardButton(text="💕 Совместимость с человеком", callback_data="compatibility"))
+    kb.row(types.InlineKeyboardButton(text="💕 Совместимость с человеком", callback_data="compatibility")),
+    kb.row(types.InlineKeyboardButton(text="⚡️ Мой тариф", callback_data="my_tariff"))
+
     return kb.as_markup()

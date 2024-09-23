@@ -243,3 +243,46 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
     
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
     await handle_section(callback_query, state, category)
+
+
+
+@router.callback_query(lambda callback: callback.data == "my_tariff")
+async def show_current_tariff(callback_query: CallbackQuery, state: FSMContext):
+    user_id = callback_query.from_user.id
+    
+    connect = sqlite3.connect('users.db')
+    cursor = connect.cursor()
+    
+    cursor.execute("SELECT tariff, readings_left, questions_left, subscription_active FROM login_id WHERE id = ?", (user_id,))
+    result = cursor.fetchone()
+    connect.close()
+    
+    if result:
+        tariff_number, readings_left, questions_left, subscription_active = result
+    
+        if tariff_number == "1":
+            tariff_price = "290 рублей"
+        elif tariff_number == "2":
+            tariff_price = "450 рублей"
+        elif tariff_number == "3":
+            tariff_price = "650 рублей"
+        else:
+            tariff_price = "Нет активного тарифа"
+        
+        status_message = (
+            f"Ваш тариф: {tariff_price}\n\n"
+            f"💫 У вас осталось:\n"
+            f"🔮 {readings_left} любых раскладов\n"
+            f"⚡️ {questions_left} ответа на любые вопросы\n"
+            "Обновить тариф?"
+        )
+        
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="Обновить тариф", callback_data="get_full_access")],
+            [InlineKeyboardButton(text="Назад", callback_data="back_to_menu")]
+        ])
+        
+        await callback_query.message.answer(status_message, reply_markup=keyboard)
+    else:
+        await callback_query.message.answer("Ошибка: информация о тарифе не найдена.")
+
