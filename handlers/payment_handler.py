@@ -8,7 +8,7 @@ from aiogram import Router, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from services.db_service import get_subscription_details
 from services.message_service import delete_messages, send_initial_messages
-from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, functions_keyboard
+from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_tariff_keyboard, functions_keyboard
 from config import secret_key, shop_id
   
 router = Router()
@@ -34,14 +34,7 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
     await state.update_data(payment_id_1=payment_id_1, payment_id_2=payment_id_2, payment_id_3=payment_id_3)
 
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="290 руб", url=payment_url_1)],
-            [InlineKeyboardButton(text="450 руб", url=payment_url_2),
-             InlineKeyboardButton(text="650 руб", url=payment_url_3)],
-            [InlineKeyboardButton(text="Назад", callback_data="back")]
-        ]
-    )
+    keyboard = create_tariff_keyboard(payment_url_1, payment_url_2, payment_url_3)
 
     await callback_query.message.answer(
         "Мы подготовили для тебя 3 тарифа 💫\n\nТариф 1.  290 рублей\n🔮 5 любых раскладов\n⚡️ 10 ответов на любые вопросы \n\nТариф 2.  450 рублей  (популярный)\n🔮 8 любых раскладов\n⚡️ 20 ответов на любые вопросы \n\nТариф 3.  650 рублей \n🔮 15 любых раскладов\n⚡️ 40 ответов на любые вопросы \n\nВыберите один из тарифов",
@@ -52,11 +45,45 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
         "После оплаты нажмите кнопку ниже, чтобы проверить статус платежа:",
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="Проверить оплату", callback_data=f"check_payment")],
-                [InlineKeyboardButton(text="Назад", callback_data="back")]
+                [InlineKeyboardButton(text="Проверить оплату", callback_data=f"check_payment")]
             ]
         )
     )
+
+
+@router.callback_query(lambda callback: callback.data == "get_full_access_main")
+async def handle_full_access_main(callback_query: CallbackQuery, state: FSMContext):
+
+    data = await state.get_data()
+    first_message_id = data.get("first_message_id")
+    question_prompt_message_id = data.get("question_prompt_message_id")
+
+    tariff_message_id = data.get("tariff_message_id")
+
+    await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id, tariff_message_id])
+
+    payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
+    payment_url_2, payment_id_2 = await create_payment("2.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
+    payment_url_3, payment_id_3 = await create_payment("3.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
+
+    await state.update_data(payment_id_1=payment_id_1, payment_id_2=payment_id_2, payment_id_3=payment_id_3)
+
+    keyboard = create_tariff_keyboard(payment_url_1, payment_url_2, payment_url_3, "main_menu")
+
+    await callback_query.message.answer(
+        "Мы подготовили для тебя 3 тарифа 💫\n\nТариф 1.  290 рублей\n🔮 5 любых раскладов\n⚡️ 10 ответов на любые вопросы \n\nТариф 2.  450 рублей  (популярный)\n🔮 8 любых раскладов\n⚡️ 20 ответов на любые вопросы \n\nТариф 3.  650 рублей \n🔮 15 любых раскладов\n⚡️ 40 ответов на любые вопросы \n\nВыберите один из тарифов",
+        reply_markup=keyboard
+    )
+
+    await callback_query.message.answer(
+        "После оплаты нажмите кнопку ниже, чтобы проверить статус платежа:",
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="Проверить оплату", callback_data=f"check_payment")]
+            ]
+        )
+    )
+
 
 async def create_payment(amount, chat_id, description):
     try:
