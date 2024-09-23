@@ -61,6 +61,7 @@ async def process_question(message: types.Message, state: FSMContext):
     
     if subscription_active and new_questions_left > 0:
         three_functions = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="Вернуться к разделам 👈", callback_data="go_back_to_categories")],
             [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
             [InlineKeyboardButton(text="Задать еще один вопрос", callback_data="ask_free_question")],
         ])
