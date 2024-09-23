@@ -110,7 +110,8 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         return
 
     payment_ids = [payment_id_1, payment_id_2, payment_id_3]
-
+    payment_pending_notified = False
+    
     try:
         for payment_id in payment_ids:
             if payment_id:
@@ -146,8 +147,9 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                     await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
                     return 
 
-                elif payment.status == "pending":
+                elif payment.status == "pending" and not payment_pending_notified:
                     await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
+                    payment_pending_notified = True
                 else:
                     await callback_query.message.answer("Оплата не прошла. Попробуйте снова.")
     except Exception as e:
