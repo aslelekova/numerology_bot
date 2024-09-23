@@ -248,6 +248,7 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
 
 @router.callback_query(lambda callback: callback.data == "my_tariff")
 async def show_current_tariff(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.message.delete()
     user_id = callback_query.from_user.id
     
     connect = sqlite3.connect('users.db')
@@ -277,6 +278,9 @@ async def show_current_tariff(callback_query: CallbackQuery, state: FSMContext):
             "Обновить тариф?"
         )
         
+        await state.update_data(previous_message_id=callback_query.message.message_id)
+
+
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="Обновить тариф", callback_data="get_full_access")],
             [InlineKeyboardButton(text="Назад", callback_data="back_to_menu")]

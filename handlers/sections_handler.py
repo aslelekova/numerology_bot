@@ -38,7 +38,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
 @router.callback_query(lambda callback: callback.data == "go_back_to_categories")
 async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.message.delete()
-
+    
     user_id = callback_query.from_user.id
     subscription_details = await get_subscription_details(user_id)
     subscription_active = subscription_details["subscription_active"]
