@@ -278,12 +278,12 @@ async def show_current_tariff(callback_query: CallbackQuery, state: FSMContext):
             "Обновить тариф?"
         )
         
-        await state.update_data(previous_message_id=callback_query.message.message_id)
+        await state.update_data(tariff_message_id=callback_query.message.message_id)
 
 
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="Обновить тариф", callback_data="get_full_access")],
-            [InlineKeyboardButton(text="Назад", callback_data="back_to_menu")]
+            [InlineKeyboardButton(text="Назад", callback_data="back")]
         ])
         
         await callback_query.message.answer(status_message, reply_markup=keyboard)
