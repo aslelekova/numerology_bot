@@ -100,7 +100,7 @@ async def create_payment(amount, chat_id, description):
 @router.callback_query(lambda callback: callback.data == "check_payment")
 async def check_payment_status(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    
+
     payment_id_1 = data.get("payment_id_1")
     payment_id_2 = data.get("payment_id_2")
     payment_id_3 = data.get("payment_id_3")
@@ -110,9 +110,11 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         return
 
     payment_ids = [payment_id_1, payment_id_2, payment_id_3]
-    payment_pending_notified = False
-    
+
     try:
+        success = False
+        pending = False
+
         for payment_id in payment_ids:
             if payment_id:
                 payment = Payment.find_one(payment_id)
@@ -145,13 +147,18 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                     )
 
                     await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-                    return 
+                    return
 
-                elif payment.status == "pending" and not payment_pending_notified:
-                    await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
-                    payment_pending_notified = True
+                elif payment.status == "pending":
+                    pending = True
                 else:
-                    await callback_query.message.answer("Оплата не прошла. Попробуйте снова.")
+                    continue
+
+        if pending:
+            await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
+        else:
+            await callback_query.message.answer("Оплата не прошла. Попробуйте снова.")
+
     except Exception as e:
         print(f"Ошибка при проверке платежа: {e}")
         print(traceback.format_exc())
