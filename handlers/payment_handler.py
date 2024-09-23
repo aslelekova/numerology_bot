@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram import Router, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from services.db_service import get_subscription_details
-from services.message_service import delete_messages, send_initial_messages
+from services.message_service import delete_message, delete_messages, send_initial_messages
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_tariff_keyboard, functions_keyboard
 from config import secret_key, shop_id
   
@@ -56,7 +56,7 @@ async def handle_full_access_main(callback_query: CallbackQuery, state: FSMConte
 
     tariff_message_id = data.get("tariff_message_id")
     print(tariff_message_id)
-    await delete_messages(callback_query.bot, callback_query.message.chat.id, [tariff_message_id])
+    await delete_message(callback_query.bot, callback_query.message.chat.id, tariff_message_id)
 
     payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
     payment_url_2, payment_id_2 = await create_payment("2.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
