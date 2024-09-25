@@ -207,7 +207,7 @@ async def generate_gpt_response(user_name, values):
         message_file = client.files.create(file=(os.path.basename("/app/matrix.pdf"), file_data), purpose="assistants")
 
         # Создаем поток
-        thread = await client.beta.threads.create(
+        thread = client.beta.threads.create(
             messages=[
                 {
                     "role": "user",
