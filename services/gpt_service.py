@@ -227,9 +227,7 @@ async def generate_gpt_response(user_name, values):
             event_handler=handler
         )
 
-        # Запуск потока в асинхронном режиме
-        async for _ in stream_until_done(stream):
-            await asyncio.sleep(0.1)
+        await stream_until_done(stream)
 
         return handler.response_text
 
@@ -247,4 +245,3 @@ async def stream_until_done(stream):
             await asyncio.sleep(0.1)
     except Exception as e:
         print(f"Error in stream_until_done: {e}")
-
