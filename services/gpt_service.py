@@ -1,4 +1,5 @@
 # services/gpt_service.py
+import os
 import aiofiles
 import config
 from openai import OpenAI, AssistantEventHandler
@@ -198,9 +199,12 @@ async def generate_gpt_response(user_name, values):
         f"Трактовка энергии находится на 116-125 страницах книги.\n\n"
     )
     try:
-        # Загружаем файл
-        async with aiofiles.open("/app/matrix.pdf", "rb") as file_stream:
-            message_file = await client.files.create(file=file_stream, purpose="assistants")
+        # Считываем файл асинхронно в байты
+        async with aiofiles.open("/app/matrix.pdf", "rb") as file:
+            file_data = await file.read()  # Читаем содержимое файла в байты
+
+        # Передаем байты в OpenAI API
+        message_file = await client.files.create(file=(os.path.basename("/app/matrix.pdf"), file_data), purpose="assistants")
 
         # Создаем поток
         thread = await client.beta.threads.create(
@@ -215,18 +219,32 @@ async def generate_gpt_response(user_name, values):
             ]
         )
 
-        # Асинхронная работа с потоком
-        async with client.beta.threads.runs.stream(
-                thread_id=thread.id,
-                assistant_id=assistant.id,
-                instructions=f"Please address the user as {user_name}.",
-                event_handler=handler
-        ) as stream:
-            async for _ in stream:
-                await asyncio.sleep(0.1)
+        # Создаем поток вручную
+        stream = client.beta.threads.runs.stream(
+            thread_id=thread.id,
+            assistant_id=assistant.id,
+            instructions=f"Please address the user as {user_name}.",
+            event_handler=handler
+        )
+
+        # Запуск потока в асинхронном режиме
+        async for _ in stream_until_done(stream):
+            await asyncio.sleep(0.1)
 
         return handler.response_text
+
     except Exception as e:
         print(f"Error in generate_gpt_response: {e}")
         return None
+
+
+async def stream_until_done(stream):
+    """Асинхронно следит за потоком до его завершения."""
+    try:
+        while not stream.is_done():
+            # Выполняем операцию чтения
+            stream.read()
+            await asyncio.sleep(0.1)
+    except Exception as e:
+        print(f"Error in stream_until_done: {e}")
 
