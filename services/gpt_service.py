@@ -1,4 +1,5 @@
 # services/gpt_service.py
+import aiofiles
 import config
 from openai import OpenAI, AssistantEventHandler
 
@@ -197,11 +198,12 @@ async def generate_gpt_response(user_name, values):
         f"Трактовка энергии находится на 116-125 страницах книги.\n\n"
     )
     try:
-        message_file = client.files.create(
-            file=open("/app/matrix.pdf", "rb"), purpose="assistants"
-        )
+        # Загружаем файл
+        async with aiofiles.open("/app/matrix.pdf", "rb") as file_stream:
+            message_file = await client.files.create(file=file_stream, purpose="assistants")
 
-        thread = client.beta.threads.create(
+        # Создаем поток
+        thread = await client.beta.threads.create(
             messages=[
                 {
                     "role": "user",
@@ -213,14 +215,16 @@ async def generate_gpt_response(user_name, values):
             ]
         )
 
+        # Асинхронная работа с потоком
         async with client.beta.threads.runs.stream(
                 thread_id=thread.id,
                 assistant_id=assistant.id,
                 instructions=f"Please address the user as {user_name}.",
-                event_handler=handler,
+                event_handler=handler
         ) as stream:
-            stream.until_done()
-            
+            async for _ in stream:
+                await asyncio.sleep(0.1)
+
         return handler.response_text
     except Exception as e:
         print(f"Error in generate_gpt_response: {e}")
