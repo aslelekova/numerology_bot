@@ -213,7 +213,7 @@ async def generate_gpt_response(user_name, values):
             ]
         )
 
-        with client.beta.threads.runs.stream(
+        async with client.beta.threads.runs.stream(
                 thread_id=thread.id,
                 assistant_id=assistant.id,
                 instructions=f"Please address the user as {user_name}.",
