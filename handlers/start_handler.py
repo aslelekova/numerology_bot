@@ -6,8 +6,6 @@ from aiogram.fsm.context import FSMContext
 from keyboards.main_menu_keyboard import main_menu_keyboard
 
 router = Router()
-
-
 @router.message(CommandStart())
 async def cmd_start(message: types.Message, state: FSMContext):
     async with aiosqlite.connect('users.db') as db:
@@ -23,6 +21,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
         await db.commit()
 
         people_id = message.chat.id
+        
         cursor = await db.execute("SELECT id FROM login_id WHERE id = ?", (people_id,))
         data = await cursor.fetchone()
 
