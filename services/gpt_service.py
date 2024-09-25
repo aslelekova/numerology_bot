@@ -2,7 +2,6 @@ import config
 from openai import AsyncOpenAI, AssistantEventHandler
 import asyncio
 
-# Инициализация клиента OpenAI
 client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
 
 class EventHandler(AssistantEventHandler):
@@ -38,7 +37,6 @@ class EventHandler(AssistantEventHandler):
             print("Message has no content attribute")
 
 async def setup_assistant_and_vector_store():
-    # Создание ассистента
     assistant = await client.beta.assistants.create(
         name="Matrix of Destiny Assistant",
         instructions="You're an expert on the Matrix of Destiny. Use your knowledge base to answer questions based on the provided book.",
@@ -46,18 +44,15 @@ async def setup_assistant_and_vector_store():
         tools=[{"type": "file_search"}],
     )
 
-    # Создание векторного хранилища
     vector_store = await client.beta.vector_stores.create(name="Matrix of Destiny Book")
 
     file_paths = ["/app/matrix.pdf"]
     file_streams = [open(path, "rb") for path in file_paths]
 
-    # Загрузка файла в векторное хранилище
     file_batch = await client.beta.vector_stores.file_batches.upload_and_poll(
         vector_store_id=vector_store.id, files=file_streams
     )
 
-    # Обновление ассистента с ресурсами
     assistant = await client.beta.assistants.update(
         assistant_id=assistant.id,
         tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
@@ -186,12 +181,10 @@ async def generate_gpt_response(user_name, values, assistant):
         f"Трактовка энергии находится на 116-125 страницах книги.\n\n"
     )
     try:
-        # Создание файла для ассистента
         message_file = await client.files.create(
             file=open("/app/matrix.pdf", "rb"), purpose="assistants"
         )
 
-        # Создание потока для обработки запросов
         thread = await client.beta.threads.create(
             messages=[
                 {
@@ -204,7 +197,6 @@ async def generate_gpt_response(user_name, values, assistant):
             ]
         )
 
-        # Запуск потока с обработчиком событий
         async with client.beta.threads.runs.stream(
                 thread_id=thread.id,
                 assistant_id=assistant.id,
@@ -214,6 +206,7 @@ async def generate_gpt_response(user_name, values, assistant):
             await stream.until_done()
             
         return handler.response_text
+
     except Exception as e:
         print(f"Error in generate_gpt_response: {e}")
         return None
