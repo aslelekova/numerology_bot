@@ -1,23 +1,8 @@
-# services/gpt_service.py
 import config
 from openai import AsyncOpenAI, AssistantEventHandler
-
-client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
-
 import asyncio
 
-async def handle_gpt_response(user_name, values):
-    max_retries = 10
-    attempt = 0
-    response_text = None
-    while response_text is None and attempt < max_retries:
-        attempt += 1
-        response_text = await generate_gpt_response(user_name, values)
-        if not response_text:
-            print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
-        await asyncio.sleep(0.1)
-
-    return response_text
+client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
 
 class EventHandler(AssistantEventHandler):
     def __init__(self):
@@ -51,30 +36,29 @@ class EventHandler(AssistantEventHandler):
         else:
             print("Message has no content attribute")
 
+async def initialize_resources():
+    global assistant, vector_store
 
+    assistant = await client.beta.assistants.create(
+        name="Matrix of Destiny Assistant",
+        instructions="You're an expert on the Matrix of Destiny. Use your knowledge base to answer questions based on the provided book.",
+        model="gpt-4o-2024-08-06",
+        tools=[{"type": "file_search"}],
+    )
 
-assistant = client.beta.assistants.create(
-    name="Matrix of Destiny Assistant",
-    instructions="You're an expert on the Matrix of Destiny. Use your knowledge base to answer questions based on the "
-                 "provided book.",
-    model="gpt-4o-2024-08-06",
-    tools=[{"type": "file_search"}],
-)
+    vector_store = await client.beta.vector_stores.create(name="Matrix of Destiny Book")
 
-vector_store = client.beta.vector_stores.create(name="Matrix of Destiny Book")
+    file_paths = ["/app/matrix.pdf"]
+    file_streams = [open(path, "rb") for path in file_paths]
 
-file_paths = ["/app/matrix.pdf"]
-file_streams = [open(path, "rb") for path in file_paths]
+    file_batch = await client.beta.vector_stores.file_batches.upload_and_poll(
+        vector_store_id=vector_store.id, files=file_streams
+    )
 
-file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
-    vector_store_id=vector_store.id, files=file_streams
-)
-
-assistant = client.beta.assistants.update(
-    assistant_id=assistant.id,
-    tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
-)
-
+    assistant = await client.beta.assistants.update(
+        assistant_id=assistant.id,
+        tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
+    )
 
 async def generate_gpt_response(user_name, values):
     handler = EventHandler()
@@ -226,3 +210,4 @@ async def generate_gpt_response(user_name, values):
         print(f"Error in generate_gpt_response: {e}")
         return None
 
+asyncio.run(initialize_resources())
