@@ -204,7 +204,7 @@ async def generate_gpt_response(user_name, values):
             file_data = await file.read()  # Читаем содержимое файла в байты
 
         # Передаем байты в OpenAI API
-        message_file = await client.files.create(file=(os.path.basename("/app/matrix.pdf"), file_data), purpose="assistants")
+        message_file = client.files.create(file=(os.path.basename("/app/matrix.pdf"), file_data), purpose="assistants")
 
         # Создаем поток
         thread = await client.beta.threads.create(
