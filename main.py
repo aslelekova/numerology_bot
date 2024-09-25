@@ -14,7 +14,7 @@ from config import BOT_TOKEN
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"), timeout=150)
 dp = Dispatcher(storage=MemoryStorage())
 
 
