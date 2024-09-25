@@ -1,15 +1,12 @@
-
-import sqlite3
-
+import aiosqlite
 
 async def get_subscription_details(user_id: int):
-    conn = sqlite3.connect('users.db') 
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT subscription_active, readings_left, questions_left FROM login_id WHERE id = ?", (user_id,))
-    result = cursor.fetchone()
-    
-    conn.close()
+    async with aiosqlite.connect('users.db') as conn:
+        cursor = await conn.execute(
+            "SELECT subscription_active, readings_left, questions_left FROM login_id WHERE id = ?",
+            (user_id,)
+        )
+        result = await cursor.fetchone()
     
     if result:
         return {
@@ -23,37 +20,36 @@ async def get_subscription_details(user_id: int):
         "questions_left": 0
     }
 
+
 async def get_questions_left(user_id: int) -> int:
-    connection = sqlite3.connect('users.db')
-    cursor = connection.cursor()
-    cursor.execute("SELECT questions_left FROM login_id WHERE id = ?", (user_id,))
-    data = cursor.fetchone()
-    connection.close()
+    async with aiosqlite.connect('users.db') as connection:
+        cursor = await connection.execute(
+            "SELECT questions_left FROM login_id WHERE id = ?",
+            (user_id,)
+        )
+        data = await cursor.fetchone()
     return data[0] if data else 0
 
 async def update_user_readings_left(user_id: int, new_readings_left: int):
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute(
-        "UPDATE login_id SET readings_left = ? WHERE id = ?",
-        (new_readings_left, user_id)
-    )
-    conn.commit()
-    conn.close()
+    async with aiosqlite.connect('users.db') as conn:
+        await conn.execute(
+            "UPDATE login_id SET readings_left = ? WHERE id = ?",
+            (new_readings_left, user_id)
+        )
+        await conn.commit()
 
 async def update_subscription_status(user_id: int, status: str):
-    connection = sqlite3.connect("users.db")
-    cursor = connection.cursor()
-    cursor.execute(
-        "UPDATE login_id SET subscription_active = ? WHERE id = ?",
-        (status, user_id)
-    )
-    connection.commit()
-    connection.close()
+    async with aiosqlite.connect("users.db") as connection:
+        await connection.execute(
+            "UPDATE login_id SET subscription_active = ? WHERE id = ?",
+            (status, user_id)
+        )
+        await connection.commit()
 
 async def update_questions_left(user_id: int, questions_left: int):
-    connection = sqlite3.connect('users.db')
-    cursor = connection.cursor()
-    cursor.execute("UPDATE login_id SET questions_left = ? WHERE id = ?", (questions_left, user_id))
-    connection.commit()
-    connection.close()
+    async with aiosqlite.connect('users.db') as connection:
+        await connection.execute(
+            "UPDATE login_id SET questions_left = ? WHERE id = ?",
+            (questions_left, user_id)
+        )
+        await connection.commit()

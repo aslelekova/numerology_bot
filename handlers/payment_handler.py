@@ -1,4 +1,4 @@
-import sqlite3
+import aiosqlite
 import requests
 from yookassa import Configuration, Payment
 import uuid
@@ -214,17 +214,13 @@ async def update_user_tariff(callback_query: CallbackQuery, chat_id, description
         questions_left += 40
 
     if tariff:
-        connect = sqlite3.connect('users.db')
-        cursor = connect.cursor()
-
-        cursor.execute("""
-            UPDATE login_id
-            SET tariff = ?, readings_left = ?, questions_left = ?, subscription_active = 1
-            WHERE id = ?
-        """, (tariff, readings_left, questions_left, chat_id))
-
-        connect.commit()
-        connect.close()
+        async with aiosqlite.connect('users.db') as connect:
+            await connect.execute("""
+                UPDATE login_id
+                SET tariff = ?, readings_left = ?, questions_left = ?, subscription_active = 1
+                WHERE id = ?
+            """, (tariff, readings_left, questions_left, chat_id))
+            await connect.commit()
 
 
 
