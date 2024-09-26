@@ -251,7 +251,6 @@ async def show_current_tariff(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.message.delete()
     user_id = callback_query.from_user.id
 
-    # Использование aiosqlite для асинхронного запроса
     async with aiosqlite.connect('users.db') as db:
         async with db.execute("SELECT tariff, readings_left, questions_left, subscription_active FROM login_id WHERE id = ?", (user_id,)) as cursor:
             result = await cursor.fetchone()
