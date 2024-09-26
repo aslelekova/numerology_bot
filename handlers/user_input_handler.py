@@ -183,6 +183,7 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
             )
             await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
 
+
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
 async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
     category_mapping = {

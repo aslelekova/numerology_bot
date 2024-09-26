@@ -293,6 +293,29 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
 
     confirmation_message_id1 = data.get("confirmation_message_id1")
     tariff_message1 = data.get("tariff_message1")
+    confirmation_message_id = data.get("confirmation_message_id")
+    tariff_message_id = data.get("tariff_message_id")
+
+    if tariff_message_id:
+            try:
+                await callback_query.message.bot.delete_message(
+                    chat_id=callback_query.message.chat.id,
+                    message_id=tariff_message_id
+                )
+            except Exception as e:
+                if "message to delete not found" not in str(e):
+                    print(f"Error deleting tarif message with ID {tariff_message_id}: {e}")
+
+    if confirmation_message_id:
+        try:
+            await callback_query.message.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=confirmation_message_id
+            )
+        except Exception as e:
+            if "message to delete not found" not in str(e):
+                print(f"Error deleting confirmation message with ID {confirmation_message_id}: {e}")
+
 
     if tariff_message1:
             try:
