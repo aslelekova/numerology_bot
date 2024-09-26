@@ -1,5 +1,4 @@
 # handlers/one_question_handler.py
-import sqlite3
 from aiogram import Router, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext

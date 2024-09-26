@@ -19,7 +19,7 @@ async def generate_question_response(question: str, user_name: str, birth_date: 
 async def generate_response(prompt: str) -> str:
     messages = [{"role": "user", "content": prompt}]
     
-    response = client.chat.completions.create(
+    response = await client.chat.completions.create(
         messages=messages,
         model="gpt-4o-2024-08-06"
     )
@@ -38,7 +38,7 @@ async def generate_suggestions(user_question: str) -> str:
     messages = [{"role": "user", "content": suggestion_prompt}]
     
 
-    suggestion_response = client.chat.completions.create(
+    suggestion_response = await client.chat.completions.create(
         messages=messages,
         model="gpt-4o-2024-08-06",
         max_tokens=150
