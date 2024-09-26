@@ -34,7 +34,7 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
     keyboard = create_tariff_keyboard(payment_url_1, payment_url_2, payment_url_3)
 
-    tariff_message = await callback_query.message.answer(
+    tariff_message1 = await callback_query.message.answer(
         "Мы подготовили для тебя 3 тарифа 💫\n\nТариф 1.  290 рублей\n🔮 5 любых раскладов\n⚡️ 10 ответов на любые вопросы \n\n"
         "Тариф 2.  450 рублей  (популярный)\n🔮 8 любых раскладов\n⚡️ 20 ответов на любые вопросы \n\n"
         "Тариф 3.  650 рублей \n🔮 15 любых раскладов\n⚡️ 40 ответов на любые вопросы \n\n"
@@ -42,9 +42,9 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
         reply_markup=keyboard
     )
 
-    await state.update_data(tariff_message_id=tariff_message.message_id)
+    await state.update_data(tariff_message_id=tariff_message1.message_id)
 
-    confirmation_message = await callback_query.message.answer(
+    confirmation_message1 = await callback_query.message.answer(
         "После оплаты нажмите кнопку ниже, чтобы проверить статус платежа:",
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
@@ -53,7 +53,7 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
         )
     )
 
-    await state.update_data(confirmation_message_id=confirmation_message.message_id)
+    await state.update_data(confirmation_message_id=confirmation_message1.message_id)
 
 
 
@@ -164,7 +164,55 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                 if payment.status == "succeeded":
                     await update_user_tariff(callback_query, callback_query.message.chat.id, payment.description)
                     await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
-                    
+                    data = await state.get_data()
+
+                    confirmation_message_id1 = data.get("confirmation_message_id1")
+                    tariff_message1 = data.get("tariff_message1")
+
+                    if tariff_message1:
+                            try:
+                                await callback_query.message.bot.delete_message(
+                                    chat_id=callback_query.message.chat.id,
+                                    message_id=tariff_message1
+                                )
+                            except Exception as e:
+                                if "message to delete not found" not in str(e):
+                                    print(f"Error deleting tarif message with ID {tariff_message1}: {e}")
+                                    
+
+                    if confirmation_message_id1:
+                        try:
+                            await callback_query.message.bot.delete_message(
+                                chat_id=callback_query.message.chat.id,
+                                message_id=confirmation_message_id1
+                            )
+                        except Exception as e:
+                            if "message to delete not found" not in str(e):
+                                print(f"Error deleting confirmation message with ID {confirmation_message_id1}: {e}")
+                                
+                    tariff_message = data.get("tariff_message")
+                    confirmation_message_id = data.get("confirmation_message_id")
+                    if tariff_message:
+                        try:
+                            await callback_query.message.bot.delete_message(
+                                chat_id=callback_query.message.chat.id,
+                                message_id=tariff_message
+                            )
+                        except Exception as e:
+                            if "message to delete not found" not in str(e):
+                                print(f"Error deleting tarif message with ID {tariff_message}: {e}")
+                                
+
+                if confirmation_message_id:
+                    try:
+                        await callback_query.message.bot.delete_message(
+                            chat_id=callback_query.message.chat.id,
+                            message_id=confirmation_message_id
+                        )
+                    except Exception as e:
+                        if "message to delete not found" not in str(e):
+                            print(f"Error deleting confirmation message with ID {confirmation_message_id}: {e}")
+
                     user_id = callback_query.from_user.id
                     subscription_details = await get_subscription_details(user_id)
                     readings_left = subscription_details["readings_left"]
@@ -243,29 +291,29 @@ async def update_user_tariff(callback_query: CallbackQuery, chat_id, description
 async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
 
-    confirmation_message_id = data.get("confirmation_message_id")
-    tariff_message = data.get("tariff_message")
+    confirmation_message_id1 = data.get("confirmation_message_id1")
+    tariff_message1 = data.get("tariff_message1")
 
-    if tariff_message:
+    if tariff_message1:
             try:
                 await callback_query.message.bot.delete_message(
                     chat_id=callback_query.message.chat.id,
-                    message_id=tariff_message
+                    message_id=tariff_message1
                 )
             except Exception as e:
                 if "message to delete not found" not in str(e):
-                    print(f"Error deleting tarif message with ID {tariff_message}: {e}")
+                    print(f"Error deleting tarif message with ID {tariff_message1}: {e}")
                     
 
-    if confirmation_message_id:
+    if confirmation_message_id1:
         try:
             await callback_query.message.bot.delete_message(
                 chat_id=callback_query.message.chat.id,
-                message_id=confirmation_message_id
+                message_id=confirmation_message_id1
             )
         except Exception as e:
             if "message to delete not found" not in str(e):
-                print(f"Error deleting confirmation message with ID {confirmation_message_id}: {e}")
+                print(f"Error deleting confirmation message with ID {confirmation_message_id1}: {e}")
 
 
 
