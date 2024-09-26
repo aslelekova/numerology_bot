@@ -34,12 +34,17 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
     keyboard = create_tariff_keyboard(payment_url_1, payment_url_2, payment_url_3)
 
-    await callback_query.message.answer(
-        "Мы подготовили для тебя 3 тарифа 💫\n\nТариф 1.  290 рублей\n🔮 5 любых раскладов\n⚡️ 10 ответов на любые вопросы \n\nТариф 2.  450 рублей  (популярный)\n🔮 8 любых раскладов\n⚡️ 20 ответов на любые вопросы \n\nТариф 3.  650 рублей \n🔮 15 любых раскладов\n⚡️ 40 ответов на любые вопросы \n\nВыберите один из тарифов",
+    tariff_message = await callback_query.message.answer(
+        "Мы подготовили для тебя 3 тарифа 💫\n\nТариф 1.  290 рублей\n🔮 5 любых раскладов\n⚡️ 10 ответов на любые вопросы \n\n"
+        "Тариф 2.  450 рублей  (популярный)\n🔮 8 любых раскладов\n⚡️ 20 ответов на любые вопросы \n\n"
+        "Тариф 3.  650 рублей \n🔮 15 любых раскладов\n⚡️ 40 ответов на любые вопросы \n\n"
+        "Выберите один из тарифов",
         reply_markup=keyboard
     )
 
-    await callback_query.message.answer(
+    await state.update_data(tariff_message_id=tariff_message.message_id)
+
+    confirmation_message = await callback_query.message.answer(
         "После оплаты нажмите кнопку ниже, чтобы проверить статус платежа:",
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
@@ -47,6 +52,9 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
             ]
         )
     )
+
+    await state.update_data(confirmation_message_id=confirmation_message.message_id)
+
 
 
 @router.callback_query(lambda callback: callback.data == "get_full_access_main")
