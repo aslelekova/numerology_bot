@@ -190,7 +190,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                             if "message to delete not found" not in str(e):
                                 print(f"Error deleting confirmation message with ID {confirmation_message_id1}: {e}")
                                 
-                    tariff_message = data.get("tariff_message")
+                    tariff_message = data.get("tariff_message_id")
                     confirmation_message_id = data.get("confirmation_message_id")
                     if tariff_message:
                         try:
