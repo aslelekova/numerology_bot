@@ -100,6 +100,9 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
     first_message_id = data.get("first_message_id")
     question_prompt_message_id = data.get("question_prompt_message_id")
     tariff_message_id = data.get("tariff_message_id")
+    confirmation_message_id = data.get("confirmation_message_id")
+    tariff_message = data.get("tariff_message")
+
     if first_message_id:
         try:
             await callback_query.message.bot.delete_message(
@@ -129,6 +132,27 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
             except Exception as e:
                 if "message to delete not found" not in str(e):
                     print(f"Error deleting tarif message with ID {tariff_message_id}: {e}")
+
+    if tariff_message:
+            try:
+                await callback_query.message.bot.delete_message(
+                    chat_id=callback_query.message.chat.id,
+                    message_id=tariff_message
+                )
+            except Exception as e:
+                if "message to delete not found" not in str(e):
+                    print(f"Error deleting tarif message with ID {tariff_message}: {e}")
+                    
+
+    if confirmation_message_id:
+        try:
+            await callback_query.message.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=confirmation_message_id
+            )
+        except Exception as e:
+            if "message to delete not found" not in str(e):
+                print(f"Error deleting confirmation message with ID {confirmation_message_id}: {e}")
 
 
     previous_message_ids = user_data.get("previous_message_ids", [])
