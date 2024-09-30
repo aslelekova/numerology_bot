@@ -110,12 +110,12 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
 
         await generating_message.delete()
 
-        if not response_text:
-            await callback_query.message.answer(
-                "Не удалось сгенерировать ответ. Пожалуйста, повторите попытку.",
-            )
-            await cmd_start(callback_query.message, state)
-            return
+        # if not response_text:
+        #     await callback_query.message.answer(
+        #         "Не удалось сгенерировать ответ. Пожалуйста, повторите попытку.",
+        #     )
+        #     await cmd_start(callback_query.message, state)
+        #     return
 
         response_text = response_text.replace("#", "").replace("*", "")
         split_text = response_text.split("---")
