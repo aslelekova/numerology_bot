@@ -116,6 +116,7 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
             )
             await cmd_start(callback_query.message, state)
             return
+        
         response_text = response_text.replace("#", "").replace("*", "")
         split_text = response_text.split("---")
         categories = [
