@@ -8,6 +8,7 @@ from openai import AsyncOpenAI
 import config
 from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, functions_keyboard
+from keyboards.sections_numerology import create_full_sections_keyboard_num
 from services.birthday_service import calculate_values
 from services.db_service import get_subscription_details, update_user_readings_left
 from services.message_service import delete_messages, send_initial_messages
@@ -48,7 +49,7 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     if subscription_active:
         first_message = await callback_query.message.answer(
             f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
-            reply_markup=create_full_sections_keyboard()
+            reply_markup=create_full_sections_keyboard_num()
         )
         await state.update_data(first_message_id=first_message.message_id)
 
