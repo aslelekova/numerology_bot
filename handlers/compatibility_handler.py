@@ -59,10 +59,10 @@ async def handle_first_partner_name_input(message: types.Message, state: FSMCont
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
-    await state.set_state(Form.waiting_for_date_first)
+    await state.set_state(Form.waiting_for_data_first)
 
 
-@router.callback_query(StateFilter(Form.waiting_for_date_first))
+@router.callback_query(StateFilter(Form.waiting_for_data_first))
 async def handle_first_partner_date_input(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
     
@@ -99,10 +99,10 @@ async def handle_second_partner_name_input(message: types.Message, state: FSMCon
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
-    await state.set_state(Form.waiting_for_date_second)
+    await state.set_state(Form.waiting_for_data_second)
 
 
-@router.callback_query(StateFilter(Form.waiting_for_date_second))
+@router.callback_query(StateFilter(Form.waiting_for_data_second))
 async def handle_second_partner_date_input(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
     
