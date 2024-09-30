@@ -61,7 +61,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
 
     date_prompt_message = await message.answer(
         "Выберите дату рождения 👇",
-        reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
+        reply_markup=await start_calendar(locale=await get_user_locale(message.from_user), section='numerology')
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data_num)

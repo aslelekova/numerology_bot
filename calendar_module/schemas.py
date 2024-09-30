@@ -49,4 +49,4 @@ class DialogCalendarCallback(CallbackData, prefix="dialog_calendar"):
     year: int
     month: int
     day: int
-
+    section: str
