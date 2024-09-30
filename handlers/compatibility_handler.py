@@ -17,7 +17,6 @@ from aiogram.filters.state import StateFilter
 
 router = Router()
 
-
 @router.callback_query(F.data == "compatibility")
 async def handle_numerology(call: CallbackQuery, state: FSMContext):
     await state.update_data(category='compatibility')
@@ -75,14 +74,16 @@ async def handle_second_partner_name(message: types.Message, state: FSMContext):
     await message.answer("✍️ Введите возраст партнера №2:")
     await state.set_state(Form.waiting_for_data_second)
 
-@router.callback_query(lambda callback: callback.data.startswith("date_"), StateFilter(Form.waiting_for_data_second))
-async def handle_second_partner_age(callback_query: CallbackQuery, state: FSMContext):
-    # Обработайте выбор даты рождения второго партнера
-    selected, date = await process_calendar_selection(callback_query)
-    if selected:
-        await update_user_date(state, date)
-        await callback_query.message.answer("🔮 Совместимость рассчитана!")
-        # Здесь можно добавить логику для расчета совместимости
+
+@router.message(StateFilter(Form.waiting_for_data_second))
+async def handle_second_partner_age(message: types.Message, state: FSMContext):
+    partner_two_age = message.text
+    await update_user_date(state, partner_two_age)
+
+    # Здесь можно добавить логику для расчета совместимости
+    await message.answer("🔮 Совместимость рассчитана! Здесь будет ваш результат.")
+    # Логика для расчета совместимости должна быть добавлена здесь.
+
 
 async def process_selecting_category_com(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
