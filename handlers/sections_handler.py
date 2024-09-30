@@ -8,7 +8,7 @@ from openai import AsyncOpenAI
 import config
 from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, functions_keyboard
-from keyboards.sections_numerology import create_full_sections_keyboard_num
+from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num
 from services.birthday_service import calculate_values
 from services.db_service import get_subscription_details, update_user_readings_left
 from services.message_service import delete_messages, send_initial_messages
@@ -50,9 +50,19 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     questions_left = subscription_details["questions_left"]
 
     if subscription_active:
+        data = await state.get_data()
+        category = data.get('category')
+
+        if category == 'matrix':
+            reply_markup=create_full_sections_keyboard()
+        elif category == 'numerology':
+            reply_markup=create_full_sections_keyboard_num()
+        else:
+            await callback_query.answer("Неизвестная категория.")
+
         first_message = await callback_query.message.answer(
             f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
-            reply_markup=create_full_sections_keyboard()
+            reply_markup=reply_markup
         )
         await state.update_data(first_message_id=first_message.message_id)
 
@@ -74,4 +84,10 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
                             " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
                             "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)")
 
-        await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard(), functions_keyboard())
+        if category == 'matrix':
+            await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard(), functions_keyboard())
+        elif category == 'numerology':
+            await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard_num(), functions_keyboard())
+        else:
+            await callback_query.answer("Неизвестная категория.")
+

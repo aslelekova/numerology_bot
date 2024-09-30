@@ -175,8 +175,6 @@ async def process_selecting_category_num(callback_query: CallbackQuery, callback
 
 @router.callback_query(lambda callback: callback.data.startswith("num_"))
 async def handle_section_callback_num(callback_query: CallbackQuery, state: FSMContext):
-    print("Обработчик handle_section_callback_num вызван", callback_query.data)  # Добавьте этот print
-
     category_mapping = {
         "num_personality_psychic": "Личность и психика",
         "num_emotions_selfrealization": "Чувства и самореализация",
