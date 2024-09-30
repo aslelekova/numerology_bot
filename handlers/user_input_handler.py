@@ -74,8 +74,18 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data)
 
-
 @router.callback_query(DialogCalendarCallback.filter())
+async def process_selecting_category_num(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
+    current_state = await state.get_state()
+
+    if current_state == Form.waiting_for_data_num:
+        # Логика для нумерологии
+        await process_selecting_category_num(callback_query, callback_data, state)
+    elif current_state == Form.waiting_for_data:
+        # Логика для матрицы судьбы
+        await process_selecting_category(callback_query, callback_data, state)
+
+
 async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
 

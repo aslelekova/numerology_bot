@@ -51,7 +51,6 @@ async def prompt_for_name_numerology(call: CallbackQuery, state: FSMContext, mes
 
 @router.message(StateFilter(Form.waiting_for_name_num))
 async def handle_params_input(message: types.Message, state: FSMContext):
-    print("нумерология")
     user_name = message.text
     await update_user_name(state, user_name)
 
