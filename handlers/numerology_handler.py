@@ -24,6 +24,8 @@ router = Router()
 
 @router.callback_query(F.data == "numerology")
 async def handle_numerology(call: CallbackQuery, state: FSMContext):
+    await state.update_data(category='numerology')
+
     message_text = (
         "✍️ Введите ваше ФИО:"
     )

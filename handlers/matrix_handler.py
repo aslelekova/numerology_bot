@@ -22,17 +22,10 @@ async def handle_matrix(call: CallbackQuery, state: FSMContext):
     :param state: The FSM (Finite State Machine) context to manage the state of the conversation.
     :return: None
     """
+    await state.update_data(category='matrix')
+
     message_text = (
         "✍️ Введите ваше имя:"
     )
     await prompt_for_name(call, state, message_text, Form.waiting_for_name)
 
-
-@router.callback_query(DialogCalendarCallback.filter())
-async def process_selecting_category(callback_query: CallbackQuery, callback_data: DialogCalendarCallback, state: FSMContext):
-
-    if callback_data.section == 'matrix':
-        await process_selecting_category_matrix(callback_query, callback_data, state)
-    elif callback_data.section == 'numerology':
-        await process_selecting_category_num(callback_query, callback_data, state)    
- 

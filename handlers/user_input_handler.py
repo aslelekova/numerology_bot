@@ -13,6 +13,7 @@ from calendar_module.schemas import DialogCalendarCallback
 from handlers.sections_handler import handle_section
 from handlers.start_handler import cmd_start
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_reply_keyboard, functions_keyboard
+from numerology_handler import process_selecting_category_num
 from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details, update_subscription_status, update_user_readings_left
@@ -71,6 +72,22 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data)
+
+
+@router.callback_query(DialogCalendarCallback.filter())
+async def process_selecting_category(callback_query: CallbackQuery, callback_data: DialogCalendarCallback, state: FSMContext):
+
+    data = await state.get_data()
+    category = data.get('category')
+
+
+    if category == 'matrix':
+        await process_selecting_category_matrix(callback_query, callback_data, state)
+    elif category == 'numerology':
+        await process_selecting_category_num(callback_query, callback_data, state)
+    else:
+
+        await callback_query.answer("Неизвестная категория.")
 
 
 async def process_selecting_category_matrix(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
