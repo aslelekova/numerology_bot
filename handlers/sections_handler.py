@@ -45,11 +45,9 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     subscription_active = subscription_details["subscription_active"]
     readings_left = subscription_details["readings_left"]
     questions_left = subscription_details["questions_left"]
-
+    data = await state.get_data()
+    category = data.get('category')
     if subscription_active:
-        data = await state.get_data()
-        category = data.get('category')
-        print(category)
         if category == 'matrix':
             reply_markup=create_full_sections_keyboard()
         elif category == 'numerology':
