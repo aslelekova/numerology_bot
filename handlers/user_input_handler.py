@@ -13,7 +13,7 @@ from calendar_module.schemas import DialogCalendarCallback
 from handlers.sections_handler import handle_section
 from handlers.start_handler import cmd_start
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_reply_keyboard, functions_keyboard
-from numerology_handler import process_selecting_category_num
+from handlers.numerology_handler import process_selecting_category_num
 from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details, update_subscription_status, update_user_readings_left
