@@ -14,6 +14,8 @@ class DialogCalAct(str, Enum):
     next_y = "NEXT-YEARS"
     day = "DAY"
     select_date = "SELECT-DATE"
+    matrix = "MATRIX"
+    numerology = "NUMEROLOGY"
 
 
 def highlight(text: str) -> str:
