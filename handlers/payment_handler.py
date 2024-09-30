@@ -6,6 +6,7 @@ import traceback
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from keyboards.sections_numerology import create_full_sections_keyboard_num
 from services.db_service import get_subscription_details
 from services.message_service import delete_message, delete_messages, send_initial_messages
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_tariff_keyboard, functions_keyboard
@@ -345,11 +346,18 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     subscription_active = subscription_details["subscription_active"]
     readings_left = subscription_details["readings_left"]
     questions_left = subscription_details["questions_left"]
+    category = data.get('category')
+    if category == 'matrix':
+        reply_markup=create_full_sections_keyboard()
+    elif category == 'numerology':
+        reply_markup=create_full_sections_keyboard_num()
+    else:
+        await callback_query.answer("Неизвестная категория.")
 
     if subscription_active:
         first_message = await callback_query.message.answer(
             f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
-            reply_markup=create_full_sections_keyboard()
+            reply_markup=reply_markup
         )
         await state.update_data(first_message_id=first_message.message_id)
 
@@ -370,5 +378,10 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
         question_message = ("Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
                             " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
                             "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)")
+        if category == 'matrix':
+            await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard(), functions_keyboard())
+        elif category == 'numerology':
+            await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard_num(), functions_keyboard())
+        else:
+            await callback_query.answer("Неизвестная категория.")
 
-        await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard(), functions_keyboard())

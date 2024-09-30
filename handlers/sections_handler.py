@@ -49,7 +49,7 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     if subscription_active:
         data = await state.get_data()
         category = data.get('category')
-
+        print(category)
         if category == 'matrix':
             reply_markup=create_full_sections_keyboard()
         elif category == 'numerology':
