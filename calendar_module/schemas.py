@@ -54,5 +54,8 @@ class DialogCalendarCallback(CallbackData, prefix="dialog_calendar"):
 
     @classmethod
     def filter(cls, act: DialogCalAct = None, year: int = None, month: int = None, day: int = None):
-        return cls.act == act and cls.year == year and cls.month == month and cls.day == day
+        return (cls.act == act if act is not None else True) and \
+               (cls.year == year if year is not None else True) and \
+               (cls.month == month if month is not None else True) and \
+               (cls.day == day if day is not None else True)
 
