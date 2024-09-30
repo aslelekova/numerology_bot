@@ -17,7 +17,7 @@ from handlers.numerology_handler import process_selecting_category_num
 from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details, update_subscription_status, update_user_readings_left
-from services.gpt_service import EventHandler, setup_assistant_and_vector_store
+from services.gpt_service import EventHandler, generate_gpt_response_matrix, setup_assistant_and_vector_store
 from services.message_service import delete_messages, notify_subscription_expired
 from services.user_service import update_user_name, get_user_data, update_user_date
 from states import Form
@@ -111,12 +111,11 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         response_text = None
         max_retries = 10
         attempt = 0
-        # while response_text is None and attempt < max_retries:
-        #     attempt += 1
-        #     response_text = await generate_gpt_response_matrix(user_name, values, assistant)
-        #     if not response_text:
-        #         print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
-
+        while response_text is None and attempt < max_retries:
+            attempt += 1
+            response_text = await generate_gpt_response_matrix(user_name, values, assistant)
+            if not response_text:
+                print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
 
         await state.update_data(response_text=response_text)
 
