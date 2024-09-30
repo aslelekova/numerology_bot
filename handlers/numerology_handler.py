@@ -19,7 +19,6 @@ from services.message_service import delete_messages, notify_subscription_expire
 from services.user_service import get_user_data, update_user_date
 from handlers.start_handler import cmd_start
 from states import Form
-from handlers.user_input_handler import prompt_for_name
 
 router = Router()
 
@@ -28,7 +27,7 @@ async def handle_numerology(call: CallbackQuery, state: FSMContext):
     message_text = (
         "✍️ Введите ваше ФИО:"
     )
-    await prompt_for_name(call, state, message_text, Form.waiting_for_name)
+    await prompt_for_name_numerology(call, state, message_text, Form.waiting_for_name)
 
 async def prompt_for_name_numerology(call: CallbackQuery, state: FSMContext, message_text: str, next_state: str):
 
@@ -69,7 +68,6 @@ async def handle_params_input(message: types.Message, state: FSMContext):
 
 async def process_selecting_category_num(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     print("Шаг 1: вызван обработчик handle_numerology")
-
     selected, date = await process_calendar_selection(callback_query, callback_data)
 
     if selected:

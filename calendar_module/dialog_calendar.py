@@ -9,7 +9,7 @@ from .calendar_utils import GenericCalendar
 
 
 class DialogCalendar(GenericCalendar):
-    ignore_callback = DialogCalendarCallback(act=DialogCalAct.ignore, year=0, month=0, day=0).pack()
+    ignore_callback = DialogCalendarCallback(act=DialogCalAct.ignore, year=0, month=0, day=0, section='ignore_section').pack()
 
     async def _get_month_kb(self, year: int):
         """
