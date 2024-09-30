@@ -17,7 +17,7 @@ from services.gpt_service import setup_assistant_and_vector_store
 from services.gpt_service_num import generate_gpt_response_numerology
 from services.message_service import delete_messages, notify_subscription_expired
 from services.user_service import get_user_data, update_user_date
-from start_handler import cmd_start
+from handlers.start_handler import cmd_start
 from states import Form
 from handlers.user_input_handler import prompt_for_name
 
