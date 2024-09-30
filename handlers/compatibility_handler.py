@@ -18,16 +18,16 @@ from aiogram.filters.state import StateFilter
 router = Router()
 
 
-@router.callback_query(F.data == "compability")
+@router.callback_query(F.data == "compatibility")
 async def handle_numerology(call: CallbackQuery, state: FSMContext):
-    await state.update_data(category='compability')
+    await state.update_data(category='compatibility')
 
     message_text = (
         "✍️ Введите имя партнера №1:"
     )
-    await prompt_for_name_compability(call, state, message_text, Form.waiting_for_name_first)
+    await prompt_for_name_compatibility(call, state, message_text, Form.waiting_for_name_first)
 
-async def prompt_for_name_compability(call: CallbackQuery, state: FSMContext, message_text: str, next_state: str):
+async def prompt_for_name_compatibility(call: CallbackQuery, state: FSMContext, message_text: str, next_state: str):
     await call.message.delete()
     prompt_message = await call.message.answer(message_text)
     await state.update_data(prompt_message_id=prompt_message.message_id)
