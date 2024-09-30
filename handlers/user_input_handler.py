@@ -9,11 +9,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import StateFilter
 
 from calendar_module.calendar_utils import get_user_locale
-from calendar_module.schemas import DialogCalAct, DialogCalendarCallback
+from calendar_module.schemas import DialogCalendarCallback
 from handlers.sections_handler import handle_section
 from handlers.start_handler import cmd_start
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_reply_keyboard, functions_keyboard
-from handlers.numerology_handler import process_selecting_category_num
 from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details, update_subscription_status, update_user_readings_left
@@ -75,20 +74,9 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data)
 
+
 @router.callback_query(DialogCalendarCallback.filter())
 async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
-    current_state = await state.get_state()
-    print(current_state)
-    if current_state == Form.waiting_for_data_num:
-        # Логика для нумерологии
-        await process_selecting_category_num(callback_query, callback_data, state)
-    elif current_state == Form.waiting_for_data:
-        # Логика для матрицы судьбы
-        await process_selecting_category(callback_query, callback_data, state)
-
-
-async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
-    print("dfdfaf")
     selected, date = await process_calendar_selection(callback_query, callback_data)
 
     if selected:
@@ -112,11 +100,13 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         response_text = None
         max_retries = 10
         attempt = 0
-        # while response_text is None and attempt < max_retries:
-        #     attempt += 1
-        #     response_text = await generate_gpt_response_matrix(user_name, values, assistant)
-        #     if not response_text:
-        #         print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
+        while response_text is None and attempt < max_retries:
+            attempt += 1
+            response_text = await generate_gpt_response_matrix(user_name, values, assistant)
+            if not response_text:
+                print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
+
+
         await state.update_data(response_text=response_text)
 
         await generating_message.delete()
