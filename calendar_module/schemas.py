@@ -52,11 +52,12 @@ class DialogCalendarCallback(CallbackData, prefix="dialog_calendar"):
     month: int
     day: int
 
+    class Config:
+        allow_population_by_field_name = True
+
     @classmethod
     def filter(cls, act: DialogCalAct = None, year: int = None, month: int = None, day: int = None):
-        return (
-            (act is None or cls.act == act) and
-            (year is None or cls.year == year) and
-            (month is None or cls.month == month) and
-            (day is None or cls.day == day)
-        )
+        return (act is None or cls.act == act) and \
+               (year is None or cls.year == year) and \
+               (month is None or cls.month == month) and \
+               (day is None or cls.day == day)
