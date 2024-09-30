@@ -88,6 +88,7 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
 
 
 async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
+    print("dfdfaf")
     selected, date = await process_calendar_selection(callback_query, callback_data)
 
     if selected:
