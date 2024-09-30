@@ -77,7 +77,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     await state.set_state(Form.waiting_for_data_num)
 
 
-@router.callback_query(DialogCalendarCallback.filter(act=DialogCalAct.numerology))
+@router.callback_query(DialogCalendarCallback.filter(act=DialogCalAct.matrix))
 async def process_selecting_category_num(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     print("Шаг 1: вызван обработчик handle_numerology")
 
