@@ -17,3 +17,4 @@ async def handle_compatibility(call: CallbackQuery, state: FSMContext):
                               "вопрос и получить персональный совет для ваших отношений! 💬")
     await state.set_state(Form.waiting_for_data)
 
+

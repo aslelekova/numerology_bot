@@ -234,3 +234,93 @@ def calculate_compatibility_values(partner1_values, partner2_values):
 # partner2_values = calculate_partner_values(12, 7, 1993)  # Значения для второго партнера
 # compatibility_values = calculate_compatibility_values(partner1_values, partner2_values)  # Общие значения
 # print(compatibility_values)
+
+
+LETTER_VALUES = {
+    'А': 1, 'И': 1, 'С': 1, 'Ъ': 1,
+    'Б': 2, 'Й': 2, 'Т': 2, 'Ы': 2,
+    'В': 3, 'К': 3, 'У': 3, 'Ь': 3,
+    'Г': 4, 'Л': 4, 'Ф': 4, 'Э': 4,
+    'Д': 5, 'М': 5, 'Х': 5, 'Ю': 5,
+    'Е': 6, 'Н': 6, 'Ц': 6, 'Я': 6,
+    'Ё': 7, 'О': 7, 'Ч': 7,
+    'Ж': 8, 'П': 8, 'Ш': 8,
+    'З': 9, 'Р': 9, 'Щ': 9
+}
+
+
+def calculate_name_value(name):
+    total_value = sum(LETTER_VALUES.get(letter.upper(), 0) for letter in name)
+    return reduce_to_single_digit(total_value)
+
+def calculate_birth_values(day, month, year):
+    day = reduce_to_single_digit(day if day <= 22 else day - 22)
+    month = reduce_to_single_digit(month)
+    
+    year = sum(int(digit) for digit in str(year))
+    year = reduce_to_single_digit(year)
+    
+    return day, month, year
+
+
+def calculate_houses(user_name, day, month, year):
+    name_parts = user_name.split()
+
+    if len(name_parts) != 3:
+        raise ValueError("Ожидается строка с тремя частями: фамилия, имя, отчество")
+
+    surname = name_parts[0]
+    name = name_parts[1]
+    patronymic = name_parts[2]
+
+    A0 = calculate_name_value(name)
+    D3 = calculate_name_value(surname)
+    F5 = calculate_name_value(patronymic)
+
+
+    B1, C2, E4 = calculate_birth_values(day, month, year)
+
+
+    G6 = C2 + F5
+    H7 = A0 + C2
+    Y8 = C2 + D3
+    M9 = B1 + D3
+    N10 = D3 + E4
+    Q11 = A0 + E4
+    T12 = E4 + F5
+    P13 = B1 + F5
+    O14 = H7 + P13
+    I16 = H7 + M9
+    L15 = O14 + I16
+    V18 = M9 + Q11
+    X17 = I16 + V18
+    R20 = Q11 + P13
+    Z19 = V18 + R20
+    K21 = O14 + R20
+
+    houses = {
+        'A0': reduce_to_single_digit(A0),
+        'B1': reduce_to_single_digit(B1),
+        'C2': reduce_to_single_digit(C2),
+        'D3': reduce_to_single_digit(D3),
+        'E4': reduce_to_single_digit(E4),
+        'F5': reduce_to_single_digit(F5),
+        'G6': reduce_to_single_digit(G6),
+        'H7': reduce_to_single_digit(H7),
+        'Y8': reduce_to_single_digit(Y8),
+        'M9': reduce_to_single_digit(M9),
+        'N10': reduce_to_single_digit(N10),
+        'Q11': reduce_to_single_digit(Q11),
+        'T12': reduce_to_single_digit(T12),
+        'P13': reduce_to_single_digit(P13),
+        'O14': reduce_to_single_digit(O14),
+        'I16': reduce_to_single_digit(I16),
+        'L15': reduce_to_single_digit(L15),
+        'V18': reduce_to_single_digit(V18),
+        'X17': reduce_to_single_digit(X17),
+        'R20': reduce_to_single_digit(R20),
+        'Z19': reduce_to_single_digit(Z19),
+        'K21': reduce_to_single_digit(K21)
+    }
+
+    return houses
