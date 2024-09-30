@@ -17,7 +17,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import StateFilter
 
 from calendar_module.calendar_utils import get_user_locale
-from calendar_module.schemas import DialogCalendarCallback
+from calendar_module.schemas import DialogCalAct, DialogCalendarCallback
 from handlers.sections_handler import handle_section
 from handlers.start_handler import cmd_start
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_reply_keyboard, functions_keyboard
@@ -77,7 +77,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     await state.set_state(Form.waiting_for_data_num)
 
 
-@router.callback_query(DialogCalendarCallback.filter())
+@router.callback_query(DialogCalendarCallback.filter(act=DialogCalAct.numerology))
 async def process_selecting_category_num(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     print("Шаг 1: вызван обработчик handle_numerology")
 
