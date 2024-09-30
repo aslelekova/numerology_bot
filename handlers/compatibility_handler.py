@@ -73,9 +73,9 @@ async def handle_second_partner_name(message: types.Message, state: FSMContext):
 
     # Запрос возраста второго партнера
     await message.answer("✍️ Введите возраст партнера №2:")
-    await state.set_state(Form.waiting_for_age_second)
+    await state.set_state(Form.waiting_for_data_second)
 
-@router.callback_query(lambda callback: callback.data.startswith("date_"), StateFilter(Form.waiting_for_age_second))
+@router.callback_query(lambda callback: callback.data.startswith("date_"), StateFilter(Form.waiting_for_data_second))
 async def handle_second_partner_age(callback_query: CallbackQuery, state: FSMContext):
     # Обработайте выбор даты рождения второго партнера
     selected, date = await process_calendar_selection(callback_query)
