@@ -69,7 +69,6 @@ async def handle_params_input(message: types.Message, state: FSMContext):
 
 
 async def process_selecting_category_num(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
-    print("Шаг 1: вызван обработчик handle_numerology")
     selected, date = await process_calendar_selection(callback_query, callback_data)
 
     if selected:

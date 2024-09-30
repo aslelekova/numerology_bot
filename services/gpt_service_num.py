@@ -16,18 +16,16 @@ class EventHandler(AsyncAssistantEventHandler):
         print(f"\nassistant > {tool_call.type}\n", flush=True)
 
     async def on_message_done(self, message) -> None:
-        print("Message done called with message:", message)
         if hasattr(message, 'content'):
             message_content = message.content[0].text
 
             if message_content:
-                print("Received message content:", message_content)
                 annotations = message_content.annotations if hasattr(message_content, 'annotations') else []
                 citations = []
                 for index, annotation in enumerate(annotations):
                     message_content.value = message_content.value.replace(annotation.text, f"[{index}]")
                     if file_citation := getattr(annotation, "file_citation", None):
-                        cited_file = client.files.retrieve(file_citation.file_id)
+                        cited_file = await client.files.retrieve(file_citation.file_id)
                         citations.append(f"[{index}] {cited_file.filename}")
 
                 self.response_text = f"{message_content.value}\n\n" + "\n".join(citations)
