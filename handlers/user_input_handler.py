@@ -73,7 +73,6 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     await state.set_state(Form.waiting_for_data)
 
 
-@router.callback_query(DialogCalendarCallback.filter())
 async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
 
