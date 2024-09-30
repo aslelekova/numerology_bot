@@ -5,6 +5,8 @@ from aiogram.fsm.state import State, StatesGroup
 class Form(StatesGroup):
     waiting_for_name = State()
     waiting_for_data = State()
+    waiting_for_name_num = State()
+    waiting_for_data_num = State()
 
 
 class QuestionState(StatesGroup):

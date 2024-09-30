@@ -37,7 +37,7 @@ async def handle_numerology(call: CallbackQuery, state: FSMContext):
     message_text = (
         "✍️ Введите ваше ФИО:"
     )
-    await prompt_for_name_numerology(call, state, message_text, Form.waiting_for_name)
+    await prompt_for_name_numerology(call, state, message_text, Form.waiting_for_name_num)
 
 
 async def prompt_for_name_numerology(call: CallbackQuery, state: FSMContext, message_text: str, next_state: str):
@@ -49,7 +49,7 @@ async def prompt_for_name_numerology(call: CallbackQuery, state: FSMContext, mes
 
 
 
-@router.message(StateFilter(Form.waiting_for_name))
+@router.message(StateFilter(Form.waiting_for_name_num))
 async def handle_params_input(message: types.Message, state: FSMContext):
     user_name = message.text
     await update_user_name(state, user_name)
