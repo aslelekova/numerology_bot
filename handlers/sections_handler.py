@@ -49,7 +49,7 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
     if subscription_active:
         first_message = await callback_query.message.answer(
             f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
-            reply_markup=create_full_sections_keyboard_num()
+            reply_markup=create_full_sections_keyboard()
         )
         await state.update_data(first_message_id=first_message.message_id)
 
