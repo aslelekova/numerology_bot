@@ -14,8 +14,6 @@ class DialogCalAct(str, Enum):
     next_y = "NEXT-YEARS"
     day = "DAY"
     select_date = "SELECT-DATE"
-    matrix = "MATRIX"
-    numerology = "NUMEROLOGY"
 
 
 def highlight(text: str) -> str:
@@ -51,13 +49,3 @@ class DialogCalendarCallback(CallbackData, prefix="dialog_calendar"):
     year: int
     month: int
     day: int
-
-    class Config:
-        allow_population_by_field_name = True
-
-    @classmethod
-    def filter(cls, act: DialogCalAct = None, year: int = None, month: int = None, day: int = None):
-        return (act is None or cls.act == act) and \
-               (year is None or cls.year == year) and \
-               (month is None or cls.month == month) and \
-               (day is None or cls.day == day)

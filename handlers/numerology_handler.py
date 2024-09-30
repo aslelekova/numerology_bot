@@ -51,6 +51,7 @@ async def prompt_for_name_numerology(call: CallbackQuery, state: FSMContext, mes
 
 @router.message(StateFilter(Form.waiting_for_name_num))
 async def handle_params_input(message: types.Message, state: FSMContext):
+    print("нумерология")
     user_name = message.text
     await update_user_name(state, user_name)
 
@@ -77,7 +78,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     await state.set_state(Form.waiting_for_data_num)
 
 
-@router.callback_query(DialogCalendarCallback.filter(act=DialogCalAct.matrix))
+@router.callback_query(DialogCalendarCallback.filter())
 async def process_selecting_category_num(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     print("Шаг 1: вызван обработчик handle_numerology")
 
