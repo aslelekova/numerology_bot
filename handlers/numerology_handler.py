@@ -74,7 +74,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
-    await state.set_state(Form.waiting_for_data)
+    await state.set_state(Form.waiting_for_data_num)
 
 
 @router.callback_query(DialogCalendarCallback.filter())
