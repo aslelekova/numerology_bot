@@ -22,9 +22,7 @@ router = Router()
 async def handle_numerology(call: CallbackQuery, state: FSMContext):
     await state.update_data(category='compatibility')
 
-    message_text = (
-        "✍️ Введите имя партнера №1:"
-    )
+    message_text = "✍️ Введите имя партнера №1:"
     await prompt_for_name_compatibility(call, state, message_text, Form.waiting_for_name_first)
 
 async def prompt_for_name_compatibility(call: CallbackQuery, state: FSMContext, message_text: str, next_state: str):
@@ -32,7 +30,6 @@ async def prompt_for_name_compatibility(call: CallbackQuery, state: FSMContext, 
     prompt_message = await call.message.answer(message_text)
     await state.update_data(prompt_message_id=prompt_message.message_id)
     await state.set_state(next_state)
-
 
 @router.message(StateFilter(Form.waiting_for_name_first))
 async def handle_params_input(message: types.Message, state: FSMContext):
@@ -50,7 +47,6 @@ async def handle_params_input(message: types.Message, state: FSMContext):
 
     try:
         await message.delete()
-
     except Exception as e:
         print(f"Ошибка при удалении сообщения с именем пользователя: {e}")
 
@@ -79,6 +75,14 @@ async def handle_second_partner_name(message: types.Message, state: FSMContext):
     await message.answer("✍️ Введите возраст партнера №2:")
     await state.set_state(Form.waiting_for_age_second)
 
+@router.callback_query(lambda callback: callback.data.startswith("date_"), StateFilter(Form.waiting_for_age_second))
+async def handle_second_partner_age(callback_query: CallbackQuery, state: FSMContext):
+    # Обработайте выбор даты рождения второго партнера
+    selected, date = await process_calendar_selection(callback_query)
+    if selected:
+        await update_user_date(state, date)
+        await callback_query.message.answer("🔮 Совместимость рассчитана!")
+        # Здесь можно добавить логику для расчета совместимости
 
 async def process_selecting_category_com(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
