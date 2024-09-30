@@ -200,6 +200,8 @@ async def process_selecting_category_matrix(callback_query: CallbackQuery, callb
 
 @router.callback_query(lambda callback: callback.data.startswith("section_"))
 async def handle_section_callback(callback_query: CallbackQuery, state: FSMContext):
+    print("Обработчик handle_section_callback вызван")  # Добавьте этот print
+
     category_mapping = {
         "section_personal": "Личные качества",
         "section_destiny": "Предназначение",
