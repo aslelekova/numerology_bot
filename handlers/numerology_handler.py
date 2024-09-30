@@ -4,7 +4,6 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from handlers.user_input_handler import prompt_for_name
 from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num
 from states import Form
 
