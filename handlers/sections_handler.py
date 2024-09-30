@@ -23,7 +23,7 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
     data = await state.get_data()
 
     categories_dict = data.get("full_response", {})
-    
+    print(categories_dict)
     selected_category = categories_dict.get(category, "Неизвестная категория")
     user_id = callback_query.from_user.id
     subscription_details = await get_subscription_details(user_id)

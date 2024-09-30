@@ -123,7 +123,7 @@ async def process_selecting_category_num(callback_query: CallbackQuery, callback
         ]
 
         categories_dict = {category: split_text[i].strip() for i, category in enumerate(categories) if i < len(split_text)}
-        print(categories_dict)
+
         await state.update_data(full_response=categories_dict)
         user_id = callback_query.from_user.id
         subscription_details = await get_subscription_details(user_id)
