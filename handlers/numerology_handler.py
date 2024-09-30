@@ -8,7 +8,7 @@ from aiogram.filters.callback_data import CallbackData
 from calendar_module.calendar_utils import get_user_locale
 from keyboards.sections_fate_matrix import functions_keyboard
 from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num
-from sections_handler import handle_section
+from handlers.sections_handler import handle_section
 from aiogram.filters.state import StateFilter
 from services.birthday_service import calculate_houses
 from services.calendar_service import process_calendar_selection, start_calendar
