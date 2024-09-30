@@ -37,7 +37,7 @@ async def prompt_for_name_compatibility(call: CallbackQuery, state: FSMContext, 
 @router.message(StateFilter(Form.waiting_for_name_first))
 async def handle_first_partner_name_input(message: types.Message, state: FSMContext):
     user_name = message.text
-    await state.update_data(partner_name_1=user_name)  # Сохраняем имя партнера №1
+    await state.update_data(partner_name_1=user_name) 
 
     data = await state.get_data()
     prompt_message_id = data.get("prompt_message_id")
@@ -54,21 +54,19 @@ async def handle_first_partner_name_input(message: types.Message, state: FSMCont
     except Exception as e:
         print(f"Ошибка при удалении сообщения с именем пользователя: {e}")
 
-    # Запрашиваем дату рождения первого партнера
     date_prompt_message = await message.answer(
         "🗓 Выберите дату рождения партнера №1",
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
-    await state.set_state(Form.waiting_for_date_first)
+    await state.set_state(Form.waiting_for_data_first)
 
 
-@router.message(StateFilter(Form.waiting_for_date_first))
+@router.message(StateFilter(Form.waiting_for_data_first))
 async def handle_first_partner_date_input(message: types.Message, state: FSMContext):
-    user_date = message.text  # Обработка ввода даты
-    await state.update_data(partner_date_1=user_date)  # Сохраняем дату рождения партнера №1
+    user_date = message.text 
+    await state.update_data(partner_date_1=user_date)  
 
-    # Запрашиваем имя второго партнера
     message_text = "✍️ Введите имя партнера №2:"
     await prompt_for_name_compatibility(message, state, message_text, Form.waiting_for_name_second)
 
@@ -76,7 +74,7 @@ async def handle_first_partner_date_input(message: types.Message, state: FSMCont
 @router.message(StateFilter(Form.waiting_for_name_second))
 async def handle_second_partner_name_input(message: types.Message, state: FSMContext):
     user_name = message.text
-    await state.update_data(partner_name_2=user_name)  # Сохраняем имя партнера №2
+    await state.update_data(partner_name_2=user_name)
 
     data = await state.get_data()
     prompt_message_id = data.get("prompt_message_id")
@@ -93,13 +91,12 @@ async def handle_second_partner_name_input(message: types.Message, state: FSMCon
     except Exception as e:
         print(f"Ошибка при удалении сообщения с именем пользователя: {e}")
 
-    # Запрашиваем дату рождения второго партнера
     date_prompt_message = await message.answer(
         "🗓 Выберите дату рождения партнера №2",
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
-    await state.set_state(Form.waiting_for_date_second)
+    await state.set_state(Form.waiting_for_data_second)
 
 
 async def process_selecting_category_com(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
