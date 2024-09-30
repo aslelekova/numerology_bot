@@ -186,6 +186,7 @@ async def handle_section_callback_num(callback_query: CallbackQuery, state: FSMC
         "section_social_family": "Социальная и семейная сфера",
     }
 
+    print(f"Полученные данные: {callback_query.data}")
 
     category = category_mapping.get(callback_query.data, "Неизвестная категория")
 
