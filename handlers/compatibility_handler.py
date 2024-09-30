@@ -59,16 +59,19 @@ async def handle_first_partner_name_input(message: types.Message, state: FSMCont
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
-    await state.set_state(Form.waiting_for_data_first)
+    await state.set_state(Form.waiting_for_date_first)
 
 
-@router.message(StateFilter(Form.waiting_for_data_first))
-async def handle_first_partner_date_input(message: types.Message, state: FSMContext):
-    user_date = message.text 
-    await state.update_data(partner_date_1=user_date)  
+@router.callback_query(StateFilter(Form.waiting_for_date_first))
+async def handle_first_partner_date_input(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
+    selected, date = await process_calendar_selection(callback_query, callback_data)
+    
+    if selected:
+        await state.update_data(partner_date_1=date)  # Сохраняем дату рождения партнера №1
 
-    message_text = "✍️ Введите имя партнера №2:"
-    await prompt_for_name_compatibility(message, state, message_text, Form.waiting_for_name_second)
+        # Запрашиваем имя второго партнера
+        message_text = "✍️ Введите имя партнера №2:"
+        await prompt_for_name_compatibility(callback_query, state, message_text, Form.waiting_for_name_second)
 
 
 @router.message(StateFilter(Form.waiting_for_name_second))
@@ -96,7 +99,18 @@ async def handle_second_partner_name_input(message: types.Message, state: FSMCon
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
-    await state.set_state(Form.waiting_for_data_second)
+    await state.set_state(Form.waiting_for_date_second)
+
+
+@router.callback_query(StateFilter(Form.waiting_for_date_second))
+async def handle_second_partner_date_input(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
+    selected, date = await process_calendar_selection(callback_query, callback_data)
+    
+    if selected:
+        await state.update_data(partner_date_2=date)  # Сохраняем дату рождения партнера №2
+
+        # Вызываем функцию process_selecting_category_com
+        await process_selecting_category_com(callback_query, callback_data, state)
 
 
 async def process_selecting_category_com(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
@@ -110,6 +124,12 @@ async def process_selecting_category_com(callback_query: CallbackQuery, callback
         
         data = await state.get_data()
         print(data)
+
+        # Здесь можно добавить дальнейшую логику обработки данных
+        await callback_query.message.answer(f"✅ Данные для обоих партнеров сохранены.\n"
+                                            f"Партнер №1: {data['partner_name_1']}, дата: {data['partner_date_1']}\n"
+                                            f"Партнер №2: {data['partner_name_2']}, дата: {data['partner_date_2']}")
+
 #         previous_message_id = data.get("date_prompt_message_id")
 
 #         if previous_message_id:
