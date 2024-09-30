@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from states import Form
-from user_input_handler import prompt_for_name
+from handlers.user_input_handler import prompt_for_name
 
 router = Router()
 
