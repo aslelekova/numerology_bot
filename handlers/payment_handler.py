@@ -6,7 +6,7 @@ import traceback
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
-from keyboards.sections_numerology import create_full_sections_keyboard_num
+from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num
 from services.db_service import get_subscription_details
 from services.message_service import delete_message, delete_messages, send_initial_messages
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_tariff_keyboard, functions_keyboard
@@ -64,7 +64,6 @@ async def handle_full_access_main(callback_query: CallbackQuery, state: FSMConte
     data = await state.get_data()
 
     tariff_message_id = data.get("tariff_message_id")
-    print(tariff_message_id)
     
     await delete_message(callback_query.bot, callback_query.message.chat.id, tariff_message_id)
 
@@ -219,7 +218,14 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                     readings_left = subscription_details["readings_left"]
                     questions_left = subscription_details["questions_left"]
 
-                    sections_keyboard = create_full_sections_keyboard()
+                    category = data.get('category')
+                    if category == 'matrix':
+                        sections_keyboard=create_full_sections_keyboard()
+                    elif category == 'numerology':
+                        sections_keyboard=create_full_sections_keyboard_num()
+                    else:
+                        await callback_query.answer("Неизвестная категория.")
+
                     first_message = await callback_query.message.answer(
                         f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
                         reply_markup=sections_keyboard
