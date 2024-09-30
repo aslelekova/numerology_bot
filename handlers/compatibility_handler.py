@@ -3,7 +3,7 @@
 from aiogram import Router, F, types
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
-from start_handler import cmd_start
+from handlers.start_handler import cmd_start
 from states import Form
 from aiogram.filters.state import StateFilter
 
