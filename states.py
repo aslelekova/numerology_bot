@@ -8,9 +8,9 @@ class Form(StatesGroup):
     waiting_for_name_num = State()
     waiting_for_data_num = State()
     waiting_for_name_first = State()
-    waiting_for_age_first = State()
+    waiting_for_data_first = State()
     waiting_for_name_second = State()
-    waiting_for_age_second = State()
+    waiting_for_data_second = State()
 
 
 class QuestionState(StatesGroup):
