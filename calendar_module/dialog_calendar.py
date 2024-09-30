@@ -165,7 +165,8 @@ class DialogCalendar(GenericCalendar):
     async def start_calendar(
             self,
             year: int = datetime.now().year,
-            month: int = None
+            month: int = None,
+            section: str = None
     ) -> InlineKeyboardMarkup:
         """
         Starts a calendar for a given year and optionally a specific month.
