@@ -166,7 +166,6 @@ class DialogCalendar(GenericCalendar):
             self,
             year: int = datetime.now().year,
             month: int = None,
-            section: str = None
     ) -> InlineKeyboardMarkup:
         """
         Starts a calendar for a given year and optionally a specific month.
@@ -175,6 +174,7 @@ class DialogCalendar(GenericCalendar):
         :param month: Optional. The month for which the calendar is created. If not provided, the year view is displayed.
         :return: An `InlineKeyboardMarkup` object with the keyboard for the calendar.
         """
+        
         if month:
             return await self._get_days_kb(year, month)
 

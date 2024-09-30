@@ -8,7 +8,7 @@ from calendar_module.schemas import DialogCalendarCallback
 from handlers.numerology_handler import process_selecting_category_num
 from services.calendar_service import process_calendar_selection
 from states import Form
-from handlers.user_input_handler import prompt_for_name
+from handlers.user_input_handler import process_selecting_category_matrix, prompt_for_name
 
 router = Router()
 
@@ -32,7 +32,7 @@ async def handle_matrix(call: CallbackQuery, state: FSMContext):
 async def process_selecting_category(callback_query: CallbackQuery, callback_data: DialogCalendarCallback, state: FSMContext):
 
     if callback_data.section == 'matrix':
-        await process_selecting_category(callback_query, callback_data, state)
+        await process_selecting_category_matrix(callback_query, callback_data, state)
     elif callback_data.section == 'numerology':
         await process_selecting_category_num(callback_query, callback_data, state)    
  

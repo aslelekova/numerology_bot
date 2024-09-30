@@ -67,13 +67,13 @@ async def handle_params_input(message: types.Message, state: FSMContext):
 
     date_prompt_message = await message.answer(
         "Выберите дату рождения 👇",
-        reply_markup=await start_calendar(locale=await get_user_locale(message.from_user), section='matrix')
+        reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data)
 
 
-async def process_selecting_category(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
+async def process_selecting_category_matrix(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
 
     if selected:
