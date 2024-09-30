@@ -173,19 +173,19 @@ async def process_selecting_category_num(callback_query: CallbackQuery, callback
             await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
 
 
-@router.callback_query(lambda callback: callback.data.startswith("section_num_"))
+@router.callback_query(lambda callback: callback.data.startswith("num_"))
 async def handle_section_callback_num(callback_query: CallbackQuery, state: FSMContext):
-    print("Обработчик handle_section_callback_num вызван")  # Добавьте этот print
+    print("Обработчик handle_section_callback_num вызван", callback_query.data)  # Добавьте этот print
 
     category_mapping = {
-        "section_num_personality_psychic": "Личность и психика",
-        "section_num_emotions_selfrealization": "Чувства и самореализация",
-        "section_num_education_spirituality": "Образование и духовное развитие",
-        "section_num_relationships_responsibility": "Отношения и ответственность",
-        "section_num_experience_finances": "Опыт и финансовая сфера",
-        "section_num_personal_power_transformation": "Личная сила и трансформация",
-        "section_num_psychology_balance": "Психология и внутренний баланс",
-        "section_num_social_family": "Социальная и семейная сфера",
+        "num_personality_psychic": "Личность и психика",
+        "num_emotions_selfrealization": "Чувства и самореализация",
+        "num_education_spirituality": "Образование и духовное развитие",
+        "num_relationships_responsibility": "Отношения и ответственность",
+        "num_experience_finances": "Опыт и финансовая сфера",
+        "num_personal_power_transformation": "Личная сила и трансформация",
+        "num_psychology_balance": "Психология и внутренний баланс",
+        "num_social_family": "Социальная и семейная сфера",
     }
 
     category = category_mapping.get(callback_query.data, "Неизвестная категория")
