@@ -7,7 +7,7 @@ from aiogram.filters.callback_data import CallbackData
 from calendar_module.calendar_utils import get_user_locale
 from calendar_module.schemas import DialogCalendarCallback
 from handlers.start_handler import cmd_start
-from services.birthday_service import calculate_houses
+from services.birthday_service import calculate_compatibility, calculate_houses
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details
 from services.gpt_service import setup_assistant_and_vector_store
@@ -38,11 +38,9 @@ async def prompt_for_name_compatibility(call: CallbackQuery, state: FSMContext, 
 
 @router.message(StateFilter(Form.waiting_for_name_first))
 async def handle_params_input(message: types.Message, state: FSMContext):
-    # Получаем имя первого партнера
     user_name = message.text
     await update_user_name(state, user_name)
 
-    # Удаляем предыдущее сообщение с запросом имени
     data = await state.get_data()
     prompt_message_id = data.get("prompt_message_id")
     if prompt_message_id:
@@ -56,7 +54,6 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     except Exception as e:
         print(f"Ошибка при удалении сообщения с именем пользователя: {e}")
 
-    # Запрашиваем дату рождения первого партнера
     date_prompt_message = await message.answer(
         "🗓 Выберите дату рождения партнера №1",
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
@@ -70,10 +67,8 @@ async def process_selecting_first_partner_date(callback_query: CallbackQuery, ca
     selected, date = await process_calendar_selection(callback_query, callback_data)
 
     if selected:
-        # Сохраняем дату первого партнера
         await update_user_date_com(state, date)
 
-        # Переходим к запросу имени второго партнера
         message_text = "✍️ Введите имя партнера №2:"
         await prompt_for_name_compatibility(callback_query, state, message_text, Form.waiting_for_name_second)
 
@@ -108,30 +103,42 @@ async def handle_second_partner_name(message: types.Message, state: FSMContext):
 async def process_selecting_second_partner_date(callback_query: CallbackQuery, callback_data: DialogCalendarCallback, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
 
+    
     if selected:
-        # Сохраняем дату второго партнера
         await update_user_date_com(state, date, partner="second")
 
-        # Здесь можно продолжить логику для расчета совместимости или другого действия
-        await callback_query.message.answer("Данные второго партнера сохранены. Продолжаем...")
+        data = await state.get_data()
+        user_name, _ = await get_user_data(state)
 
-#         previous_message_id = data.get("date_prompt_message_id")
+        print(data)
+        first_partner_day = data.get("first_partner_day")
+        first_partner_month = data.get("first_partner_month")
+        first_partner_year = data.get("first_partner_year")
 
-#         if previous_message_id:
-#             try:
-#                 await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id, message_id=previous_message_id)
-#             except Exception as e:
-#                 print(f"Ошибка при удалении сообщения с календарем: {e}")
+        second_partner_day = data.get("second_partner_day")
+        second_partner_month = data.get("second_partner_month")
+        second_partner_year = data.get("second_partner_year")
 
-#         generating_message = await callback_query.message.answer("⏳")
-#         assistant = await setup_assistant_and_vector_store()
-#         energies = calculate_houses(user_name, day, month, year)
+        previous_message_id = data.get("date_prompt_message_id")
+
+        if previous_message_id:
+            try:
+                await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id, message_id=previous_message_id)
+            except Exception as e:
+                print(f"Ошибка при удалении сообщения с календарем: {e}")
+
+        generating_message = await callback_query.message.answer("⏳")
+        assistant = await setup_assistant_and_vector_store()
+        values = calculate_compatibility(
+            (first_partner_day, first_partner_month, first_partner_year),
+            (second_partner_day, second_partner_month, second_partner_year)
+        ) 
 #         response_text = None
 #         max_retries = 10
 #         attempt = 0
 #         while response_text is None and attempt < max_retries:
 #             attempt += 1
-#             response_text = await generate_gpt_response_numerology(user_name, energies, assistant)
+#             response_text = await generate_gpt_response_numerology(user_name, values, assistant)
 #             if not response_text:
 #                 print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
 
