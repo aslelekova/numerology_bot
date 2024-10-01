@@ -144,7 +144,7 @@ async def process_selecting_second_partner_date(callback_query: CallbackQuery, c
 #         attempt = 0
 #         while response_text is None and attempt < max_retries:
 #             attempt += 1
-#             response_text = await generate_gpt_response_numerology(user_name, values, assistant)
+#             response_text = await generate_gpt_response_com(user_name, values, assistant)
 #             if not response_text:
 #                 print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
 

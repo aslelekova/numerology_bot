@@ -273,18 +273,17 @@ def calculate_partner_matrix(day, month, year):
     }
 
 def calculate_compatibility(date1, date2):
-    # Extract day, month, year for both partners
+
     day1, month1, year1 = date1
     day2, month2, year2 = date2
 
-    # Calculate individual matrices
     partner1_matrix = calculate_partner_matrix(day1, month1, year1)
     partner2_matrix = calculate_partner_matrix(day2, month2, year2)
 
-    # Calculate combined matrix
     combined_matrix = {}
     for key in partner1_matrix:
         combined_value = partner1_matrix[key] + partner2_matrix[key]
         combined_matrix[key] = reduce_to_single_digit(combined_value)
-
+    
+    print(combined_matrix)
     return combined_matrix
