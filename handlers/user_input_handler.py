@@ -10,7 +10,7 @@ from aiogram.filters.state import StateFilter
 
 from calendar_module.calendar_utils import get_user_locale
 from calendar_module.schemas import DialogCalendarCallback
-from handlers.compatibility_handler import process_selecting_category_com
+from handlers.compatibility_handler import process_selecting_category_com, process_selecting_second_partner_date
 from handlers.sections_handler import handle_section
 from handlers.start_handler import cmd_start
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_reply_keyboard, functions_keyboard
@@ -87,7 +87,10 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
     elif category == 'numerology':
         await process_selecting_category_num(callback_query, callback_data, state)
     elif category == 'compatibility':
-        await process_selecting_category_com(callback_query, callback_data, state)
+        if await state.get_state() == Form.waiting_for_data_first:
+            await process_selecting_first_partner_date(callback_query, callback_data, state)
+        elif await state.get_state() == Form.waiting_for_data_second:
+            await process_selecting_second_partner_date(callback_query, callback_data, state)
     else:
         await callback_query.answer("Неизвестная категория.")
 
