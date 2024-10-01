@@ -12,7 +12,7 @@ from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details
 from services.gpt_service import setup_assistant_and_vector_store
 from services.gpt_service_num import generate_gpt_response_numerology
-from services.user_service import get_user_data, update_user_date, update_user_name
+from services.user_service import get_user_data, update_user_date, update_user_date_com, update_user_name
 from states import Form
 from aiogram.filters.state import StateFilter
 
@@ -71,7 +71,7 @@ async def process_selecting_first_partner_date(callback_query: CallbackQuery, ca
 
     if selected:
         # Сохраняем дату первого партнера
-        await update_user_date(state, date)
+        await update_user_date_com(state, date)
 
         # Переходим к запросу имени второго партнера
         message_text = "✍️ Введите имя партнера №2:"
@@ -80,11 +80,9 @@ async def process_selecting_first_partner_date(callback_query: CallbackQuery, ca
 
 @router.message(StateFilter(Form.waiting_for_name_second))
 async def handle_second_partner_name(message: types.Message, state: FSMContext):
-    # Получаем имя второго партнера
     partner_name = message.text
     await state.update_data(partner_name=partner_name)
 
-    # Удаляем сообщение с запросом имени второго партнера
     data = await state.get_data()
     prompt_message_id = data.get("prompt_message_id")
     if prompt_message_id:
@@ -98,7 +96,6 @@ async def handle_second_partner_name(message: types.Message, state: FSMContext):
     except Exception as e:
         print(f"Ошибка при удалении сообщения с именем партнера: {e}")
 
-    # Запрашиваем дату рождения второго партнера
     date_prompt_message = await message.answer(
         "🗓 Выберите дату рождения партнера №2",
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))

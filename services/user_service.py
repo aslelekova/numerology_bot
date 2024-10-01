@@ -34,3 +34,13 @@ async def update_user_date(state: FSMContext, date):
     :return: None
     """
     await state.update_data(user_date=date)
+
+async def update_user_date_com(state: FSMContext, date, partner: str = "first"):
+    data = await state.get_data()
+    
+    if partner == "first":
+        # Сохраняем дату для первого партнера
+        await state.update_data(date_first_partner=date)
+    elif partner == "second":
+        # Сохраняем дату для второго партнера
+        await state.update_data(date_second_partner=date)
