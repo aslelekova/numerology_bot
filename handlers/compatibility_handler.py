@@ -17,28 +17,28 @@ from aiogram.filters.state import StateFilter
 
 router = Router()
 
-
 @router.callback_query(F.data == "compatibility")
 async def handle_numerology(call: CallbackQuery, state: FSMContext):
     await state.update_data(category='compatibility')
 
-    # Запрашиваем имя первого партнера
+    # Запрашиваем имя партнера №1
     message_text = "✍️ Введите имя партнера №1:"
     await prompt_for_name_compatibility(call, state, message_text, Form.waiting_for_name_first)
 
-
+# Шаг запроса имени партнера
 async def prompt_for_name_compatibility(call: CallbackQuery, state: FSMContext, message_text: str, next_state: str):
     await call.message.delete()
     prompt_message = await call.message.answer(message_text)
     await state.update_data(prompt_message_id=prompt_message.message_id)
     await state.set_state(next_state)
 
-
+# Обработка имени партнера №1
 @router.message(StateFilter(Form.waiting_for_name_first))
-async def handle_first_partner_name_input(message: types.Message, state: FSMContext):
+async def handle_params_input(message: types.Message, state: FSMContext):
     user_name = message.text
-    await state.update_data(partner_name_1=user_name) 
+    await update_user_date(state, user_name)
 
+    # Удаляем сообщение с вводом имени
     data = await state.get_data()
     prompt_message_id = data.get("prompt_message_id")
 
@@ -50,31 +50,36 @@ async def handle_first_partner_name_input(message: types.Message, state: FSMCont
 
     try:
         await message.delete()
-
     except Exception as e:
         print(f"Ошибка при удалении сообщения с именем пользователя: {e}")
 
+    # Запрашиваем дату рождения партнера №1
     date_prompt_message = await message.answer(
         "🗓 Выберите дату рождения партнера №1",
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
-    await state.set_state(Form.waiting_for_data_first)
-    message_text = "✍️ Введите имя партнера №2:"
-    await prompt_for_second_name(message, state, message_text, Form.waiting_for_name_first)
+    await state.set_state(Form.waiting_for_date_first)
 
+# Обработка даты рождения партнера №1
+@router.callback_query(StateFilter(Form.waiting_for_date_first))
+async def handle_date_first(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
+    selected, date = await process_calendar_selection(callback_query, callback_data)
+    
+    if selected:
+        await update_user_date(state, date)
 
-async def prompt_for_second_name(message: types.Message, state: FSMContext, message_text: str, next_state: str):
-    prompt_message = await message.answer(message_text)
-    await state.update_data(prompt_message_id=prompt_message.message_id)
-    await state.set_state(next_state)
+        # Переходим к запросу имени партнера №2
+        message_text = "✍️ Введите имя партнера №2:"
+        await prompt_for_name_compatibility(callback_query, state, message_text, Form.waiting_for_name_second)
 
-
+# Обработка имени партнера №2
 @router.message(StateFilter(Form.waiting_for_name_second))
-async def handle_second_partner_name_input(message: types.Message, state: FSMContext):
-    user_name = message.text
-    await state.update_data(partner_name_2=user_name)
+async def handle_name_second(message: types.Message, state: FSMContext):
+    partner_name = message.text
+    await update_user_date(state, partner_name)
 
+    # Удаляем сообщение с вводом имени партнера №2
     data = await state.get_data()
     prompt_message_id = data.get("prompt_message_id")
 
@@ -86,16 +91,27 @@ async def handle_second_partner_name_input(message: types.Message, state: FSMCon
 
     try:
         await message.delete()
-
     except Exception as e:
-        print(f"Ошибка при удалении сообщения с именем пользователя: {e}")
+        print(f"Ошибка при удалении сообщения с именем партнера №2: {e}")
 
+    # Запрашиваем дату рождения партнера №2
     date_prompt_message = await message.answer(
         "🗓 Выберите дату рождения партнера №2",
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
-    await state.set_state(Form.waiting_for_data_second)
+    await state.set_state(Form.waiting_for_date_second)
+
+# Обработка даты рождения партнера №2
+@router.callback_query(StateFilter(Form.waiting_for_date_second))
+async def handle_date_second(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
+    selected, date = await process_calendar_selection(callback_query, callback_data)
+
+    if selected:
+        await update_user_date(state, date)
+
+        # Теперь вызываем process_selecting_category_com после получения данных
+        await process_selecting_category_com(callback_query, callback_data, state)
 
 
 async def process_selecting_category_com(callback_query: CallbackQuery, callback_data: CallbackData, state: FSMContext):
