@@ -35,7 +35,7 @@ async def prompt_for_name_compatibility(call: CallbackQuery, state: FSMContext, 
 
 
 @router.message(StateFilter(Form.waiting_for_name_first))
-async def handle_first_partner_name_input(call: CallbackQuery, message: types.Message, state: FSMContext):
+async def handle_first_partner_name_input(message: types.Message, state: FSMContext):
     user_name = message.text
     await state.update_data(partner_name_1=user_name) 
 
@@ -61,12 +61,11 @@ async def handle_first_partner_name_input(call: CallbackQuery, message: types.Me
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data_first)
     message_text = "✍️ Введите имя партнера №2:"
-    await prompt_for_second_name(call, state, message_text, Form.waiting_for_name_first)
+    await prompt_for_second_name(message, state, message_text, Form.waiting_for_name_first)
 
 
-async def prompt_for_second_name(call: CallbackQuery, state: FSMContext, message_text: str, next_state: str):
-    await call.message.delete()
-    prompt_message = await call.message.answer(message_text)
+async def prompt_for_second_name(message: types.Message, state: FSMContext, message_text: str, next_state: str):
+    prompt_message = await message.answer(message_text)
     await state.update_data(prompt_message_id=prompt_message.message_id)
     await state.set_state(next_state)
 
