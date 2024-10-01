@@ -11,7 +11,7 @@ from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details
 from services.gpt_service import setup_assistant_and_vector_store
 from services.gpt_service_num import generate_gpt_response_numerology
-from services.user_service import get_user_data, update_user_date
+from services.user_service import get_user_data, update_user_date, update_user_name
 from states import Form
 from aiogram.filters.state import StateFilter
 
@@ -27,7 +27,16 @@ async def handle_numerology(call: CallbackQuery, state: FSMContext):
     )
     await prompt_for_name_compatibility(call, state, message_text, Form.waiting_for_name_first)
 
+
 async def prompt_for_name_compatibility(call: CallbackQuery, state: FSMContext, message_text: str, next_state: str):
+    """
+    Prompts the user to enter their name by sending a message and updating the state.
+    :param call: The callback query object containing information about the callback event.
+    :param state: The FSM (Finite State Machine) context to manage the state of the conversation.
+    :param message_text: The text message to prompt the user for their name.
+    :param next_state: The next state in the FSM after the user responds.
+    :return: None
+    """
     await call.message.delete()
     prompt_message = await call.message.answer(message_text)
     await state.update_data(prompt_message_id=prompt_message.message_id)
@@ -36,8 +45,14 @@ async def prompt_for_name_compatibility(call: CallbackQuery, state: FSMContext, 
 
 @router.message(StateFilter(Form.waiting_for_name_first))
 async def handle_params_input(message: types.Message, state: FSMContext):
+    """
+    Handles user input for their name, updates the state, and prompts the user to select a date of birth.
+    :param message: The message object containing the user's input.
+    :param state: The FSM (Finite State Machine) context to manage the state of the conversation.
+    :return: None
+    """
     user_name = message.text
-    await update_user_date(state, user_name)
+    await update_user_name(state, user_name)
 
     data = await state.get_data()
     prompt_message_id = data.get("prompt_message_id")
