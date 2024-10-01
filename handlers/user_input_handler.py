@@ -10,7 +10,7 @@ from aiogram.filters.state import StateFilter
 
 from calendar_module.calendar_utils import get_user_locale
 from calendar_module.schemas import DialogCalendarCallback
-from handlers.compatibility_handler import process_selecting_category_com, process_selecting_second_partner_date
+from handlers.compatibility_handler import process_selecting_first_partner_date, process_selecting_second_partner_date
 from handlers.sections_handler import handle_section
 from handlers.start_handler import cmd_start
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_reply_keyboard, functions_keyboard
