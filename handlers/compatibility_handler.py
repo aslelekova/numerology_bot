@@ -77,7 +77,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data_first)
 
-@router.callback_query(StateFilter(Form.waiting_for_date_first))
+@router.callback_query(StateFilter(Form.waiting_for_data_first))
 async def handle_date_first(callback_query: CallbackQuery, callback_data: DialogCalendarCallback, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
     
