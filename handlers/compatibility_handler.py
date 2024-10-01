@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.callback_data import CallbackData
 from calendar_module.calendar_utils import get_user_locale
+from calendar_module.schemas import DialogCalendarCallback
 from handlers.start_handler import cmd_start
 from services.birthday_service import calculate_houses
 from services.calendar_service import process_calendar_selection, start_calendar
@@ -114,10 +115,10 @@ async def handle_name_second(message: types.Message, state: FSMContext):
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
-    await state.set_state(Form.waiting_for_date_second)
+    await state.set_state(Form.waiting_for_data_second)
 
 # Обработка даты рождения партнера №2
-@router.callback_query(StateFilter(Form.waiting_for_date_second))
+@router.callback_query(StateFilter(Form.waiting_for_data_second))
 async def handle_date_second(callback_query: CallbackQuery, callback_data: DialogCalendarCallback, state: FSMContext):
     selected, date = await process_calendar_selection(callback_query, callback_data)
 
