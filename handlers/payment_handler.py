@@ -6,6 +6,7 @@ import traceback
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from keyboards.sections_fate_com import create_full_sections_keyboard_com, create_sections_keyboard_com
 from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num
 from services.db_service import get_subscription_details
 from services.message_service import delete_message, delete_messages, send_initial_messages
@@ -223,6 +224,8 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                         sections_keyboard=create_full_sections_keyboard()
                     elif category == 'numerology':
                         sections_keyboard=create_full_sections_keyboard_num()
+                    elif category == 'compatibility':
+                        sections_keyboard=create_full_sections_keyboard_com()
                     else:
                         await callback_query.answer("Неизвестная категория.")
 
@@ -357,6 +360,8 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
         reply_markup=create_full_sections_keyboard()
     elif category == 'numerology':
         reply_markup=create_full_sections_keyboard_num()
+    elif category == 'compatibility':
+        reply_markup=create_full_sections_keyboard_com()
     else:
         await callback_query.answer("Неизвестная категория.")
 
@@ -384,6 +389,8 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
             section_message = "Ура, ваша матрица судьбы готова 🔮\n\nВы можете посмотреть расклад по каждому из разделов.\n✅ - доступно бесплатно\n🔐 - требуется полный доступ"
         elif category == 'numerology':
             section_message = "Ура, ваш расчет по Нумерологии | Личному успеху | Финансам готов 💸\n\nВы можете посмотреть расклад по каждому из разделов.\n✅ - доступно бесплатно\n🔐 - требуется полный доступ"
+        elif category == 'compatibility':
+            reply_markup=create_full_sections_keyboard_com()
         question_message = ("Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
                             " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
                             "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)")
@@ -391,6 +398,8 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
             await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard(), functions_keyboard())
         elif category == 'numerology':
             await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard_num(), functions_keyboard())
+        elif category == 'compatibility':
+            await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard_com(), functions_keyboard())
         else:
             await callback_query.answer("Неизвестная категория.")
 

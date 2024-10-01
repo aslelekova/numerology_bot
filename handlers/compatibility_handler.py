@@ -1,17 +1,22 @@
 # handlers/compatibility_handler.py
 
 from aiogram import Router, F, types
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.callback_data import CallbackData
 from calendar_module.calendar_utils import get_user_locale
 from calendar_module.schemas import DialogCalendarCallback
 from handlers.start_handler import cmd_start
+from keyboards.sections_fate_com import create_full_sections_keyboard_com, create_sections_keyboard_com
+from keyboards.sections_fate_matrix import functions_keyboard
+from sections_handler import handle_section
 from services.birthday_service import calculate_compatibility, calculate_houses
 from services.calendar_service import process_calendar_selection, start_calendar
-from services.db_service import get_subscription_details
+from services.db_service import get_subscription_details, update_subscription_status, update_user_readings_left
 from services.gpt_service import setup_assistant_and_vector_store
+from services.gpt_service_com import generate_gpt_response_com
 from services.gpt_service_num import generate_gpt_response_numerology
+from services.message_service import delete_messages, notify_subscription_expired
 from services.user_service import get_user_data, update_user_date, update_user_date_com, update_user_name
 from states import Form
 from aiogram.filters.state import StateFilter
@@ -139,146 +144,150 @@ async def process_selecting_second_partner_date(callback_query: CallbackQuery, c
             (first_partner_day, first_partner_month, first_partner_year),
             (second_partner_day, second_partner_month, second_partner_year)
         ) 
-#         response_text = None
-#         max_retries = 10
-#         attempt = 0
-#         while response_text is None and attempt < max_retries:
-#             attempt += 1
-#             response_text = await generate_gpt_response_com(user_name, values, assistant)
-#             if not response_text:
-#                 print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
+        response_text = None
+        max_retries = 10
+        attempt = 0
+        while response_text is None and attempt < max_retries:
+            attempt += 1
+            response_text = await generate_gpt_response_com(user_name, values, assistant)
+            if not response_text:
+                print(f"Попытка {attempt}: не удалось сгенерировать ответ.")
 
-#         await state.update_data(response_text=response_text)
+        await state.update_data(response_text=response_text)
 
-#         await generating_message.delete()
+        await generating_message.delete()
 
-#         if not response_text:
-#             await callback_query.message.answer(
-#                 "Не удалось сгенерировать ответ. Пожалуйста, повторите попытку.",
-#             )
-#             await cmd_start(callback_query.message, state)
-#             return
+        if not response_text:
+            await callback_query.message.answer(
+                "Не удалось сгенерировать ответ. Пожалуйста, повторите попытку.",
+            )
+            await cmd_start(callback_query.message, state)
+            return
 
-#         response_text = response_text.replace("#", "").replace("*", "")
-#         split_text = response_text.split("---")
-#         categories = [
-#             "Личность и психика",
-#             "Чувства и самореализация",
-#             "Образование и духовное развитие",
-#             "Отношения и ответственность",
-#             "Опыт и финансовая сфера",
-#             "Личная сила и трансформация",
-#             "Психология и внутренний баланс",
-#             "Социальная и семейная сфера",
-#         ]
+        response_text = response_text.replace("#", "").replace("*", "")
+        split_text = response_text.split("---")
+        categories = [
+            "Для чего пара встретилась",
+            "Как пара выглядит для других",
+            "Общая атмосфера внутри пары",
+            "Что укрепляет союз",
+            "Финансы",
+            "Желания и цели",
+            "Задачи пары",
+            "Трудности и недопонимания",
+        ]
 
-#         categories_dict = {category: split_text[i].strip() for i, category in enumerate(categories) if i < len(split_text)}
+        categories_dict = {category: split_text[i].strip() for i, category in enumerate(categories) if i < len(split_text)}
 
-#         await state.update_data(full_response=categories_dict)
-#         user_id = callback_query.from_user.id
-#         subscription_details = await get_subscription_details(user_id)
-#         subscription_active = subscription_details["subscription_active"]
-#         readings_left = subscription_details["readings_left"]
-#         questions_left = subscription_details["questions_left"]
+        await state.update_data(full_response=categories_dict)
+        user_id = callback_query.from_user.id
+        subscription_details = await get_subscription_details(user_id)
+        subscription_active = subscription_details["subscription_active"]
+        readings_left = subscription_details["readings_left"]
+        questions_left = subscription_details["questions_left"]
         
-#         if subscription_active:  
-#             sections_keyboard = create_full_sections_keyboard_num()
-#             first_message = await callback_query.message.answer(
-#                 f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
-#                 reply_markup=sections_keyboard
-#             )
-#             await state.update_data(first_message_id=first_message.message_id)
+        if subscription_active:  
+            sections_keyboard = create_full_sections_keyboard_com()
+            first_message = await callback_query.message.answer(
+                f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
+                reply_markup=sections_keyboard
+            )
+            await state.update_data(first_message_id=first_message.message_id)
 
-#             question_prompt_message = await callback_query.message.answer(
-#                     f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-#                 "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
-#                     reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-#                     [InlineKeyboardButton(text="Новый расчет", callback_data="main_menu")],
-#                     [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_free_question")],
-#                     [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-#                     ]),
-#                     parse_mode="HTML"
-#                 )
+            question_prompt_message = await callback_query.message.answer(
+                    f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
+                "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
+                    reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="Новый расчет", callback_data="main_menu")],
+                    [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_free_question")],
+                    [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
+                    ]),
+                    parse_mode="HTML"
+                )
 
-#             await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-#         else:
-#             sections_keyboard = create_sections_keyboard_num()
-#             first_message = await callback_query.message.answer(
-#                 "Ура, ваш расчет по Нумерологии | Личному успеху | Финансам готов 💸\n\n"
-#                 "Вы можете посмотреть расклад по каждому из разделов.\n"
-#                 "✅ - доступно бесплатно\n"
-#                 "🔐 - требуется полный доступ",
-#                 reply_markup=sections_keyboard
-#             )
-#             await state.update_data(first_message_id=first_message.message_id)
+            await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+        else:
+            sections_keyboard = create_sections_keyboard_com()
+            first_message = await callback_query.message.answer(
+                "Ура, ваш расчет по совместимости готов 💕\n\n"
+                "Вы можете посмотреть расклад по каждому из разделов.\n"
+                "✅ - доступно бесплатно\n"
+                "🔐 - требуется полный доступ",
+                reply_markup=sections_keyboard
+            )
+            await state.update_data(first_message_id=first_message.message_id)
 
-#             three_functions = functions_keyboard()
-#             question_prompt_message = await callback_query.message.answer(
-#                 f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
-#                 " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
-#                 "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
-#                 reply_markup=three_functions,
-#                 parse_mode="HTML"
-#             )
-#             await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+            three_functions = functions_keyboard()
+            question_prompt_message = await callback_query.message.answer(
+                f"Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
+                " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
+                "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)",
+                reply_markup=three_functions,
+                parse_mode="HTML"
+            )
+            await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
 
 
-# @router.callback_query(lambda callback: callback.data.startswith("num_"))
-# async def handle_section_callback_num(callback_query: CallbackQuery, state: FSMContext):
-#     category_mapping = {
-#         "num_personality_psychic": "Личность и психика",
-#         "num_emotions_selfrealization": "Чувства и самореализация",
-#         "num_education_spirituality": "Образование и духовное развитие",
-#         "num_relationships_responsibility": "Отношения и ответственность",
-#         "num_experience_finances": "Опыт и финансовая сфера",
-#         "num_personal_power_transformation": "Личная сила и трансформация",
-#         "num_psychology_balance": "Психология и внутренний баланс",
-#         "num_social_family": "Социальная и семейная сфера",
-#     }
+@router.callback_query(lambda callback: callback.data.startswith("com_"))
+async def handle_section_callback_num(callback_query: CallbackQuery, state: FSMContext):
+    category_mapping = {
+        "com_meeting_purpose": "Для чего пара встретилась",
+        "com_appearance": "Как пара выглядит для других",
+        "com_atmosphere": "Общая атмосфера внутри пары",
+        "com_strengthen_union": "Что укрепляет союз",
+        "com_finances": "Финансы",
+        "com_wishes_goals": "Желания и цели",
+        "com_tasks": "Задачи пары",
+        "com_difficulties": "Трудности и недопонимания",
+    }
 
-#     category = category_mapping.get(callback_query.data, "Неизвестная категория")
 
-#     data = await state.get_data()
-#     first_message_id = data.get("first_message_id")
-#     question_prompt_message_id = data.get("question_prompt_message_id")
-#     previous_warning_message_id = data.get("previous_warning_message_id")
+    category = category_mapping.get(callback_query.data, "Неизвестная категория")
 
-#     if previous_warning_message_id:
-#         try:
-#             await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id, message_id=previous_warning_message_id)
-#         except Exception as e:
-#             print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
+    data = await state.get_data()
+    first_message_id = data.get("first_message_id")
+    question_prompt_message_id = data.get("question_prompt_message_id")
+    previous_warning_message_id = data.get("previous_warning_message_id")
 
-#     user_id = callback_query.from_user.id
-#     subscription_details = await get_subscription_details(user_id)
-#     subscription_active = subscription_details["subscription_active"]
-#     readings_left = subscription_details["readings_left"]
-#     questions_left = subscription_details["questions_left"]
+    if previous_warning_message_id:
+        try:
+            await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id, message_id=previous_warning_message_id)
+        except Exception as e:
+            print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
 
-#     if readings_left <= 0 and questions_left <= 0:
-#         await update_subscription_status(user_id, 0)
+    user_id = callback_query.from_user.id
+    subscription_details = await get_subscription_details(user_id)
+    subscription_active = subscription_details["subscription_active"]
+    readings_left = subscription_details["readings_left"]
+    questions_left = subscription_details["questions_left"]
 
-#     if not subscription_active and category not in [
-#         "Личность и психика",
-#     ]:
-#         warning_message = await callback_query.message.answer(
-#             "Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ."
-#         )
-#         await state.update_data(previous_warning_message_id=warning_message.message_id)
-#         return
+    if readings_left <= 0 and questions_left <= 0:
+        await update_subscription_status(user_id, 0)
 
-#     if subscription_active and readings_left <= 0 and category not in [
-#         "Личность и психика",
-#     ]:
-#         await notify_subscription_expired(callback_query, state)
-#         return
+    if not subscription_active and category not in [
+        "Для чего пара встретилась",
+        "Как пара выглядит для других"
+    ]:
+        warning_message = await callback_query.message.answer(
+            "Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ."
+        )
+        await state.update_data(previous_warning_message_id=warning_message.message_id)
+        return
 
-#     if subscription_active and category not in [
-#         "Личность и психика",
-#     ]:
-#         new_readings_left = readings_left - 1
-#         await update_user_readings_left(user_id, new_readings_left)
+    if subscription_active and readings_left <= 0 and category not in [
+        "Для чего пара встретилась",
+        "Как пара выглядит для других"
+    ]:
+        await notify_subscription_expired(callback_query, state)
+        return
+
+    if subscription_active and category not in [
+        "Для чего пара встретилась",
+        "Как пара выглядит для других"
+    ]:
+        new_readings_left = readings_left - 1
+        await update_user_readings_left(user_id, new_readings_left)
     
-#     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
-#     await handle_section(callback_query, state, category)
+    await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
+    await handle_section(callback_query, state, category)
 

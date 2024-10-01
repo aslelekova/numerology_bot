@@ -262,14 +262,17 @@ def calculate_partner_matrix(day, month, year):
     J = reduce_to_single_digit(C + E)
     CP = reduce_to_single_digit(M + J)
     DP = reduce_to_single_digit(LP + CP)
-
+    A2 = reduce_to_single_digit(G3 + Z3)  # A2 = G3 + Z3
+    A3 = reduce_to_single_digit(G3 + A2)   # A3 = G3 + A2
+    A1 = reduce_to_single_digit(A2 + Z3)
     return {
         "X": X, "Y": Y, "Z": Z, "G": G, "A": A, "B": B,
         "C": C, "D": D, "E": E, "G3": G3, "G2": G2,
         "Y3": Y3, "Y2": Y2, "Z3": Z3, "Z2": Z2, "X3": X3,
         "X2": X2, "B3": B3, "B2": B2, "C3": C3, "C2": C2,
         "D3": D3, "D2": D2, "E3": E3, "E2": E2, "N": N, 
-        "S": S, "LP": LP, "M": M, "J": J, "CP": CP, "DP": DP
+        "S": S, "LP": LP, "M": M, "J": J, "CP": CP, "DP": DP,
+        "A2": A2, "A3": A3, "A1": A1
     }
 
 def calculate_compatibility(date1, date2):
