@@ -9,7 +9,7 @@ from calendar_module.schemas import DialogCalendarCallback
 from handlers.start_handler import cmd_start
 from keyboards.sections_fate_com import create_full_sections_keyboard_com, create_sections_keyboard_com
 from keyboards.sections_fate_matrix import functions_keyboard
-from sections_handler import handle_section
+from handlers.sections_handler import handle_section
 from services.birthday_service import calculate_compatibility, calculate_houses
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details, update_subscription_status, update_user_readings_left
