@@ -288,5 +288,4 @@ def calculate_compatibility(date1, date2):
         combined_value = partner1_matrix[key] + partner2_matrix[key]
         combined_matrix[key] = reduce_to_single_digit(combined_value)
     
-    print(combined_matrix)
     return combined_matrix
