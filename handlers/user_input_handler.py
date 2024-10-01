@@ -86,8 +86,8 @@ async def process_selecting_category(callback_query: CallbackQuery, callback_dat
         await process_selecting_category_matrix(callback_query, callback_data, state)
     elif category == 'numerology':
         await process_selecting_category_num(callback_query, callback_data, state)
-    # elif category == 'compatibility':
-    #     await process_selecting_category_com(callback_query, callback_data, state)
+    elif category == 'compatibility':
+        await process_selecting_category_com(callback_query, callback_data, state)
     else:
         await callback_query.answer("Неизвестная категория.")
 
