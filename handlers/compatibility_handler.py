@@ -110,7 +110,7 @@ async def process_selecting_second_partner_date(callback_query: CallbackQuery, c
 
     if selected:
         # Сохраняем дату второго партнера
-        await update_user_date(state, date, partner="second")
+        await update_user_date_com(state, date, partner="second")
 
         # Здесь можно продолжить логику для расчета совместимости или другого действия
         await callback_query.message.answer("Данные второго партнера сохранены. Продолжаем...")
