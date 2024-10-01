@@ -110,14 +110,12 @@ async def process_selecting_second_partner_date(callback_query: CallbackQuery, c
         data = await state.get_data()
         user_name, _ = await get_user_data(state)
 
-        print(data)
-        first_partner_day = data.get("first_partner_day")
-        first_partner_month = data.get("first_partner_month")
-        first_partner_year = data.get("first_partner_year")
+        first_partner_date = data.get("date_first_partner")
+        second_partner_date = data.get("date_second_partner")
 
-        second_partner_day = data.get("second_partner_day")
-        second_partner_month = data.get("second_partner_month")
-        second_partner_year = data.get("second_partner_year")
+        if not first_partner_date or not second_partner_date:
+            await callback_query.message.answer("Ошибка: не удалось получить даты партнеров.")
+            return
 
         previous_message_id = data.get("date_prompt_message_id")
 
@@ -129,6 +127,14 @@ async def process_selecting_second_partner_date(callback_query: CallbackQuery, c
 
         generating_message = await callback_query.message.answer("⏳")
         assistant = await setup_assistant_and_vector_store()
+        first_partner_day = first_partner_date.day
+        first_partner_month = first_partner_date.month
+        first_partner_year = first_partner_date.year
+
+        second_partner_day = second_partner_date.day
+        second_partner_month = second_partner_date.month
+        second_partner_year = second_partner_date.year
+
         values = calculate_compatibility(
             (first_partner_day, first_partner_month, first_partner_year),
             (second_partner_day, second_partner_month, second_partner_year)
