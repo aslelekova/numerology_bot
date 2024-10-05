@@ -34,6 +34,7 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
             print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
 
     if questions_left <= 0:
+        await callback_query.message.delete()
         message = await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
         await save_message_id(state, message.message_id)
     else:
@@ -51,6 +52,7 @@ async def process_question(message: types.Message, state: FSMContext):
     subscription_active = subscription_details["subscription_active"]
     questions_left = subscription_details["questions_left"]
     if questions_left <= 0:
+        await message.delete()
         warning_message = await message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
         await save_message_id(state, warning_message.message_id)
         return
@@ -135,7 +137,3 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
     )
     await save_message_id(state, main_menu_message.message_id)
 
-
-@router.message(lambda message: message.text)
-async def text_message_handler(message: types.Message, state: FSMContext):
-    await save_message_id(state, message.message_id)
