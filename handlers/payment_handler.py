@@ -24,7 +24,6 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     first_message_id = data.get("first_message_id")
     question_prompt_message_id = data.get("question_prompt_message_id")
     previous_warning_message_id = data.get("previous_warning_message_id")
-    print(previous_warning_message_id)
     if previous_warning_message_id:
         try:
             await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id,
@@ -396,10 +395,11 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
         elif category == 'numerology':
             section_message = "Ура, ваш расчет по Нумерологии | Личному успеху | Финансам готов 💸\n\nВы можете посмотреть расклад по каждому из разделов.\n✅ - доступно бесплатно\n🔐 - требуется полный доступ"
         elif category == 'compatibility':
-            reply_markup=create_full_sections_keyboard_com()
+            section_message = "Ура, ваш расчет по Совместимости готов 💕\n\nВы можете посмотреть расклад по каждому из разделов.\n✅ - доступно бесплатно\n🔐 - требуется полный доступ"
         question_message = ("Получите <b>ответы на все свои вопросы</b> с ПОЛНЫМ доступом к:\n🔮 Матрице судьбы\n💸 Нумерологии"
                             " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
                             "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)")
+
         if category == 'matrix':
             await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard(), functions_keyboard())
         elif category == 'numerology':
