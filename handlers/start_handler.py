@@ -46,6 +46,8 @@ async def cmd_start(message: types.Message, state: FSMContext):
                     questions_left = await get_questions_left(int(referrer_id))
                     await update_questions_left(int(referrer_id), questions_left + 1)
                 except Exception as e:
+
+
                     print(f"Ошибка при отправке сообщения рефереру: {e}")
             else:
                 await message.answer("Нельзя регистрироваться по собственной реферальной ссылке!")
@@ -55,7 +57,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
     user_name = user_data.get("user_name") or message.from_user.first_name
 
-    await state.clear()
 
     await message.answer(
         f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, нумерологии, "
@@ -63,4 +64,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
         "сможете задать любой вопрос.</b> С чего начнем?",
         reply_markup=main_menu_keyboard()
     )
+
+    await state.clear()
 
