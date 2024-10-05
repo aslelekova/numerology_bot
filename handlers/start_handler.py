@@ -12,7 +12,6 @@ router = Router()
 
 @router.message(CommandStart())
 async def cmd_start(message: types.Message, state: FSMContext):
-    await state.clear()
     await setup_db()
     user_id = message.from_user.id
     start_command = message.text
@@ -65,6 +64,9 @@ async def cmd_start(message: types.Message, state: FSMContext):
         "сможете задать любой вопрос.</b> С чего начнем?",
         reply_markup=main_menu_keyboard()
     )
+
+    await state.update_data(link_message_id=None)
+
 
 
 
