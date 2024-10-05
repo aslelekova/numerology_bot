@@ -1,6 +1,5 @@
 # handlers/user_input_handler.py
 
-import asyncio
 import aiosqlite
 from aiogram import Router, types
 from aiogram.filters.callback_data import CallbackData
@@ -39,6 +38,8 @@ async def prompt_for_name(call: CallbackQuery, state: FSMContext, message_text: 
     prompt_message = await call.message.answer(message_text)
     await state.update_data(prompt_message_id=prompt_message.message_id)
     await state.set_state(next_state)
+    await save_message_id(state, prompt_message.message_id)
+
 
 
 @router.message(StateFilter(Form.waiting_for_name))
@@ -171,6 +172,7 @@ async def process_selecting_category_matrix(callback_query: CallbackQuery, callb
             )
             await state.update_data(first_message_id=first_message.message_id)
             await save_message_id(state, first_message.message_id)
+            print(first_message.message_id)
 
             question_prompt_message = await callback_query.message.answer(
                     f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
@@ -185,7 +187,7 @@ async def process_selecting_category_matrix(callback_query: CallbackQuery, callb
 
             await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
             await save_message_id(state, question_prompt_message.message_id)
-
+            print(question_prompt_message.message_id)
         else:
             sections_keyboard = create_sections_keyboard()
             first_message = await callback_query.message.answer(

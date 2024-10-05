@@ -223,3 +223,4 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
 #         "<b>После каждого расчета вы сможете задать любой вопрос.</b> С чего начнем?",
 #         reply_markup=main_menu_keyboard()
 #     )
+
