@@ -171,8 +171,9 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
 
                 if payment.status == "succeeded":
                     await update_user_tariff(callback_query, callback_query.message.chat.id, payment.description)
-                    await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
+                    success = await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
                     data = await state.get_data()
+                    await save_message_id(state, success.message_id)
 
                     confirmation_message_id1 = data.get("confirmation_message_id1")
                     tariff_message1 = data.get("tariff_message1")

@@ -56,6 +56,7 @@ async def process_question(message: types.Message, state: FSMContext):
     user_name = user_data.get('user_name', 'Пользователь')
     birth_date = user_data.get('user_date', 'неизвестна')
     question = message.text
+    await save_message_id(state, message.message_id)
 
     response_text = await generate_question_response(question, user_name, birth_date, state)
 
