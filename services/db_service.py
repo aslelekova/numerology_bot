@@ -55,3 +55,28 @@ async def update_questions_left(user_id: int, questions_left: int):
         )
         await connection.commit()
 
+class Database:
+    async def setup(self):
+        async with aiosqlite.connect('users.db') as db:
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS login_id (
+                    id INTEGER PRIMARY KEY,
+                    tariff TEXT DEFAULT 'none',
+                    readings_left INTEGER DEFAULT 0,
+                    questions_left INTEGER DEFAULT 1, 
+                    subscription_active BOOLEAN DEFAULT 0,
+                    referred_id INTEGER DEFAULT NULL
+                )
+            """)
+            await db.commit()
+
+    async def user_exists(self, user_id):
+        async with aiosqlite.connect('users.db') as db:
+            cursor = await db.execute("SELECT id FROM login_id WHERE id = ?", (user_id,))
+            data = await cursor.fetchone()
+            return data is not None
+
+    async def add_user(self, user_id, referred_id=None):
+        async with aiosqlite.connect('users.db') as db:
+            await db.execute("INSERT INTO login_id (id, referred_id) VALUES (?, ?)", (user_id, referred_id))
+            await db.commit()

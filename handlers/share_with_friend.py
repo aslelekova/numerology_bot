@@ -16,7 +16,7 @@ async def share_and_ask_handler(callback_query: types.CallbackQuery, state: FSMC
     link = f"https://t.me/MakeMyMatrix_Bot?start={user_id}"
 
     await callback_query.message.answer(
-        f"Отправьте другу эту ссылку, чтобы получить дополнительный вопрос: {link}"
+        f"Отправьте другу эту ссылку, чтобы задать еще один вопрос  :\n{link}"
     )
 
     # Удаляем оригинальное сообщение
