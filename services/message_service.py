@@ -28,6 +28,7 @@ async def send_initial_messages(bot, chat_id: int, state: FSMContext, section_me
                                 sections_keyboard, functions_keyboard):
     first_message = await bot.send_message(chat_id, section_message, reply_markup=sections_keyboard)
     await state.update_data(first_message_id=first_message.message_id)
+    await save_message_id(state, first_message.message_id)
 
     question_prompt_message = await bot.send_message(
         chat_id,

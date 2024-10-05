@@ -88,6 +88,7 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
                             " | Личному успеху | Финансам\n💕 Совместимости с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
                             "персональному ассистенту и получите мгновенный ответ (например: 💕<b>Как улучшить отношения с партнером?</b>)")
 
+
         if category == 'matrix':
             await send_initial_messages(callback_query.bot, callback_query.message.chat.id, state, section_message, question_message, create_sections_keyboard(), functions_keyboard())
         elif category == 'numerology':
