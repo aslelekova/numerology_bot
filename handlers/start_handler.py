@@ -63,9 +63,10 @@ async def cmd_start(message: types.Message, state: FSMContext):
         reply_markup=main_menu_keyboard()
     )
 
-    await state.clear()
-    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-    await save_message_id(state, question_prompt_message.message_id)
+    question_prompt_message_id = user_data.get("question_prompt_message_id")
+
+    await state.update_data(question_prompt_message_id=question_prompt_message_id)
+
 
 
 
