@@ -66,3 +66,4 @@ async def cmd_start(message: types.Message, state: FSMContext):
         reply_markup=main_menu_keyboard()
     )
 
+    await state.clear()
