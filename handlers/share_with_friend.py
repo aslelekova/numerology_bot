@@ -21,7 +21,6 @@ async def share_and_ask_handler(callback_query: types.CallbackQuery, state: FSMC
     unique_id = str(uuid4())
     link = f"https://t.me/MakeMyMatrix_Bot/share/{unique_id}"
 
-    # Сохраняем ссылку в базе данных для отслеживания
     await save_share_link(user_id, unique_id)
 
     # Отправляем сообщение пользователю с уникальной ссылкой
