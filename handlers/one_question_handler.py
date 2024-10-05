@@ -19,7 +19,7 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
 
     data = await state.get_data()
     previous_warning_message_id = data.get("previous_warning_message_id")
-    question = data.get("question_prompt_message_id")
+    question = data.get("question_id")
     print(f"Message ID to delete: {question}")
 
     if question:
