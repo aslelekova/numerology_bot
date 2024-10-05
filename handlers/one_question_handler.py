@@ -111,6 +111,15 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
     confirmation_message_id = data.get("confirmation_message_id")
     tariff_message = data.get("tariff_message")
 
+    previous_warning_message_id = data.get("previous_warning_message_id")
+
+    if previous_warning_message_id:
+        try:
+            await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id,
+                                                            message_id=previous_warning_message_id)
+        except Exception as e:
+            print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
+
     if first_message_id:
         try:
             await callback_query.message.bot.delete_message(

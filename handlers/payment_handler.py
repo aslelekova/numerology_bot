@@ -24,6 +24,14 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     first_message_id = data.get("first_message_id")
     question_prompt_message_id = data.get("question_prompt_message_id")
+    previous_warning_message_id = data.get("previous_warning_message_id")
+
+    if previous_warning_message_id:
+        try:
+            await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id,
+                                                            message_id=previous_warning_message_id)
+        except Exception as e:
+            print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
 
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
 
