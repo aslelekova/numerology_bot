@@ -234,8 +234,6 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                         sections_keyboard=create_full_sections_keyboard_num()
                     elif category == 'compatibility':
                         sections_keyboard=create_full_sections_keyboard_com()
-                    else:
-                        await callback_query.answer("Неизвестная категория.")
 
                     first_message = await callback_query.message.answer(
                         f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
