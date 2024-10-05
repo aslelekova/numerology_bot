@@ -8,7 +8,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from handlers import payment_handler, start_handler, matrix_handler, numerology_handler, \
-    compatibility_handler, user_input_handler, sections_handler, one_question_handler
+    compatibility_handler, user_input_handler, sections_handler, one_question_handler, share_with_friend
 from config import BOT_TOKEN
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -28,6 +28,7 @@ async def main():
         dp.include_router(sections_handler.router)
         dp.include_router(one_question_handler.router)
         dp.include_router(payment_handler.router)
+        dp.include_router(share_with_friend.router)
 
         # Start the bot.
         await dp.start_polling(bot)
