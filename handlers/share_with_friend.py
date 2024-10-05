@@ -1,5 +1,4 @@
 import uuid
-import aiosqlite
 from fastapi import FastAPI
 from aiogram import types
 from aiogram import Router
@@ -11,7 +10,7 @@ app = FastAPI()
 
 def generate_share_link(user_id: int) -> str:
     unique_token = str(uuid.uuid4())
-    return f"https://yourdomain.com/share?user_id={user_id}&token={unique_token}"
+    return f"https://t.me/MakeMyMatrix_Bot?user_id={user_id}&token={unique_token}"
 
 @router.callback_query(lambda callback: callback.data == "share_and_ask")
 async def share_and_ask_handler(callback_query: types.CallbackQuery):
