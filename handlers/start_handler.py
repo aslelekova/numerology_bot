@@ -19,7 +19,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
             )
         """)
         await db.commit()
-
+    async with aiosqlite.connect('database.db') as db:
         await db.execute("""
            CREATE TABLE IF NOT EXISTS share_links (
                id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,8 +27,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
                unique_id TEXT NOT NULL UNIQUE
            )
        """)
-
-        await db.commit()
 
         await db.execute("""
            CREATE TABLE IF NOT EXISTS users (
