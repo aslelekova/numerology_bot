@@ -228,6 +228,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                     questions_left = subscription_details["questions_left"]
 
                     category = data.get('category')
+                    print(category)
                     if category == 'matrix':
                         sections_keyboard=create_full_sections_keyboard()
                     elif category == 'numerology':
