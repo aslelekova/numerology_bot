@@ -2,7 +2,7 @@ import uuid
 
 from aiogram import types
 from aiogram.fsm.context import FSMContext
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Depends
 from aiogram import Router
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
@@ -27,9 +27,12 @@ async def share_and_ask_handler(callback_query: types.CallbackQuery):
         f"Поделитесь этой ссылкой с другом, чтобы они могли задать вам вопрос: {share_link}"
     )
 
+async def get_fsm_context(state: FSMContext = Depends()):
+    return state
+
 
 @app.get("/share")
-async def share_redirect(user_id: int, token: str, callback_query: CallbackQuery, state: FSMContext):
+async def share_redirect(user_id: int, token: str, callback_query: CallbackQuery, state: FSMContext = Depends(get_fsm_context)):
     # Логика проверки токена здесь (если нужно)
 
     # Обновляем количество доступных вопросов
