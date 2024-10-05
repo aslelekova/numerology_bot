@@ -49,7 +49,7 @@ async def process_question(message: types.Message, state: FSMContext):
         await save_message_id(state, warning_message.message_id)
         return
 
-    generating_message = await message.answer("⏳")
+    generating_message = await message.answer("Подождите минутку, мы готовим для вас ответ ⏳")
     await save_message_id(state, generating_message.message_id)
 
     user_data = await state.get_data()

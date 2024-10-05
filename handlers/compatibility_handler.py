@@ -131,7 +131,7 @@ async def process_selecting_second_partner_date(callback_query: CallbackQuery, c
             except Exception as e:
                 print(f"Ошибка при удалении сообщения с календарем: {e}")
 
-        generating_message = await callback_query.message.answer("⏳")
+        generating_message = await callback_query.message.answer("Подождите минутку, мы готовим для вас ответ ⏳")
         assistant = await setup_assistant_and_vector_store()
         first_partner_day = first_partner_date.day
         first_partner_month = first_partner_date.month

@@ -116,7 +116,7 @@ async def process_selecting_category_matrix(callback_query: CallbackQuery, callb
             except Exception as e:
                 print(f"Ошибка при удалении сообщения с календарем: {e}")
 
-        generating_message = await callback_query.message.answer("⏳")
+        generating_message = await callback_query.message.answer("Подождите минутку, мы готовим для вас ответ ⏳")
         assistant = await setup_assistant_and_vector_store()
 
         response_text = None
@@ -308,8 +308,8 @@ async def show_current_tariff(callback_query: CallbackQuery, state: FSMContext):
         status_message = (
             f"Ваш тариф: {tariff_price}\n\n"
             f"💫 У вас осталось:\n"
-            f"• 🔮 {readings_left} любых раскладов\n"
-            f"• ⚡️ {questions_left} ответа на любые вопросы\n\n"
+            f"• 🔮 Количество раскладов: {readings_left}\n"
+            f"• ⚡️ Ответов на вопросы: {questions_left}\n\n"
             "Обновить тариф?"
         )
 
