@@ -40,6 +40,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
                         ]),
                         parse_mode="HTML"
                     )
+                    print(question.message_id)
                     await state.update_data(question_id=question.message_id)
                     await save_message_id(state, question.message_id)
 
