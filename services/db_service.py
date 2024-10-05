@@ -55,30 +55,3 @@ async def update_questions_left(user_id: int, questions_left: int):
         )
         await connection.commit()
 
-
-
-async def save_share_link(user_id: int, unique_id: str):
-    async with aiosqlite.connect('users.db') as db:
-        await db.execute(
-            "INSERT INTO share_links (user_id, unique_id) VALUES (?, ?)",
-            (user_id, unique_id)
-        )
-        await db.commit()
-
-
-async def get_user_by_share_link(unique_id: str) -> int:
-    async with aiosqlite.connect('users.db') as db:
-        async with db.execute("SELECT user_id FROM share_links WHERE unique_id = ?", (unique_id,)) as cursor:
-            result = await cursor.fetchone()
-            if result:
-                return result[0]
-            return None
-
-
-async def increment_user_questions(user_id: int, count: int):
-    async with aiosqlite.connect('users.db') as db:
-        await db.execute(
-            "UPDATE users SET questions_left = questions_left + ? WHERE user_id = ?",
-            (count, user_id)
-        )
-        await db.commit()

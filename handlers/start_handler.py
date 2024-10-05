@@ -19,21 +19,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
             )
         """)
 
-        await db.execute("""
-           CREATE TABLE IF NOT EXISTS share_links (
-               id INTEGER PRIMARY KEY AUTOINCREMENT,
-               user_id INTEGER NOT NULL,
-               unique_id TEXT NOT NULL UNIQUE
-           )
-       """)
-
-        await db.execute("""
-           CREATE TABLE IF NOT EXISTS users (
-                user_id INTEGER PRIMARY KEY,
-                questions_left INTEGER DEFAULT 0
-            );
-       """)
-
         await db.commit()
         people_id = message.chat.id
 
