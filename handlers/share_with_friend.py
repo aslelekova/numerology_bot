@@ -1,56 +1,54 @@
-import uuid
+from uuid import uuid4
 
-from aiogram import types
+from aiogram import Router, types, Bot
 from aiogram.fsm.context import FSMContext
-from fastapi import FastAPI, Request, Depends
-from aiogram import Router
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from services.db_service import update_questions_left
-from services.message_service import save_message_id
+from config import BOT_TOKEN
+from services.db_service import save_share_link, get_user_by_share_link, increment_user_questions
 
-router = Router()
+from fastapi import FastAPI, Request
+from fastapi.responses import PlainTextResponse
+
 app = FastAPI()
-
-
-def generate_share_link(user_id: int) -> str:
-    unique_token = str(uuid.uuid4())
-    return f"https://t.me/MakeMyMatrix_Bot?user_id={user_id}&token={unique_token}"
-
+router = Router()
+bot = Bot(token=BOT_TOKEN)
 
 @router.callback_query(lambda callback: callback.data == "share_and_ask")
-async def share_and_ask_handler(callback_query: types.CallbackQuery):
+async def share_and_ask_handler(callback_query: types.CallbackQuery, state: FSMContext):
     user_id = callback_query.from_user.id
-    share_link = generate_share_link(user_id)
 
+    unique_id = str(uuid4())
+    link = f"https://yourbot.com/share/{unique_id}"
+
+    # Сохраняем ссылку в базе данных для отслеживания
+    await save_share_link(user_id, unique_id)
+
+    # Отправляем сообщение пользователю с уникальной ссылкой
     await callback_query.message.answer(
-        f"Поделитесь этой ссылкой с другом, чтобы они могли задать вам вопрос: {share_link}"
+        f"Отправьте другу эту ссылку, чтобы получить дополнительный вопрос: {link}"
     )
 
-async def get_fsm_context(state: FSMContext = Depends()):
-    return state
+    # Удаляем оригинальное сообщение
+    await callback_query.answer()
 
 
-@app.get("/share")
-async def share_redirect(user_id: int, token: str, callback_query: CallbackQuery, state: FSMContext = Depends(get_fsm_context)):
-    # Логика проверки токена здесь (если нужно)
+@app.get("/share/{unique_id}")
+async def process_share_link(unique_id: str, request: Request):
+    user_id = await get_user_by_share_link(unique_id)
 
-    # Обновляем количество доступных вопросов
-    await update_questions_left(user_id, 1)
+    if user_id:
+        # Добавляем дополнительный вопрос первому пользователю
+        await increment_user_questions(user_id, 1)
 
-    # Отправляем уведомление пользователю, который поделился ссылкой
-    await notify_user(callback_query, state)
+        # Отправляем первому пользователю уведомление
+        await bot.send_message(
+            user_id,
+            "Ваш друг перешел по ссылке! Теперь у вас доступен один дополнительный вопрос. "
+            "Нажмите на кнопку ниже, чтобы задать вопрос.",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_free_question")]
+            ])
+        )
 
-    return {"message": "Спасибо, ваш друг теперь может задать дополнительный вопрос!"}
-
-
-async def notify_user(callback_query: CallbackQuery, state: FSMContext):
-    message_text = await callback_query.message.answer(
-        f"Ваш друг перешел по ссылке и теперь может задать дополнительный вопрос!",
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_free_question")]
-        ]),
-    )
-
-    await state.update_data(message_text_id=message_text.message_id)
-    await save_message_id(state, message_text.message_id)
+    return PlainTextResponse("OK")

@@ -20,6 +20,24 @@ async def cmd_start(message: types.Message, state: FSMContext):
         """)
         await db.commit()
 
+        await db.execute("""
+           CREATE TABLE IF NOT EXISTS share_links (
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               user_id INTEGER NOT NULL,
+               unique_id TEXT NOT NULL UNIQUE
+           )
+       """)
+
+        await db.commit()
+
+        await db.execute("""
+           CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY,
+                questions_left INTEGER DEFAULT 0
+            );
+       """)
+
+        await db.commit()
         people_id = message.chat.id
         
         cursor = await db.execute("SELECT id FROM login_id WHERE id = ?", (people_id,))
