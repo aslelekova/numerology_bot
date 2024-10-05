@@ -106,7 +106,7 @@ async def handle_full_access_main(callback_query: CallbackQuery, state: FSMConte
     await state.update_data(confirmation_message_id=confirmation_message.message_id)
 
 
-async def create_payment(amount, description):
+async def create_payment(amount, chat_id, description):
     try:
         payment = Payment.create({
             "amount": {
