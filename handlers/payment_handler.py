@@ -5,6 +5,8 @@ import traceback
 from aiogram.fsm.context import FSMContext
 from aiogram import Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+
+from handlers.start_handler import cmd_start
 from keyboards.sections_fate_com import create_full_sections_keyboard_com, create_sections_keyboard_com
 from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num
 from services.db_service import get_subscription_details
@@ -67,7 +69,6 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
 @router.callback_query(lambda callback: callback.data == "get_full_access_main")
 async def handle_full_access_main(callback_query: CallbackQuery, state: FSMContext):
-    print(1)
     data = await state.get_data()
 
     tariff_message_id = data.get("tariff_message_id")
@@ -228,13 +229,15 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                     questions_left = subscription_details["questions_left"]
 
                     category = data.get('category')
-                    print(category)
                     if category == 'matrix':
                         sections_keyboard=create_full_sections_keyboard()
                     elif category == 'numerology':
                         sections_keyboard=create_full_sections_keyboard_num()
                     elif category == 'compatibility':
                         sections_keyboard=create_full_sections_keyboard_com()
+                    elif category is None:
+                        await cmd_start(callback_query.message, state)
+                        return
 
                     first_message = await callback_query.message.answer(
                         f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
