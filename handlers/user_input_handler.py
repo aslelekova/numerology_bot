@@ -332,10 +332,9 @@ async def show_current_tariff(callback_query: CallbackQuery, state: FSMContext):
 @router.callback_query(lambda callback: callback.data == "support")
 async def support(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.message.delete()
-    user_id = callback_query.from_user.id
 
     status_message = (
-        f"По любым вопросам можете обращаться к нашему менеджеру:\n📲 @Ilia0211"
+        f"📲 По любым вопросам можете обращаться к нашему менеджеру:\n @Ilia0211"
     )
 
     new_mes = await callback_query.message.answer(
