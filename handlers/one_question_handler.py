@@ -134,3 +134,15 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
         reply_markup=main_menu_keyboard()
     )
     await save_message_id(state, main_menu_message.message_id)
+
+
+@router.message(lambda message: message.text)
+async def text_message_handler(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+
+    all_message_ids = data.get("all_message_ids", [])
+
+    all_message_ids.append(message.message_id)
+
+    await state.update_data(all_message_ids=all_message_ids)
+
