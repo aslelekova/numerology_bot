@@ -9,6 +9,9 @@ from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 
 router = Router()
+
+
+
 @router.callback_query(lambda callback: callback.data == "share_and_ask")
 async def share_and_ask_handler(callback_query: types.CallbackQuery, state: FSMContext):
     user_id = callback_query.from_user.id

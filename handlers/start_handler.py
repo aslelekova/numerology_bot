@@ -10,7 +10,6 @@ db = Database()
 
 router = Router()
 
-
 @router.message(CommandStart())
 async def cmd_start(message: types.Message, state: FSMContext):
     await db.setup()
@@ -24,13 +23,14 @@ async def cmd_start(message: types.Message, state: FSMContext):
         referrer_id = str(start_command[7:])  # Получаем реферальный ID из команды
 
         if referrer_id:  # Проверяем, что referrer_id не пустой
-            if referrer_id != str(
-                    user_id):  # Проверяем, что пользователь не пытается зарегистрироваться по своей ссылке
+            if referrer_id != str(user_id):  # Проверяем, что пользователь не пытается зарегистрироваться по своей ссылке
                 await db.add_user(user_id, referrer_id)  # Добавляем пользователя с реферальным ID
+
+                # Уведомляем реферера о регистрации нового пользователя
                 try:
-                    await message.answer(f"По вашей ссылке зарегистрировался новый пользователь!")
+                    await message.bot.send_message(referrer_id, f"По вашей ссылке зарегистрировался новый пользователь!")
                 except Exception as e:
-                    print(f"Ошибка при отправке сообщения: {e}")
+                    print(f"Ошибка при отправке сообщения рефереру: {e}")
             else:
                 await message.answer("Нельзя регистрироваться по собственной реферальной ссылке!")
         else:
