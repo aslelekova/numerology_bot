@@ -2,51 +2,66 @@ import aiosqlite
 from aiogram import Router, types
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from keyboards.main_menu_keyboard import main_menu_keyboard
-from services.db_service import Database
-
-db = Database()
+from services.db_service import Database, setup_db, user_exists, add_user, get_questions_left, update_questions_left
+from services.message_service import save_message_id
 
 router = Router()
 
 @router.message(CommandStart())
 async def cmd_start(message: types.Message, state: FSMContext):
-    await db.setup()
-
+    await setup_db()
     user_id = message.from_user.id
     start_command = message.text
 
-    # Проверка, существует ли пользователь в базе данных
-    if not await db.user_exists(user_id):
-        # Извлечение реферального ID
-        referrer_id = str(start_command[7:])  # Получаем реферальный ID из команды
+    if not await user_exists(user_id):
+        referrer_id = str(start_command[7:])
 
-        if referrer_id:  # Проверяем, что referrer_id не пустой
-            if referrer_id != str(user_id):  # Проверяем, что пользователь не пытается зарегистрироваться по своей ссылке
-                await db.add_user(user_id, referrer_id)  # Добавляем пользователя с реферальным ID
+        if referrer_id:
+            if referrer_id != str(user_id):
+                await add_user(user_id, referrer_id)
 
-                # Уведомляем реферера о регистрации нового пользователя
+                data = await state.get_data()
+                link_message_id = data.get("link_message_id")
+
+                if link_message_id:
+                    try:
+                        await message.bot.delete_message(chat_id=message.chat.id, message_id=link_message_id)
+                    except Exception as e:
+                        print(f"Ошибка при удалении сообщения: {e}")
+
                 try:
-                    await message.bot.send_message(referrer_id, f"По вашей ссылке зарегистрировался новый пользователь!")
+                    question_prompt_message = await message.bot.send_message(referrer_id,
+                        f"По вашей ссылке зарегистрировался новый пользователь! Вы можете задать бесплатный вопрос!",
+                        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                            [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_free_question")]
+                        ]),
+                        parse_mode="HTML"
+                    )
+
+                    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+                    await save_message_id(state, question_prompt_message.message_id)
+
+                    questions_left = await get_questions_left(int(referrer_id))
+                    await update_questions_left(int(referrer_id), questions_left + 1)
                 except Exception as e:
                     print(f"Ошибка при отправке сообщения рефереру: {e}")
             else:
                 await message.answer("Нельзя регистрироваться по собственной реферальной ссылке!")
         else:
-            await db.add_user(user_id)  # Если нет реферального ID, просто добавляем пользователя
+            await add_user(user_id)
 
-    # Получаем имя пользователя
     user_data = await state.get_data()
     user_name = user_data.get("user_name") or message.from_user.first_name
 
-    # Очищаем состояние FSM
     await state.clear()
 
-    # Отправляем приветственное сообщение
     await message.answer(
         f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, нумерологии, "
         "совместимости, карьерного успеха, богатства и других вопросов.\n\n<b>После каждого расчета вы "
         "сможете задать любой вопрос.</b> С чего начнем?",
-        reply_markup=main_menu_keyboard()  # Предполагается, что у вас есть функция main_menu_keyboard()
+        reply_markup=main_menu_keyboard()
     )
+

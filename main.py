@@ -1,7 +1,6 @@
 # main.py
 import logging
 import asyncio
-import sqlite3
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties

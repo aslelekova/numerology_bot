@@ -8,6 +8,8 @@ from config import BOT_TOKEN
 from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 
+from services.message_service import save_message_id
+
 router = Router()
 
 
@@ -18,9 +20,11 @@ async def share_and_ask_handler(callback_query: types.CallbackQuery, state: FSMC
 
     link = f"https://t.me/MakeMyMatrix_Bot?start={user_id}"
 
-    await callback_query.message.answer(
+    link_message = await callback_query.message.answer(
         f"Отправьте другу эту ссылку, чтобы задать еще один вопрос  :\n{link}"
     )
+    await state.update_data(link_message_id=link_message.message_id)
+    await save_message_id(state, link_message.message_id)
 
     # Удаляем оригинальное сообщение
     await callback_query.answer()
