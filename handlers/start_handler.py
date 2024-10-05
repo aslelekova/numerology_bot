@@ -40,8 +40,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
                         ]),
                         parse_mode="HTML"
                     )
-                    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
-                    await save_message_id(state, question_prompt_message.message_id)
 
                     questions_left = await get_questions_left(int(referrer_id))
                     await update_questions_left(int(referrer_id), questions_left + 1)
@@ -65,7 +63,9 @@ async def cmd_start(message: types.Message, state: FSMContext):
         reply_markup=main_menu_keyboard()
     )
 
-    await state.update_data(question_prompt_message_id=None)
+    await state.clear()
+    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+    await save_message_id(state, question_prompt_message.message_id)
 
 
 
