@@ -10,10 +10,8 @@ from keyboards.back_to_menu import create_back_button
 from keyboards.sections_fate_com import create_full_sections_keyboard_com, create_sections_keyboard_com
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, functions_keyboard
 from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num
-from services.birthday_service import calculate_values
 from services.db_service import get_subscription_details, update_user_readings_left
-from services.message_service import delete_messages, send_initial_messages
-from states import QuestionState
+from services.message_service import send_initial_messages
 
 router = Router()
 

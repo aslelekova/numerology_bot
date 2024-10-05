@@ -1,6 +1,5 @@
 import config
 from openai import AsyncAssistantEventHandler, AsyncOpenAI
-import asyncio
 
 client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
 

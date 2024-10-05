@@ -1,10 +1,9 @@
 import aiosqlite
-import requests
 from yookassa import Configuration, Payment
 import uuid
 import traceback
 from aiogram.fsm.context import FSMContext
-from aiogram import Router, types
+from aiogram import Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from keyboards.sections_fate_com import create_full_sections_keyboard_com, create_sections_keyboard_com
 from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num

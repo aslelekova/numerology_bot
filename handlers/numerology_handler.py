@@ -1,6 +1,5 @@
 # handlers/numerology_handler.py
 from aiogram import Router, F, types
-from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.filters.callback_data import CallbackData

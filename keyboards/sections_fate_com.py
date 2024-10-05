@@ -1,6 +1,6 @@
 # keyboards/sections_fate_matrix.py
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 def create_sections_keyboard_com() -> InlineKeyboardMarkup:

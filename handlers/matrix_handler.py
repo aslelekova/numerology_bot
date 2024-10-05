@@ -4,11 +4,8 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from calendar_module.schemas import DialogCalendarCallback
-from handlers.numerology_handler import process_selecting_category_num
-from services.calendar_service import process_calendar_selection
 from states import Form
-from handlers.user_input_handler import process_selecting_category_matrix, prompt_for_name
+from handlers.user_input_handler import prompt_for_name
 
 router = Router()
 

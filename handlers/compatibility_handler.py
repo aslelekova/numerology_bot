@@ -3,21 +3,19 @@
 from aiogram import Router, F, types
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
-from aiogram.filters.callback_data import CallbackData
 from calendar_module.calendar_utils import get_user_locale
 from calendar_module.schemas import DialogCalendarCallback
 from handlers.start_handler import cmd_start
 from keyboards.sections_fate_com import create_full_sections_keyboard_com, create_sections_keyboard_com
 from keyboards.sections_fate_matrix import functions_keyboard
 from handlers.sections_handler import handle_section
-from services.birthday_service import calculate_compatibility, calculate_houses
+from services.birthday_service import calculate_compatibility
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details, update_subscription_status, update_user_readings_left
 from services.gpt_service import setup_assistant_and_vector_store
 from services.gpt_service_com import generate_gpt_response_com
-from services.gpt_service_num import generate_gpt_response_numerology
 from services.message_service import delete_messages, notify_subscription_expired
-from services.user_service import get_user_data, update_user_date, update_user_date_com, update_user_name
+from services.user_service import get_user_data, update_user_date_com, update_user_name
 from states import Form
 from aiogram.filters.state import StateFilter
 

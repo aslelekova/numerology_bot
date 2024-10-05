@@ -1,6 +1,6 @@
 # services/message_service.py
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton
 from aiogram.types import CallbackQuery
 from aiogram import types
 

@@ -5,9 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from keyboards.main_menu_keyboard import main_menu_keyboard
-from keyboards.sections_fate_matrix import functions_keyboard
 from services.db_service import get_questions_left, get_subscription_details, update_questions_left
-from services.gpt_service import client
 from services.question_service import generate_question_response, generate_suggestions
 from states import QuestionState
 
@@ -17,6 +15,16 @@ router = Router()
 async def ask_free_question_callback(callback_query: types.CallbackQuery, state: FSMContext):
     user_id = callback_query.from_user.id
     questions_left = await get_questions_left(user_id)
+
+    data = await state.get_data()
+    previous_warning_message_id = data.get("previous_warning_message_id")
+
+    if previous_warning_message_id:
+        try:
+            await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id,
+                                                            message_id=previous_warning_message_id)
+        except Exception as e:
+            print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
 
     if questions_left <= 0:
         await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")

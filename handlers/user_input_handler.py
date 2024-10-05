@@ -13,12 +13,12 @@ from calendar_module.schemas import DialogCalendarCallback
 from handlers.compatibility_handler import process_selecting_first_partner_date, process_selecting_second_partner_date
 from handlers.sections_handler import handle_section
 from handlers.start_handler import cmd_start
-from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_reply_keyboard, functions_keyboard
+from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, functions_keyboard
 from handlers.numerology_handler import process_selecting_category_num
 from services.birthday_service import calculate_values
 from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details, update_subscription_status, update_user_readings_left
-from services.gpt_service import EventHandler, generate_gpt_response_matrix, setup_assistant_and_vector_store
+from services.gpt_service import generate_gpt_response_matrix, setup_assistant_and_vector_store
 from services.message_service import delete_messages, notify_subscription_expired
 from services.user_service import update_user_name, get_user_data, update_user_date
 from states import Form
