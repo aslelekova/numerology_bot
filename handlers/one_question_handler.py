@@ -19,13 +19,13 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
 
     data = await state.get_data()
     previous_warning_message_id = data.get("previous_warning_message_id")
-    question_prompt_message_id = data.get("question_prompt_message_id")
-    print(f"Message ID to delete: {question_prompt_message_id}")
+    question = data.get("question_prompt_message_id")
+    print(f"Message ID to delete: {question}")
 
-    if question_prompt_message_id:
+    if question:
         try:
             await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id,
-                                                            message_id=question_prompt_message_id)
+                                                            message_id=question)
         except Exception as e:
             print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
 
