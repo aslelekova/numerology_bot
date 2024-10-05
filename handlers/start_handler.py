@@ -18,8 +18,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
                 subscription_active BOOLEAN DEFAULT 0
             )
         """)
-        await db.commit()
-    async with aiosqlite.connect('database.db') as db:
+
         await db.execute("""
            CREATE TABLE IF NOT EXISTS share_links (
                id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +36,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
 
         await db.commit()
         people_id = message.chat.id
-        
+
         cursor = await db.execute("SELECT id FROM login_id WHERE id = ?", (people_id,))
         data = await cursor.fetchone()
 
@@ -53,6 +52,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
     await message.answer(
         f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, нумерологии, "
         "совместимости, карьерного успеха, богатства и других вопросов.\n\n<b>После каждого расчета вы "
-        "сможете задать любой вопрос.</b> С чего начнем?", 
+        "сможете задать любой вопрос.</b> С чего начнем?",
         reply_markup=main_menu_keyboard()
     )
