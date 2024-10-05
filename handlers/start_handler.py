@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from keyboards.main_menu_keyboard import main_menu_keyboard
-from services.db_service import Database, setup_db, user_exists, add_user, get_questions_left, update_questions_left
+from services.db_service import setup_db, user_exists, add_user, get_questions_left, update_questions_left
 from services.message_service import save_message_id
 
 router = Router()
