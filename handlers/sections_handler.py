@@ -11,7 +11,7 @@ from keyboards.sections_fate_com import create_full_sections_keyboard_com, creat
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, functions_keyboard
 from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num
 from services.db_service import get_subscription_details, update_user_readings_left
-from services.message_service import send_initial_messages
+from services.message_service import send_initial_messages, save_message_id
 
 router = Router()
 
@@ -61,6 +61,7 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
             reply_markup=reply_markup
         )
         await state.update_data(first_message_id=first_message.message_id)
+        await save_message_id(state, first_message.message_id)
 
         question_prompt_message = await callback_query.message.answer(
             f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
@@ -73,6 +74,7 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
             parse_mode="HTML"
         )
         await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+        await save_message_id(state, question_prompt_message.message_id)
 
     else:
         if category == 'matrix':

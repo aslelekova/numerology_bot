@@ -13,7 +13,7 @@ from services.calendar_service import process_calendar_selection, start_calendar
 from services.db_service import get_subscription_details, update_subscription_status, update_user_readings_left
 from services.gpt_service import setup_assistant_and_vector_store
 from services.gpt_service_num import generate_gpt_response_numerology
-from services.message_service import delete_messages, notify_subscription_expired
+from services.message_service import delete_messages, notify_subscription_expired, save_message_id
 from services.user_service import get_user_data, update_user_date
 from handlers.start_handler import cmd_start
 from states import Form
@@ -34,6 +34,8 @@ async def prompt_for_name_numerology(call: CallbackQuery, state: FSMContext, mes
     await call.message.delete()
     prompt_message = await call.message.answer(message_text)
     await state.update_data(prompt_message_id=prompt_message.message_id)
+    await save_message_id(state, prompt_message.message_id)
+
     await state.set_state(next_state)
 
 
@@ -63,6 +65,7 @@ async def handle_params_input(message: types.Message, state: FSMContext):
         reply_markup=await start_calendar(locale=await get_user_locale(message.from_user))
     )
     await state.update_data(date_prompt_message_id=date_prompt_message.message_id)
+    await save_message_id(state, date_prompt_message.message_id)
     await state.set_state(Form.waiting_for_data_num)
 
 
@@ -136,6 +139,7 @@ async def process_selecting_category_num(callback_query: CallbackQuery, callback
                 reply_markup=sections_keyboard
             )
             await state.update_data(first_message_id=first_message.message_id)
+            await save_message_id(state, first_message.message_id)
 
             question_prompt_message = await callback_query.message.answer(
                     f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
@@ -149,6 +153,8 @@ async def process_selecting_category_num(callback_query: CallbackQuery, callback
                 )
 
             await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+            await save_message_id(state, question_prompt_message.message_id)
+
         else:
             sections_keyboard = create_sections_keyboard_num()
             first_message = await callback_query.message.answer(
@@ -159,6 +165,7 @@ async def process_selecting_category_num(callback_query: CallbackQuery, callback
                 reply_markup=sections_keyboard
             )
             await state.update_data(first_message_id=first_message.message_id)
+            await save_message_id(state, first_message.message_id)
 
             three_functions = functions_keyboard()
             question_prompt_message = await callback_query.message.answer(
@@ -169,6 +176,7 @@ async def process_selecting_category_num(callback_query: CallbackQuery, callback
                 parse_mode="HTML"
             )
             await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+            await save_message_id(state, question_prompt_message.message_id)
 
 
 @router.callback_query(lambda callback: callback.data.startswith("num_"))
@@ -213,6 +221,8 @@ async def handle_section_callback_num(callback_query: CallbackQuery, state: FSMC
             "Эта категория доступна только в платной версии. Пожалуйста, откройте полный доступ."
         )
         await state.update_data(previous_warning_message_id=warning_message.message_id)
+        await save_message_id(state, warning_message.message_id)
+
         return
 
     if subscription_active and readings_left <= 0 and category not in [

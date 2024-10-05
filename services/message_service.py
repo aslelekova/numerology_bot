@@ -75,3 +75,10 @@ async def notify_subscription_expired(callback_query: CallbackQuery, state: FSMC
         reply_markup=access_keyboard,
         parse_mode="HTML"
     )
+
+
+async def save_message_id(state: FSMContext, message_id: int):
+    data = await state.get_data()
+    all_message_ids = data.get("all_message_ids", [])
+    all_message_ids.append(message_id)
+    await state.update_data(all_message_ids=all_message_ids)

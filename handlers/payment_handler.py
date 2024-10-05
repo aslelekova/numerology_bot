@@ -8,7 +8,7 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 from keyboards.sections_fate_com import create_full_sections_keyboard_com, create_sections_keyboard_com
 from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num
 from services.db_service import get_subscription_details
-from services.message_service import delete_message, delete_messages, send_initial_messages
+from services.message_service import delete_message, delete_messages, send_initial_messages, save_message_id
 from keyboards.sections_fate_matrix import create_full_sections_keyboard, create_sections_keyboard, create_tariff_keyboard, functions_keyboard
 from config import secret_key, shop_id
   
@@ -48,6 +48,7 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
         "Выберите один из тарифов",
         reply_markup=keyboard
     )
+    await save_message_id(state, tariff_message1.message_id)
 
     await state.update_data(tariff_message_id=tariff_message1.message_id)
 
@@ -59,7 +60,7 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
             ]
         )
     )
-
+    await save_message_id(state, confirmation_message1.message_id)
     await state.update_data(confirmation_message_id=confirmation_message1.message_id)
 
 
@@ -88,6 +89,7 @@ async def handle_full_access_main(callback_query: CallbackQuery, state: FSMConte
         "Выберите один из тарифов",
         reply_markup=keyboard
     )
+    await save_message_id(state, tariff_message.message_id)
 
     await state.update_data(tariff_message_id=tariff_message.message_id)
 
@@ -99,11 +101,12 @@ async def handle_full_access_main(callback_query: CallbackQuery, state: FSMConte
             ]
         )
     )
+    await save_message_id(state, confirmation_message.message_id)
 
     await state.update_data(confirmation_message_id=confirmation_message.message_id)
 
 
-async def create_payment(amount, chat_id, description):
+async def create_payment(amount, description):
     try:
         payment = Payment.create({
             "amount": {
@@ -160,7 +163,6 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
     payment_ids = [payment_id_1, payment_id_2, payment_id_3]
 
     try:
-        success = False
         pending = False
 
         for payment_id in payment_ids:
@@ -184,7 +186,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                             except Exception as e:
                                 if "message to delete not found" not in str(e):
                                     print(f"Error deleting tarif message with ID {tariff_message1}: {e}")
-                                    
+
 
                     if confirmation_message_id1:
                         try:
@@ -195,7 +197,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                         except Exception as e:
                             if "message to delete not found" not in str(e):
                                 print(f"Error deleting confirmation message with ID {confirmation_message_id1}: {e}")
-                                
+
                     tariff_message = data.get("tariff_message_id")
                     confirmation_message_id = data.get("confirmation_message_id")
                     if tariff_message:
@@ -207,7 +209,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                         except Exception as e:
                             if "message to delete not found" not in str(e):
                                 print(f"Error deleting tarif message with ID {tariff_message}: {e}")
-                                
+
 
                 if confirmation_message_id:
                     try:
@@ -239,6 +241,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                         reply_markup=sections_keyboard
                     )
                     await state.update_data(first_message_id=first_message.message_id)
+                    await save_message_id(state, first_message.message_id)
 
                     question_prompt_message = await callback_query.message.answer(
                         f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
@@ -250,6 +253,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                         ]),
                         parse_mode="HTML"
                     )
+                    await save_message_id(state, question_prompt_message.message_id)
 
                     await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
                     return
@@ -260,9 +264,12 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                     continue
 
         if pending:
-            await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
+            pending_message = await callback_query.message.answer("Оплата пока не завершена. Пожалуйста, попробуйте позже.")
+            await save_message_id(state, pending_message.message_id)
+
         else:
-            await callback_query.message.answer("Оплата не прошла. Попробуйте снова.")
+            failed_message = await callback_query.message.answer("Оплата не прошла. Попробуйте снова.")
+            await save_message_id(state, failed_message.message_id)
 
     except Exception as e:
         print(f"Ошибка при проверке платежа: {e}")
@@ -376,6 +383,7 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
             reply_markup=reply_markup
         )
         await state.update_data(first_message_id=first_message.message_id)
+        await save_message_id(state, first_message.message_id)
 
         question_prompt_message = await callback_query.message.answer(
             f"Сделайте новый расчет:  \n🔮 Матрица судьбы\n💸 Нумерология | Личному успеху | Финансам\n💕 Совместимость с партнером\n\nИли <b>задайте любой вопрос</b> нашему "
@@ -388,6 +396,7 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext):
             parse_mode="HTML"
         )
         await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
+        await save_message_id(state, question_prompt_message.message_id)
 
     else:
         if category == 'matrix':
