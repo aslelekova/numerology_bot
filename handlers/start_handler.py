@@ -40,8 +40,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
                         ]),
                         parse_mode="HTML"
                     )
-
-                    await state.update_data(question_prompt_id=question_prompt.message_id)
+                    print(question_prompt.message_id)
                     await save_message_id(state, question_prompt.message_id)
 
                     questions_left = await get_questions_left(int(referrer_id))

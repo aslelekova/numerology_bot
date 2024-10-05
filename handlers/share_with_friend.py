@@ -2,11 +2,6 @@ from uuid import uuid4
 
 from aiogram import Router, types, Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-
-from config import BOT_TOKEN
-from fastapi import FastAPI, Request
-from fastapi.responses import PlainTextResponse
 
 from services.message_service import save_message_id
 
