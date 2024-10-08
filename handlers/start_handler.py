@@ -1,5 +1,3 @@
-import logging
-
 import aiosqlite
 from aiogram import Router, types
 from aiogram.filters import CommandStart, Command
@@ -12,20 +10,11 @@ from services.message_service import save_message_id
 
 router = Router()
 
-logging.basicConfig(
-    filename='bot.log',  # Имя файла для логов
-    level=logging.INFO,   # Уровень логирования
-    format='%(asctime)s - %(message)s'  # Формат записи логов
-)
-logger = logging.getLogger(__name__)
-
 @router.message(CommandStart())
 async def cmd_start(message: types.Message, state: FSMContext):
     await setup_db()
     user_id = message.from_user.id
     start_command = message.text
-
-    logger.info(f"Пользователь с id {message.from_user.id} зарегистрировался в боте.")
 
     if not await user_exists(user_id):
         referrer_id = str(start_command[7:])
