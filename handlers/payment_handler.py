@@ -1,3 +1,5 @@
+import logging
+
 import aiosqlite
 from yookassa import Configuration, Payment
 import uuid
@@ -310,6 +312,7 @@ async def update_user_tariff(callback_query: CallbackQuery, chat_id, description
             """, (tariff, readings_left, questions_left, chat_id))
             await connect.commit()
 
+    logging.info(f"Пользователь {user_id} оплатил тариф: {tariff}.")
 
 
 @router.callback_query(lambda callback: callback.data == "back")
