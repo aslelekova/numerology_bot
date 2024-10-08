@@ -1,4 +1,8 @@
+import os
+
 import aiosqlite
+
+from main import logger
 
 
 async def get_subscription_details(user_id: int):
@@ -59,18 +63,35 @@ async def update_questions_left(user_id: int, questions_left: int):
         await connection.commit()
 
 async def setup_db():
-    async with aiosqlite.connect('/app/users.db') as db:
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS login_id (
-                id INTEGER PRIMARY KEY,
-                tariff TEXT DEFAULT 'none',
-                readings_left INTEGER DEFAULT 0,
-                questions_left INTEGER DEFAULT 1, 
-                subscription_active BOOLEAN DEFAULT 0,
-                referred_id INTEGER DEFAULT NULL
-            )
-        """)
-        await db.commit()
+    db_directory = '/app'
+    db_path = os.path.join(db_directory, 'users.db')
+
+    # Проверка существования директории и создание её при отсутствии
+    if not os.path.exists(db_directory):
+        os.makedirs(db_directory)
+
+    if not os.path.exists(db_path):
+        logger.info("Создаётся новая база данных...")
+    else:
+        logger.info("База данных уже существует.")
+
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            logger.info("Успешное подключение к базе данных.")
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS login_id (
+                    id INTEGER PRIMARY KEY,
+                    tariff TEXT DEFAULT 'none',
+                    readings_left INTEGER DEFAULT 0,
+                    questions_left INTEGER DEFAULT 1, 
+                    subscription_active BOOLEAN DEFAULT 0,
+                    referred_id INTEGER DEFAULT NULL
+                )
+            """)
+            await db.commit()
+            logger.info("Таблица успешно создана или уже существует.")
+    except Exception as e:
+        logger.exception("Ошибка при подключении к базе данных: %s", e)
 
 async def user_exists(user_id):
     async with aiosqlite.connect('/app/users.db') as db:
