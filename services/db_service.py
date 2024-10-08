@@ -2,7 +2,7 @@ import aiosqlite
 
 
 async def get_subscription_details(user_id: int):
-    async with aiosqlite.connect('/app/users.db') as conn:
+    async with aiosqlite.connect('users.db') as conn:
         cursor = await conn.execute(
             "SELECT subscription_active, readings_left, questions_left FROM login_id WHERE id = ?",
             (user_id,)
@@ -23,7 +23,7 @@ async def get_subscription_details(user_id: int):
 
 
 async def get_questions_left(user_id: int) -> int:
-    async with aiosqlite.connect('/app/users.db') as connection:
+    async with aiosqlite.connect('users.db') as connection:
         cursor = await connection.execute(
             "SELECT questions_left FROM login_id WHERE id = ?",
             (user_id,)
@@ -33,7 +33,7 @@ async def get_questions_left(user_id: int) -> int:
 
 
 async def update_user_readings_left(user_id: int, new_readings_left: int):
-    async with aiosqlite.connect('/app/users.db') as conn:
+    async with aiosqlite.connect('users.db') as conn:
         await conn.execute(
             "UPDATE login_id SET readings_left = ? WHERE id = ?",
             (new_readings_left, user_id)
@@ -42,7 +42,7 @@ async def update_user_readings_left(user_id: int, new_readings_left: int):
 
 
 async def update_subscription_status(user_id: int, status: str):
-    async with aiosqlite.connect("/app/users.db") as connection:
+    async with aiosqlite.connect("users.db") as connection:
         await connection.execute(
             "UPDATE login_id SET subscription_active = ? WHERE id = ?",
             (status, user_id)
@@ -51,7 +51,7 @@ async def update_subscription_status(user_id: int, status: str):
 
 
 async def update_questions_left(user_id: int, questions_left: int):
-    async with aiosqlite.connect('/app/users.db') as connection:
+    async with aiosqlite.connect('users.db') as connection:
         await connection.execute(
             "UPDATE login_id SET questions_left = ? WHERE id = ?",
             (questions_left, user_id)
@@ -59,7 +59,7 @@ async def update_questions_left(user_id: int, questions_left: int):
         await connection.commit()
 
 async def setup_db():
-    async with aiosqlite.connect('/app/users.db') as db:
+    async with aiosqlite.connect('users.db') as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS login_id (
                 id INTEGER PRIMARY KEY,
@@ -73,12 +73,12 @@ async def setup_db():
         await db.commit()
 
 async def user_exists(user_id):
-    async with aiosqlite.connect('/app/users.db') as db:
+    async with aiosqlite.connect('users.db') as db:
         cursor = await db.execute("SELECT id FROM login_id WHERE id = ?", (user_id,))
         data = await cursor.fetchone()
         return data is not None
 
 async def add_user(user_id, referred_id=None):
-    async with aiosqlite.connect('/app/users.db') as db:
+    async with aiosqlite.connect('users.db') as db:
         await db.execute("INSERT INTO login_id (id, referred_id) VALUES (?, ?)", (user_id, referred_id))
         await db.commit()
