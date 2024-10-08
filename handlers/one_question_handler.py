@@ -115,7 +115,6 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
     user_name = callback_query.from_user.first_name
 
     all_message_ids = user_data.get("all_message_ids", [])
-    print(all_message_ids)
     for message_id in all_message_ids:
         try:
             await callback_query.message.bot.delete_message(
