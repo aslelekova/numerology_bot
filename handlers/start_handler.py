@@ -72,6 +72,36 @@ async def cmd_start(message: types.Message, state: FSMContext):
 @router.message(Command("users_info"))
 async def users_info_command(message: types.Message):
     if message.from_user.id == 524763432:
-        await message.answer("ОК")
+        async with aiosqlite.connect('/app/users.db') as db:
+            total_users = await db.execute_fetchone("SELECT COUNT(*) FROM login_id")
+
+            active_subscriptions = await db.execute_fetchone(
+                "SELECT COUNT(*) FROM login_id WHERE subscription_active = 1"
+            )
+
+            tariff_1_users = await db.execute_fetchone(
+                "SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 1'"
+            )
+
+            tariff_2_users = await db.execute_fetchone(
+                "SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 2'"
+            )
+
+            tariff_3_users = await db.execute_fetchone(
+                "SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 3'"
+            )
+
+            referred_users = await db.execute_fetchone(
+                "SELECT COUNT(*) FROM login_id WHERE referred_id IS NOT NULL"
+            )
+
+        await message.answer(
+            f"Общее количество пользователей: {total_users[0]}\n"
+            f"Количество активных подписок: {active_subscriptions[0]}\n"
+            f"Количество пользователей с Тариф 1: {tariff_1_users[0]}\n"
+            f"Количество пользователей с Тариф 2: {tariff_2_users[0]}\n"
+            f"Количество пользователей с Тариф 3: {tariff_3_users[0]}\n"
+            f"Количество пользователей с реферальным ID: {referred_users[0]}"
+        )
     else:
         await message.answer("У вас нет доступа к этой команде.")
