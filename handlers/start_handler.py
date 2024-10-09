@@ -73,35 +73,39 @@ async def cmd_start(message: types.Message, state: FSMContext):
 async def users_info_command(message: types.Message):
     if message.from_user.id == 524763432:
         async with aiosqlite.connect('/app/users.db') as db:
-            total_users = await db.execute("SELECT COUNT(*) FROM login_id")
+            async with db.execute("SELECT COUNT(*) FROM login_id") as cursor:
+                total_users = await cursor.fetchone()  # fetchone возвращает кортеж
 
-            active_subscriptions = await db.execute(
-                "SELECT COUNT(*) FROM login_id WHERE subscription_active = 1"
-            )
+            async with db.execute("SELECT COUNT(*) FROM login_id WHERE subscription_active = 1") as cursor:
+                active_subscriptions = await cursor.fetchone()
 
-            tariff_1_users = await db.execute(
-                "SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 1'"
-            )
+            async with db.execute("SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 1'") as cursor:
+                tariff_1_users = await cursor.fetchone()
 
-            tariff_2_users = await db.execute(
-                "SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 2'"
-            )
+            async with db.execute("SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 2'") as cursor:
+                tariff_2_users = await cursor.fetchone()
 
-            tariff_3_users = await db.execute(
-                "SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 3'"
-            )
+            async with db.execute("SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 3'") as cursor:
+                tariff_3_users = await cursor.fetchone()
 
-            referred_users = await db.execute(
-                "SELECT COUNT(*) FROM login_id WHERE referred_id IS NOT NULL"
-            )
+            async with db.execute("SELECT COUNT(*) FROM login_id WHERE referred_id IS NOT NULL") as cursor:
+                referred_users = await cursor.fetchone()
+
+            # Извлекаем значения из кортежей
+        total_users_count = total_users[0] if total_users else 0
+        active_subscriptions_count = active_subscriptions[0] if active_subscriptions else 0
+        tariff_1_users_count = tariff_1_users[0] if tariff_1_users else 0
+        tariff_2_users_count = tariff_2_users[0] if tariff_2_users else 0
+        tariff_3_users_count = tariff_3_users[0] if tariff_3_users else 0
+        referred_users_count = referred_users[0] if referred_users else 0
 
         await message.answer(
-            f"Общее количество пользователей: {total_users[0]}\n"
-            f"Количество активных подписок: {active_subscriptions[0]}\n"
-            f"Количество пользователей с Тариф 1: {tariff_1_users[0]}\n"
-            f"Количество пользователей с Тариф 2: {tariff_2_users[0]}\n"
-            f"Количество пользователей с Тариф 3: {tariff_3_users[0]}\n"
-            f"Количество пользователей с реферальным ID: {referred_users[0]}"
+            f"Общее количество пользователей: {total_users_count}\n"
+            f"Количество активных подписок: {active_subscriptions_count}\n"
+            f"Количество пользователей с Тариф 1: {tariff_1_users_count}\n"
+            f"Количество пользователей с Тариф 2: {tariff_2_users_count}\n"
+            f"Количество пользователей с Тариф 3: {tariff_3_users_count}\n"
+            f"Количество пользователей с реферальным ID: {referred_users_count}"
         )
     else:
         await message.answer("У вас нет доступа к этой команде.")
