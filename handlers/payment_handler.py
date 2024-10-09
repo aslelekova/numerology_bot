@@ -302,7 +302,7 @@ async def update_user_tariff(callback_query: CallbackQuery, chat_id, description
         questions_left += 40
 
     if tariff:
-        async with aiosqlite.connect('users.db') as connect:
+        async with aiosqlite.connect('/app/users.db') as connect:
             await connect.execute("""
                 UPDATE login_id
                 SET tariff = ?, readings_left = ?, questions_left = ?, subscription_active = 1
