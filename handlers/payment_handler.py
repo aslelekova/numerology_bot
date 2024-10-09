@@ -213,15 +213,15 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                                 print(f"Error deleting tarif message with ID {tariff_message}: {e}")
 
 
-                if confirmation_message_id:
-                    try:
-                        await callback_query.message.bot.delete_message(
-                            chat_id=callback_query.message.chat.id,
-                            message_id=confirmation_message_id
-                        )
-                    except Exception as e:
-                        if "message to delete not found" not in str(e):
-                            print(f"Error deleting confirmation message with ID {confirmation_message_id}: {e}")
+                    if confirmation_message_id:
+                        try:
+                            await callback_query.message.bot.delete_message(
+                                chat_id=callback_query.message.chat.id,
+                                message_id=confirmation_message_id
+                            )
+                        except Exception as e:
+                            if "message to delete not found" not in str(e):
+                                print(f"Error deleting confirmation message with ID {confirmation_message_id}: {e}")
 
                     user_id = callback_query.from_user.id
                     subscription_details = await get_subscription_details(user_id)
