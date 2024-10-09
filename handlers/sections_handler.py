@@ -31,7 +31,9 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
         readings_left += 1
         await update_user_readings_left(user_id, readings_left)
         return
-
+    if not category:  #
+        await callback_query.answer("Выберите категорию.", reply_markup=create_back_button())
+        return
     await callback_query.message.answer(selected_category, reply_markup=create_back_button())
 
 

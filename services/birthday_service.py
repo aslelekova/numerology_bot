@@ -156,9 +156,6 @@ def calculate_birth_values(day, month, year):
 def calculate_houses(user_name, day, month, year):
     name_parts = user_name.split()
 
-    if len(name_parts) != 3:
-        raise ValueError("Ожидается строка с тремя частями: фамилия, имя, отчество")
-
     surname = name_parts[0]
     name = name_parts[1]
     patronymic = name_parts[2]
@@ -166,11 +163,7 @@ def calculate_houses(user_name, day, month, year):
     A0 = calculate_name_value(name)
     D3 = calculate_name_value(surname)
     F5 = calculate_name_value(patronymic)
-
-
     B1, C2, E4 = calculate_birth_values(day, month, year)
-
-
     G6 = C2 + F5
     H7 = A0 + C2
     Y8 = C2 + D3
