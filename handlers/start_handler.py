@@ -73,25 +73,25 @@ async def cmd_start(message: types.Message, state: FSMContext):
 async def users_info_command(message: types.Message):
     if message.from_user.id == 524763432:
         async with aiosqlite.connect('/app/users.db') as db:
-            total_users = await db.execute_fetchone("SELECT COUNT(*) FROM login_id")
+            total_users = await db.execute("SELECT COUNT(*) FROM login_id")
 
-            active_subscriptions = await db.execute_fetchone(
+            active_subscriptions = await db.execute(
                 "SELECT COUNT(*) FROM login_id WHERE subscription_active = 1"
             )
 
-            tariff_1_users = await db.execute_fetchone(
+            tariff_1_users = await db.execute(
                 "SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 1'"
             )
 
-            tariff_2_users = await db.execute_fetchone(
+            tariff_2_users = await db.execute(
                 "SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 2'"
             )
 
-            tariff_3_users = await db.execute_fetchone(
+            tariff_3_users = await db.execute(
                 "SELECT COUNT(*) FROM login_id WHERE tariff = 'Тариф 3'"
             )
 
-            referred_users = await db.execute_fetchone(
+            referred_users = await db.execute(
                 "SELECT COUNT(*) FROM login_id WHERE referred_id IS NOT NULL"
             )
 
