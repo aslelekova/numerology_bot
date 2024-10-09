@@ -105,7 +105,7 @@ async def users_info_command(message: types.Message):
             f"Количество пользователей с Тариф 1: {tariff_1_users_count}\n"
             f"Количество пользователей с Тариф 2: {tariff_2_users_count}\n"
             f"Количество пользователей с Тариф 3: {tariff_3_users_count}\n"
-            f"Количество пользователей с реферальным ID: {referred_users_count}"
+            f"Количество приглавшенных пользователей: {referred_users_count}"
         )
     else:
         await message.answer("У вас нет доступа к этой команде.")
