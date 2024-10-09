@@ -70,7 +70,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
 
 
 @router.message(Command("users_info"))
-async def users_info_command(message: types.Message):
+async def users_info_command(message: types.Message, state: FSMContext):
     if message.from_user.id == 524763432:
         async with aiosqlite.connect('/app/users.db') as db:
             async with db.execute("SELECT COUNT(*) FROM login_id") as cursor:
@@ -105,7 +105,8 @@ async def users_info_command(message: types.Message):
             f"Количество пользователей с Тариф 1: {tariff_1_users_count}\n"
             f"Количество пользователей с Тариф 2: {tariff_2_users_count}\n"
             f"Количество пользователей с Тариф 3: {tariff_3_users_count}\n"
-            f"Количество приглавшенных пользователей: {referred_users_count}"
+            f"Количество приглашенных пользователей: {referred_users_count}"
         )
     else:
-        await message.answer("У вас нет доступа к этой команде.")
+        mes_access = await message.answer("У вас нет доступа к этой команде.")
+        await save_message_id(state, mes_access.message_id)
