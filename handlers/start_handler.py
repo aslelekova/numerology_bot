@@ -67,3 +67,11 @@ async def cmd_start(message: types.Message, state: FSMContext):
     )
 
     await state.clear()
+
+
+@router.message(Command("users_info"))
+async def users_info_command(message: types.Message):
+    if message.from_user.id == 524763432:
+        await message.answer("ОК")
+    else:
+        await message.answer("У вас нет доступа к этой команде.")

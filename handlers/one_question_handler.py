@@ -119,6 +119,7 @@ async def main_menu_callback(callback_query: types.CallbackQuery, state: FSMCont
         try:
             await callback_query.message.bot.delete_message(
                 chat_id=callback_query.message.chat.id,
+
                 message_id=message_id
             )
         except Exception as e:
