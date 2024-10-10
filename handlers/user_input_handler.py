@@ -254,7 +254,6 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
         await update_subscription_status(user_id, 0)
 
     if readings_left <= 0:
-        await notify_subscription_expired(callback_query, state)
         await update_subscription_status(user_id, 0)
 
 
