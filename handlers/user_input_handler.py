@@ -169,11 +169,9 @@ async def process_selecting_category_matrix(callback_query: CallbackQuery, callb
             new_readings_left = readings_left - 1
             await update_user_readings_left(user_id, new_readings_left)
 
-            readings_left = subscription_details["readings_left"]
-
             sections_keyboard = create_full_sections_keyboard()
             first_message = await callback_query.message.answer(
-                f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
+                f"У вас осталось:\n🔮 {new_readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
                 reply_markup=sections_keyboard
             )
             await state.update_data(first_message_id=first_message.message_id)
