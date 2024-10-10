@@ -7,6 +7,7 @@ from aiogram import Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
 from handlers.start_handler import cmd_start
+from keyboards.main_menu_keyboard import main_menu_keyboard
 from keyboards.sections_fate_com import create_full_sections_keyboard_com, create_sections_keyboard_com
 from keyboards.sections_numerology import create_full_sections_keyboard_num, create_sections_keyboard_num
 from services.db_service import get_subscription_details
@@ -236,8 +237,16 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                     elif category == 'compatibility':
                         sections_keyboard=create_full_sections_keyboard_com()
                     elif category is None:
-                        await cmd_start(callback_query.message, state)
-                        return
+                        user_name = callback_query.from_user.first_name
+                        main_menu_message = await callback_query.message.answer(
+                            f"Добрый день, {user_name}!\n\nМы рады помочь вам с расчетом матрицы судьбы, "
+                            "нумерологии, совместимости, карьерного успеха, богатства и других вопросов.\n\n"
+                            "<b>После каждого расчета вы сможете задать любой вопрос.</b> С чего начнем?",
+                            reply_markup=main_menu_keyboard()
+                        )
+                        await save_message_id(state, main_menu_message.message_id)
+
+                    return
 
                     first_message = await callback_query.message.answer(
                         f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
