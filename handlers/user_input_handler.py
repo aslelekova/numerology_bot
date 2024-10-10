@@ -161,13 +161,15 @@ async def process_selecting_category_matrix(callback_query: CallbackQuery, callb
         user_id = callback_query.from_user.id
         subscription_details = await get_subscription_details(user_id)
         subscription_active = subscription_details["subscription_active"]
-
+        readings_left = subscription_details["readings_left"]
+        questions_left = subscription_details["questions_left"]
 
         if subscription_active:
-            readings_left = subscription_details["readings_left"]
-            questions_left = subscription_details["questions_left"]
+
             new_readings_left = readings_left - 1
             await update_user_readings_left(user_id, new_readings_left)
+
+            readings_left = subscription_details["readings_left"]
 
             sections_keyboard = create_full_sections_keyboard()
             first_message = await callback_query.message.answer(
