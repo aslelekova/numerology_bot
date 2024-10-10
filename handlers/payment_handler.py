@@ -35,18 +35,18 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
 
-    payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
-    payment_url_2, payment_id_2 = await create_payment("2.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
-    payment_url_3, payment_id_3 = await create_payment("3.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
+    payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 590 руб")
+    payment_url_2, payment_id_2 = await create_payment("2.00", callback_query.message.chat.id, "Тариф 2. 790 руб")
+    payment_url_3, payment_id_3 = await create_payment("3.00", callback_query.message.chat.id, "Тариф 3. 990 руб")
 
     await state.update_data(payment_id_1=payment_id_1, payment_id_2=payment_id_2, payment_id_3=payment_id_3)
 
     keyboard = create_tariff_keyboard(payment_url_1, payment_url_2, payment_url_3)
 
     tariff_message1 = await callback_query.message.answer(
-        "Мы подготовили для тебя 3 тарифа 💫\n\nТариф 1.  290 рублей\n🔮 5 любых раскладов\n⚡️ 10 ответов на любые вопросы \n\n"
-        "Тариф 2.  450 рублей  (популярный)\n🔮 8 любых раскладов\n⚡️ 20 ответов на любые вопросы \n\n"
-        "Тариф 3.  650 рублей \n🔮 15 любых раскладов\n⚡️ 40 ответов на любые вопросы \n\n"
+        "Мы подготовили для тебя 3 тарифа 💫\n\nТариф 1.  590 рублей\n🔮 3 любых раскладов\n⚡️ 7 ответов на любые вопросы \n\n"
+        "Тариф 2.  790 рублей  (популярный)\n🔮 6 любых раскладов\n⚡️ 12 ответов на любые вопросы \n\n"
+        "Тариф 3.  990 рублей \n🔮 10 любых раскладов\n⚡️ 15 ответов на любые вопросы \n\n"
         "Выберите один из тарифов",
         reply_markup=keyboard
     )
@@ -75,18 +75,18 @@ async def handle_full_access_main(callback_query: CallbackQuery, state: FSMConte
     
     await delete_message(callback_query.bot, callback_query.message.chat.id, tariff_message_id)
 
-    payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 290 руб")
-    payment_url_2, payment_id_2 = await create_payment("2.00", callback_query.message.chat.id, "Тариф 2. 450 руб")
-    payment_url_3, payment_id_3 = await create_payment("3.00", callback_query.message.chat.id, "Тариф 3. 650 руб")
+    payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 590 руб")
+    payment_url_2, payment_id_2 = await create_payment("2.00", callback_query.message.chat.id, "Тариф 2. 790 руб")
+    payment_url_3, payment_id_3 = await create_payment("3.00", callback_query.message.chat.id, "Тариф 3. 990 руб")
 
     await state.update_data(payment_id_1=payment_id_1, payment_id_2=payment_id_2, payment_id_3=payment_id_3)
 
     keyboard = create_tariff_keyboard(payment_url_1, payment_url_2, payment_url_3, "main_menu")
 
     tariff_message = await callback_query.message.answer(
-        "Мы подготовили для тебя 3 тарифа 💫\n\nТариф 1.  290 рублей\n🔮 5 любых раскладов\n⚡️ 10 ответов на любые вопросы \n\n"
-        "Тариф 2.  450 рублей  (популярный)\n🔮 8 любых раскладов\n⚡️ 20 ответов на любые вопросы \n\n"
-        "Тариф 3.  650 рублей \n🔮 15 любых раскладов\n⚡️ 40 ответов на любые вопросы \n\n"
+        "Мы подготовили для тебя 3 тарифа 💫\n\nТариф 1.  590 рублей\n🔮 3 любых раскладов\n⚡️ 7 ответов на любые вопросы \n\n"
+        "Тариф 2.  790 рублей  (популярный)\n🔮 6 любых раскладов\n⚡️ 12 ответов на любые вопросы \n\n"
+        "Тариф 3.  990 рублей \n🔮 10 любых раскладов\n⚡️ 15 ответов на любые вопросы \n\n"
         "Выберите один из тарифов",
         reply_markup=keyboard
     )
@@ -290,16 +290,16 @@ async def update_user_tariff(callback_query: CallbackQuery, chat_id, description
 
     if "Тариф 1" in description:
         tariff = "Тариф 1"
-        readings_left += 5
-        questions_left += 10
+        readings_left += 3
+        questions_left += 7
     elif "Тариф 2" in description:
         tariff = "Тариф 2"
-        readings_left += 8
-        questions_left += 20
+        readings_left += 6
+        questions_left += 12
     elif "Тариф 3" in description:
         tariff = "Тариф 3"
-        readings_left += 15
-        questions_left += 40
+        readings_left += 10
+        questions_left += 15
 
     if tariff:
         async with aiosqlite.connect('/app/users.db') as connect:

@@ -71,10 +71,10 @@ async def cmd_start(message: types.Message, state: FSMContext):
 
 @router.message(Command("users_info"))
 async def users_info_command(message: types.Message, state: FSMContext):
-    if message.from_user.id == 524763432:
+    if message.from_user.id == 524763432 or message.from_user.id == 501957101 or message.from_user.id == 965257572:
         async with aiosqlite.connect('/app/users.db') as db:
             async with db.execute("SELECT COUNT(*) FROM login_id") as cursor:
-                total_users = await cursor.fetchone()  # fetchone возвращает кортеж
+                total_users = await cursor.fetchone()
 
             async with db.execute("SELECT COUNT(*) FROM login_id WHERE subscription_active = 1") as cursor:
                 active_subscriptions = await cursor.fetchone()
@@ -91,7 +91,6 @@ async def users_info_command(message: types.Message, state: FSMContext):
             async with db.execute("SELECT COUNT(*) FROM login_id WHERE referred_id IS NOT NULL") as cursor:
                 referred_users = await cursor.fetchone()
 
-            # Извлекаем значения из кортежей
         total_users_count = total_users[0] if total_users else 0
         active_subscriptions_count = active_subscriptions[0] if active_subscriptions else 0
         tariff_1_users_count = tariff_1_users[0] if tariff_1_users else 0
