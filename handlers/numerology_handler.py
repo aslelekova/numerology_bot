@@ -132,10 +132,9 @@ async def process_selecting_category_num(callback_query: CallbackQuery, callback
         readings_left = subscription_details["readings_left"]
         questions_left = subscription_details["questions_left"]
 
-        new_readings_left = readings_left - 1
-        await update_user_readings_left(user_id, new_readings_left)
-
-        if subscription_active:  
+        if subscription_active:
+            new_readings_left = readings_left - 1
+            await update_user_readings_left(user_id, new_readings_left)
             sections_keyboard = create_full_sections_keyboard_num()
             first_message = await callback_query.message.answer(
                 f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
