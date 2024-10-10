@@ -23,13 +23,8 @@ async def handle_section(callback_query: CallbackQuery, state: FSMContext, categ
 
     categories_dict = data.get("full_response", {})
     selected_category = categories_dict.get(category, "Неизвестная категория")
-    user_id = callback_query.from_user.id
-    subscription_details = await get_subscription_details(user_id)
-    readings_left = subscription_details["readings_left"]
     if selected_category == "Неизвестная категория":
         await callback_query.message.answer("Категория не найдена. Пожалуйста, выберите другую.", reply_markup=create_back_button())
-        readings_left += 1
-        await update_user_readings_left(user_id, readings_left)
         return
     if not category:  #
         await callback_query.answer("Выберите категорию.", reply_markup=create_back_button())
