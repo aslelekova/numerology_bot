@@ -187,6 +187,9 @@ async def process_selecting_second_partner_date(callback_query: CallbackQuery, c
         readings_left = subscription_details["readings_left"]
         questions_left = subscription_details["questions_left"]
 
+        if readings_left <= 0:
+            await update_subscription_status(user_id, 0)
+
         if subscription_active:
             new_readings_left = readings_left - 1
             await update_user_readings_left(user_id, new_readings_left)
@@ -269,8 +272,6 @@ async def handle_section_callback_num(callback_query: CallbackQuery, state: FSMC
     if readings_left <= 0 and questions_left <= 0:
         await update_subscription_status(user_id, 0)
 
-    if readings_left <= 0:
-        await update_subscription_status(user_id, 0)
 
     if not subscription_active and category not in [
         "Для чего пара встретилась",
