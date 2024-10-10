@@ -245,8 +245,7 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
                             reply_markup=main_menu_keyboard()
                         )
                         await save_message_id(state, main_menu_message.message_id)
-
-                    return
+                        return
 
                     first_message = await callback_query.message.answer(
                         f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
