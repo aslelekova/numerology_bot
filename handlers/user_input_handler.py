@@ -266,15 +266,6 @@ async def handle_section_callback(callback_query: CallbackQuery, state: FSMConte
 
         return
 
-    if subscription_active and category not in [
-        "Личные качества",
-        "Предназначение",
-        "Таланты",
-        "Детско-родительские отношения"
-    ]:
-        await notify_subscription_expired(callback_query, state)
-        return
-
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
     await handle_section(callback_query, state, category)
 

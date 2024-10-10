@@ -186,10 +186,10 @@ async def process_selecting_second_partner_date(callback_query: CallbackQuery, c
         subscription_active = subscription_details["subscription_active"]
         readings_left = subscription_details["readings_left"]
         questions_left = subscription_details["questions_left"]
-        new_readings_left = readings_left - 1
-        await update_user_readings_left(user_id, new_readings_left)
 
-        if subscription_active:  
+        if subscription_active:
+            new_readings_left = readings_left - 1
+            await update_user_readings_left(user_id, new_readings_left)
             sections_keyboard = create_full_sections_keyboard_com()
             first_message = await callback_query.message.answer(
                 f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
@@ -278,13 +278,6 @@ async def handle_section_callback_num(callback_query: CallbackQuery, state: FSMC
         )
         await state.update_data(previous_warning_message_id=warning_message.message_id)
         await save_message_id(state, warning_message.message_id)
-        return
-
-    if subscription_active and category not in [
-        "Для чего пара встретилась",
-        "Как пара выглядит для других"
-    ]:
-        await notify_subscription_expired(callback_query, state)
         return
 
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
