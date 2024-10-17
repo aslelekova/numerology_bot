@@ -57,16 +57,16 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
     await state.update_data(tariff_message_id=tariff_message1.message_id)
 
-    confirmation_message1 = await callback_query.message.answer(
-        "После оплаты нажмите кнопку ниже, чтобы проверить статус платежа:",
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(text="Проверить оплату", callback_data=f"check_payment")]
-            ]
-        )
-    )
-    await save_message_id(state, confirmation_message1.message_id)
-    await state.update_data(confirmation_message_id=confirmation_message1.message_id)
+    # confirmation_message1 = await callback_query.message.answer(
+    #     "После оплаты нажмите кнопку ниже, чтобы проверить статус платежа:",
+    #     reply_markup=InlineKeyboardMarkup(
+    #         inline_keyboard=[
+    #             [InlineKeyboardButton(text="Проверить оплату", callback_data=f"check_payment")]
+    #         ]
+    #     )
+    # )
+    # await save_message_id(state, confirmation_message1.message_id)
+    # await state.update_data(confirmation_message_id=confirmation_message1.message_id)
 
     asyncio.create_task(check_payment_status_periodically(callback_query, state))
 
@@ -114,7 +114,7 @@ async def handle_full_access_main(callback_query: CallbackQuery, state: FSMConte
     
     await delete_message(callback_query.bot, callback_query.message.chat.id, tariff_message_id)
 
-    payment_url_1, payment_id_1 = await create_payment("590.00", callback_query.message.chat.id, "Тариф 1. 590 руб")
+    payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 590 руб")
     payment_url_2, payment_id_2 = await create_payment("790.00", callback_query.message.chat.id, "Тариф 2. 790 руб")
     payment_url_3, payment_id_3 = await create_payment("990.00", callback_query.message.chat.id, "Тариф 3. 990 руб")
 
