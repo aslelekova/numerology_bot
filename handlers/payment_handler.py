@@ -1,3 +1,5 @@
+import asyncio
+
 import aiosqlite
 from yookassa import Configuration, Payment
 import uuid
@@ -36,7 +38,7 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
 
     await delete_messages(callback_query.bot, callback_query.message.chat.id, [first_message_id, question_prompt_message_id])
 
-    payment_url_1, payment_id_1 = await create_payment("590.00", callback_query.message.chat.id, "Тариф 1. 590 руб")
+    payment_url_1, payment_id_1 = await create_payment("1.00", callback_query.message.chat.id, "Тариф 1. 590 руб")
     payment_url_2, payment_id_2 = await create_payment("790.00", callback_query.message.chat.id, "Тариф 2. 790 руб")
     payment_url_3, payment_id_3 = await create_payment("990.00", callback_query.message.chat.id, "Тариф 3. 990 руб")
 
@@ -66,6 +68,42 @@ async def handle_full_access(callback_query: CallbackQuery, state: FSMContext):
     await save_message_id(state, confirmation_message1.message_id)
     await state.update_data(confirmation_message_id=confirmation_message1.message_id)
 
+    asyncio.create_task(check_payment_status_periodically(callback_query, state))
+
+
+async def check_payment_status_periodically(callback_query: CallbackQuery, state: FSMContext, interval=10):
+    """Периодически проверяет статус оплаты"""
+    while True:
+        await asyncio.sleep(interval)  # Ждать перед следующей проверкой
+        data = await state.get_data()
+
+        payment_id_1 = data.get("payment_id_1")
+        payment_id_2 = data.get("payment_id_2")
+        payment_id_3 = data.get("payment_id_3")
+
+        payment_ids = [payment_id_1, payment_id_2, payment_id_3]
+
+        try:
+            pending = False
+
+            for payment_id in payment_ids:
+                if payment_id:
+                    payment = Payment.find_one(payment_id)
+
+                    if payment.status == "succeeded":
+                        # Завершаем проверку, если оплата прошла
+                        await handle_successful_payment(callback_query, state, payment)
+                        return
+                    elif payment.status == "pending":
+                        pending = True
+
+            if not pending:
+                # Если все оплаты завершены, можно остановить цикл
+                return
+
+        except Exception as e:
+            print(f"Ошибка при проверке платежа: {e}")
+            print(traceback.format_exc())
 
 
 @router.callback_query(lambda callback: callback.data == "get_full_access_main")
@@ -286,6 +324,62 @@ async def check_payment_status(callback_query: CallbackQuery, state: FSMContext)
         print(f"Ошибка при проверке платежа: {e}")
         print(traceback.format_exc())
         await callback_query.message.answer("Произошла ошибка при проверке платежа. Пожалуйста, свяжитесь с поддержкой.")
+
+async def handle_successful_payment(callback_query: CallbackQuery, state: FSMContext, payment: Payment):
+    # Обновляем информацию о подписке пользователя на основе описания платежа
+    await update_user_tariff(callback_query, callback_query.message.chat.id, payment.description)
+
+    # Сообщаем пользователю об успешной оплате
+    success_message = await callback_query.message.answer("Оплата прошла успешно! 🎉 Полный доступ предоставлен.")
+    await save_message_id(state, success_message.message_id)
+
+    # Удаляем старые сообщения о выборе тарифа и подтверждении оплаты
+    data = await state.get_data()
+    tariff_message_id = data.get("tariff_message_id")
+    confirmation_message_id = data.get("confirmation_message_id")
+
+    if tariff_message_id:
+        try:
+            await callback_query.message.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=tariff_message_id
+            )
+        except Exception as e:
+            print(f"Ошибка при удалении сообщения с тарифами: {e}")
+
+    if confirmation_message_id:
+        try:
+            await callback_query.message.bot.delete_message(
+                chat_id=callback_query.message.chat.id,
+                message_id=confirmation_message_id
+            )
+        except Exception as e:
+            print(f"Ошибка при удалении сообщения с подтверждением: {e}")
+
+    # Обновляем состояние пользователя
+    subscription_details = await get_subscription_details(callback_query.from_user.id)
+    readings_left = subscription_details["readings_left"]
+    questions_left = subscription_details["questions_left"]
+
+    # Показываем пользователю оставшиеся услуги и меню
+    first_message = await callback_query.message.answer(
+        f"У вас осталось:\n🔮 {readings_left} любых раскладов\n⚡️ {questions_left} ответа на любые вопросы",
+        reply_markup=create_full_sections_keyboard()
+    )
+    await save_message_id(state, first_message.message_id)
+
+    question_prompt_message = await callback_query.message.answer(
+        f"Сделайте новый расчет или задайте вопрос. Например: 💕<b>Как улучшить отношения с партнером?</b>",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="Новый расчет", callback_data="main_menu")],
+            [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_free_question")],
+            [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
+        ]),
+        parse_mode="HTML"
+    )
+    await save_message_id(state, question_prompt_message.message_id)
+
+    await state.update_data(question_prompt_message_id=question_prompt_message.message_id)
 
 
 async def update_user_tariff(callback_query: CallbackQuery, chat_id, description):
