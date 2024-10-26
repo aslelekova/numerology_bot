@@ -82,9 +82,9 @@ def create_tariff_keyboard(payment_url_1: str, payment_url_2: str, payment_url_3
     
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="590 руб", url=payment_url_1)],
-            [InlineKeyboardButton(text="790 руб", url=payment_url_2),
-             InlineKeyboardButton(text="990 руб", url=payment_url_3)],
+            [InlineKeyboardButton(text="290 руб", url=payment_url_1)],
+            [InlineKeyboardButton(text="450 руб", url=payment_url_2),
+             InlineKeyboardButton(text="650 руб", url=payment_url_3)],
             [InlineKeyboardButton(text="Назад", callback_data=back_callback)]
         ]
     )
