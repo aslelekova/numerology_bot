@@ -121,16 +121,12 @@ async def broadcast_message(message: types.Message):
 
     # Сообщение для рассылки
     broadcast_text = "<b>🔮 Сделай свой нумерологический расклад по лучшей цене — всего за 290 рублей! Горящее предложение ❤️‍</b>🔥"
-    target_user_id = 7919534966
     async with aiosqlite.connect('/app/users.db') as db:
         async with db.execute("SELECT id FROM login_id") as cursor:
             users = await cursor.fetchall()  # Получаем всех пользователей
 
-    if (target_user_id,) in users:
+    for user in users:
         try:
-            await message.bot.send_message(target_user_id, broadcast_text)
-            print(f"Сообщение отправлено пользователю {target_user_id}")
+            await message.bot.send_message(user[0], broadcast_text)
         except Exception as e:
-            print(f"Не удалось отправить сообщение пользователю {target_user_id}: {e}")
-    else:
-        print(f"Пользователь с ID {target_user_id} не найден в базе данных.")
+            print(f"Не удалось отправить сообщение пользователю {user[0]}: {e}")
