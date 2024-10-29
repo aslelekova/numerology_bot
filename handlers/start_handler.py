@@ -119,14 +119,29 @@ async def broadcast_message(message: types.Message):
     if message.from_user.id != admin_id:
         return
 
-    # Сообщение для рассылки
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="Получить полный доступ", callback_data="get_full_access")],
+                [InlineKeyboardButton(text="Обновить тариф", callback_data="get_full_access_main")],
+                [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
+            ])
+
     broadcast_text = "<b>🔮 Сделай свой нумерологический расклад по лучшей цене — всего за 290 рублей! Горящее предложение ❤️‍</b>🔥"
     async with aiosqlite.connect('/app/users.db') as db:
         async with db.execute("SELECT id FROM login_id") as cursor:
-            users = await cursor.fetchall()  # Получаем всех пользователей
+            users = await cursor.fetchall()
 
-    for user in users:
+    target_user_id = 7919534966
+    if (target_user_id,) in users:
         try:
-            await message.bot.send_message(user[0], broadcast_text)
+            await message.bot.send_message(chat_id=target_user_id, text=broadcast_text, reply_markup=keyboard, parse_mode='HTML')
+            print(f"Сообщение отправлено пользователю {target_user_id}")
         except Exception as e:
-            print(f"Не удалось отправить сообщение пользователю {user[0]}: {e}")
+            print(f"Не удалось отправить сообщение пользователю {target_user_id}: {e}")
+    else:
+        print(f"Пользователь с ID {target_user_id} не найден в базе данных.")
+    # for user in users:
+    #     user_id = user[0]
+    #     try:
+    #         await message.bot.send_message(chat_id=user_id, text=broadcast_text, reply_markup=keyboard, parse_mode='HTML')
+    #     except Exception as e:
+    #         print(f"Ошибка при отправке сообщения пользователю {user_id}: {e}")
