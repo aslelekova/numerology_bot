@@ -1,6 +1,5 @@
 # handlers/one_question_handler.py
 from aiogram import Router, types
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -15,38 +14,39 @@ router = Router()
 
 @router.callback_query(lambda callback: callback.data == "ask_free_question")
 async def ask_free_question_callback(callback_query: types.CallbackQuery, state: FSMContext):
+    user_id = callback_query.from_user.id
+    questions_left = await get_questions_left(user_id)
+
+    data = await state.get_data()
+    previous_warning_message_id = data.get("previous_warning_message_id")
+
     try:
-        user_id = callback_query.from_user.id
-        questions_left = await get_questions_left(user_id)
+        await callback_query.message.delete()
+    except Exception as e:
+        print(f"Ошибка при удалении сообщения с кнопкой: {e}")
 
-        data = await state.get_data()
-        previous_warning_message_id = data.get("previous_warning_message_id")
 
+    if previous_warning_message_id:
         try:
-            await callback_query.message.delete()
+            await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id,
+                                                            message_id=previous_warning_message_id)
         except Exception as e:
-            print(f"Ошибка при удалении сообщения с кнопкой: {e}")
+            print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
 
-
-        if previous_warning_message_id:
-            try:
-                await callback_query.message.bot.delete_message(chat_id=callback_query.message.chat.id,
-                                                                message_id=previous_warning_message_id)
-            except Exception as e:
-                print(f"Ошибка при удалении предыдущего предупреждающего сообщения: {e}")
-
-        if questions_left <= 0:
+    if questions_left <= 0:
+        try:
             await callback_query.message.delete()
             message = await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
             await save_message_id(state, message.message_id)
-        else:
-            message = await callback_query.message.answer(
-                f"Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить мои отношения с партнером?)\n\nУ вас доступно:\n ⚡️ {questions_left} ответа на любые вопросы"
-            )
-            await save_message_id(state, message.message_id)
-            await state.set_state(QuestionState.waiting_for_question)
-    except TelegramBadRequest:
-        print("Message to delete not found. It may have already been deleted.")
+        except Exception as e:
+            # Обрабатываем все остальные исключения
+            print(f"Произошла ошибка: {e}")
+    else:
+        message = await callback_query.message.answer(
+            f"Отлично! Теперь вы можете задать свой вопрос (Например: 💕 Как улучшить мои отношения с партнером?)\n\nУ вас доступно:\n ⚡️ {questions_left} ответа на любые вопросы"
+        )
+        await save_message_id(state, message.message_id)
+        await state.set_state(QuestionState.waiting_for_question)
 
 @router.message(StateFilter(QuestionState.waiting_for_question))
 async def process_question(message: types.Message, state: FSMContext):
