@@ -35,7 +35,6 @@ async def ask_free_question_callback(callback_query: types.CallbackQuery, state:
 
     if questions_left <= 0:
         try:
-            await callback_query.message.delete()
             message = await callback_query.message.answer("Упс, похоже у вас закончились бесплатные вопросы...")
             await save_message_id(state, message.message_id)
         except Exception as e:
