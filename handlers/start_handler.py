@@ -130,18 +130,10 @@ async def broadcast_message(message: types.Message):
         async with db.execute("SELECT id FROM login_id") as cursor:
             users = await cursor.fetchall()
 
-    target_user_id = 7919534966
-    if (target_user_id,) in users:
+
+    for user in users:
+        user_id = user[0]
         try:
-            await message.bot.send_message(chat_id=target_user_id, text=broadcast_text, reply_markup=keyboard, parse_mode='HTML')
-            print(f"Сообщение отправлено пользователю {target_user_id}")
+            await message.bot.send_message(chat_id=user_id, text=broadcast_text, reply_markup=keyboard, parse_mode='HTML')
         except Exception as e:
-            print(f"Не удалось отправить сообщение пользователю {target_user_id}: {e}")
-    else:
-        print(f"Пользователь с ID {target_user_id} не найден в базе данных.")
-    # for user in users:
-    #     user_id = user[0]
-    #     try:
-    #         await message.bot.send_message(chat_id=user_id, text=broadcast_text, reply_markup=keyboard, parse_mode='HTML')
-    #     except Exception as e:
-    #         print(f"Ошибка при отправке сообщения пользователю {user_id}: {e}")
+            print(f"Ошибка при отправке сообщения пользователю {user_id}: {e}")
