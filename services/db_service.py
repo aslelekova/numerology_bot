@@ -82,3 +82,5 @@ async def add_user(user_id, referred_id=None):
     async with aiosqlite.connect('/app/users.db') as db:
         await db.execute("INSERT INTO login_id (id, referred_id) VALUES (?, ?)", (user_id, referred_id))
         await db.commit()
+
+

@@ -3,6 +3,7 @@ from aiogram import Router, types
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiosqlite import cursor
 
 from keyboards.main_menu_keyboard import main_menu_keyboard
 from services.db_service import user_exists, add_user, get_questions_left, update_questions_left
@@ -109,3 +110,27 @@ async def users_info_command(message: types.Message, state: FSMContext):
     else:
         mes_access = await message.answer("У вас нет доступа к этой команде.")
         await save_message_id(state, mes_access.message_id)
+
+
+@router.message(Command('broadcast'))
+async def broadcast_message(message: types.Message):
+    # Проверка, что команда отправлена администратором (добавьте ваш user_id)
+    admin_id = 524763432  # Замените на свой ID
+    if message.from_user.id != admin_id:
+        return
+
+    # Сообщение для рассылки
+    broadcast_text = "<b>🔮 Сделай свой нумерологический расклад по лучшей цене — всего за 290 рублей! Горящее предложение ❤️‍</b>🔥"
+    target_user_id = 7919534966
+    async with aiosqlite.connect('/app/users.db') as db:
+        async with db.execute("SELECT user_id FROM users") as cursor:
+            users = await cursor.fetchall()  # Получаем всех пользователей
+
+    if (target_user_id,) in users:
+        try:
+            await message.bot.send_message(target_user_id, broadcast_text)
+            print(f"Сообщение отправлено пользователю {target_user_id}")
+        except Exception as e:
+            print(f"Не удалось отправить сообщение пользователю {target_user_id}: {e}")
+    else:
+        print(f"Пользователь с ID {target_user_id} не найден в базе данных.")
