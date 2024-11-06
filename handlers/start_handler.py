@@ -125,7 +125,7 @@ async def broadcast_message(message: types.Message):
                 [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
             ])
 
-    broadcast_text = "<b>🔮 Сделай свой нумерологический расклад по лучшей цене — всего за 290 рублей! Горящее предложение ❤️‍</b>🔥"
+    broadcast_text = "<b>🔮Нумерологический расклад по лучшей цене — всего за 100 рублей! На 24 часа❤️‍🔥‍</b>"
     async with aiosqlite.connect('/app/users.db') as db:
         async with db.execute("SELECT id FROM login_id") as cursor:
             users = await cursor.fetchall()

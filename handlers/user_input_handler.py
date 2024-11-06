@@ -286,7 +286,7 @@ async def show_current_tariff(callback_query: CallbackQuery, state: FSMContext):
     if result:
         tariff_number, readings_left, questions_left, subscription_active = result
         if tariff_number == "Тариф 1":
-            tariff_price = "290 рублей"
+            tariff_price = "100 рублей"
         elif tariff_number == "Тариф 2":
             tariff_price = "450 рублей"
         elif tariff_number == "Тариф 3":
